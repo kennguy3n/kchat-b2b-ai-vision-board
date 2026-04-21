@@ -70,6 +70,11 @@ export function renderChannel(channelId) {
   const msgs = (D.messages[channelId] || []).map(renderMessage).join("");
 
   const container = document.getElementById("screen-channel-chat");
+  const kh = D.knowledgeForChannel(ch.id);
+  const khBadge = kh
+    ? `<button class="kh-badge" data-open-knowledge title="Open channel knowledge">${iconSvg("ai", 12)} Knowledge · rebuilt ${kh.rebuiltAt}</button>`
+    : `<button class="kh-badge" data-open-knowledge title="No knowledge indexed yet">${iconSvg("ai", 12)} Knowledge</button>`;
+
   container.innerHTML = `
     <div class="channel-header">
       <div>
@@ -77,6 +82,7 @@ export function renderChannel(channelId) {
         <div class="ch-desc">${ch.description} · ${ch.members} members · in ${domain?.name || ""}</div>
       </div>
       <span class="spacer"></span>
+      ${khBadge}
       <button class="icon-btn" title="Pin">${iconSvg("shield", 16)}</button>
       <button class="icon-btn" title="Search">${iconSvg("search", 16)}</button>
       <div class="avatar-stack">
@@ -139,6 +145,12 @@ function wireChannelEvents() {
   // Make task-list cards clickable on the body too
   document.querySelectorAll(".kcard-tasks").forEach(c => {
     c.addEventListener("click", () => window.app.openRightView("task-panel"));
+  });
+
+  const kh = document.querySelector("[data-open-knowledge]");
+  if (kh) kh.addEventListener("click", () => {
+    const cid = window.app.state.channelId;
+    if (cid) window.app.navigateTo("channel-knowledge", { channelId: cid });
   });
 
   const ai = document.getElementById("compose-ai");

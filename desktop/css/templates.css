@@ -1,0 +1,265 @@
+/* Template intake full-screen (Screen 7) */
+
+.template-intake {
+  padding: 20px 24px 96px;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow-y: auto;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.template-intake .ti-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.template-intake .ti-head .ti-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--ai-50);
+  color: var(--ai-strong);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 1px solid var(--ai-200);
+}
+.template-intake h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+}
+.template-intake .ti-sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 2px;
+}
+.template-intake .ti-curated {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+}
+
+.ti-section {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.ti-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ti-section h3 .req-badge {
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.ti-field {
+  margin-bottom: 12px;
+}
+.ti-field:last-child {
+  margin-bottom: 0;
+}
+.ti-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.ti-field label .req-dot {
+  color: var(--danger);
+  margin-left: 2px;
+}
+.ti-field input[type="text"],
+.ti-field input[type="email"],
+.ti-field textarea,
+.ti-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.ti-field textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+.ti-field input:focus,
+.ti-field textarea:focus,
+.ti-field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.18);
+}
+.ti-field.invalid input,
+.ti-field.invalid textarea,
+.ti-field.invalid select,
+.ti-field.invalid .ti-chips {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+}
+.ti-field .ti-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.ti-field.invalid .ti-hint {
+  color: var(--danger);
+}
+
+.ti-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  min-height: 40px;
+}
+.ti-chips .chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--panel);
+  color: var(--text-muted);
+  user-select: none;
+}
+.ti-chips .chip.selected {
+  background: var(--ai-50);
+  color: var(--ai-strong);
+  border-color: var(--ai-200);
+}
+
+.ti-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ti-source {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+.ti-source .ts-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.ti-source .ts-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+.ti-source .ts-kind {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ti-outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ti-output-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+.ti-output-row::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ai);
+  flex-shrink: 0;
+}
+
+.ti-foot {
+  position: sticky;
+  bottom: 0;
+  margin: 24px -24px -20px -24px;
+  padding: 14px 24px;
+  background: linear-gradient(to top, var(--bg) 75%, transparent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+}
+.ti-foot .ti-validation-msg {
+  flex: 1;
+  font-size: 12px;
+  color: var(--danger);
+  min-height: 16px;
+}
+
+/* Admin-only meta prompt pill (shown only in Settings → Templates) */
+.ti-meta-prompt {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px dashed var(--ai-200);
+  font-size: 12px;
+  color: var(--ai-strong);
+  white-space: pre-wrap;
+}
+.ti-meta-prompt::before {
+  content: "HIDDEN META-PROMPT (admin only)";
+  display: block;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  font-size: 10px;
+}

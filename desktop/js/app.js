@@ -6,21 +6,27 @@ import { renderSidebar } from "./navigation.js";
 import { renderChannel } from "./chat.js";
 import { renderThread } from "./threads.js";
 import { renderTaskPanel, renderTaskDetail, renderForm, renderBase, renderSheet } from "./kapps.js";
-import { openActionLauncher, renderBrief, renderProcessing, renderOutputReview, renderSummary } from "./ai-actions.js";
+import { openActionLauncher, renderBrief, renderProcessing, renderOutputReview, renderSummary, renderAIProcessingScreen, renderAIOutputReviewScreen } from "./ai-actions.js";
 import { renderAIEmployee } from "./ai-employees.js";
 import { renderArtifactWorkspace } from "./artifacts.js";
 import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
 import { openSettings } from "./settings.js";
+import { renderTemplateIntake } from "./templates.js";
+import { renderKnowledge } from "./knowledge.js";
+import { renderConnectors } from "./connectors.js";
+import { renderNotifications } from "./notifications.js";
 import { showToast } from "./transitions.js";
 
 /* ---------- State ---------- */
 const state = {
-  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace
+  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
   domainId: null,
   channelId: null,
   threadId: null,
   aiEmployeeId: null,
   artifactId: null,
+  templateId: null,
+  recipeId: null,
   rightView: null,           // brief | processing | output-review | task-panel | task-detail | form | base | sheet | approval-form | approval-review | summary
   collapsed: new Set(),      // section / domain ids that are collapsed in sidebar
 };
@@ -32,6 +38,7 @@ window.app = {
   openActionLauncher: () => openActionLauncher(),
   openSettings: () => openSettings(),
   toggleSection,
+  refreshSidebar: () => renderSidebar(state),
 };
 
 /* ---------- Init ---------- */
@@ -45,9 +52,9 @@ function init() {
   wirePublishConfirm();
   wireTopbarBackForward();
 
-  // Restore last screen from localStorage (except never restore to processing)
+  // Restore last screen from localStorage (except never restore to processing or login)
   const saved = safeGetLastScreen();
-  if (saved && saved.screen && saved.screen !== "login") {
+  if (saved && saved.screen && saved.screen !== "login" && saved.screen !== "ai-processing") {
     navigateTo(saved.screen, saved.params || {});
   } else {
     navigateTo("login");
@@ -70,6 +77,8 @@ function persistLastScreen() {
         threadId: state.threadId,
         aiEmployeeId: state.aiEmployeeId,
         artifactId: state.artifactId,
+        templateId: state.templateId,
+        recipeId: state.recipeId,
       },
     }));
   } catch {}
@@ -83,6 +92,8 @@ function navigateTo(screenId, params = {}, afterRender) {
   if (params.threadId)     state.threadId     = params.threadId;
   if (params.aiEmployeeId) state.aiEmployeeId = params.aiEmployeeId;
   if (params.artifactId)   state.artifactId   = params.artifactId;
+  if (params.templateId)   state.templateId   = params.templateId;
+  if (params.recipeId)     state.recipeId     = params.recipeId;
 
   state.screen = screenId;
 
@@ -120,7 +131,7 @@ function applyShellForScreen(screenId) {
   }
 
   // Right panel only applies inside chat-like screens
-  const allowRight = ["channel-chat", "thread-detail"].includes(screenId);
+  const allowRight = ["channel-chat", "thread-detail", "ai-employee"].includes(screenId);
   if (!allowRight || !state.rightView) {
     work.classList.remove("with-right");
   } else {
@@ -164,7 +175,35 @@ function renderTopbar(screenId) {
     title = a ? a.title : "Artifact";
     sub = "Document workspace";
   }
+  if (screenId === "template-intake") {
+    const t = D.templateById(state.templateId);
+    title = t ? "Create: " + t.name : "Create from template";
+    sub = "Template intake";
+  }
+  if (screenId === "ai-processing") {
+    title = "AI is working…";
+    sub = "On-device AI";
+  }
+  if (screenId === "ai-output-review") {
+    title = "Review AI draft";
+    sub = "Output review";
+  }
+  if (screenId === "notifications") {
+    title = "Inbox";
+    sub = `${D.unreadNotificationCount()} unread`;
+  }
+  if (screenId === "channel-knowledge") {
+    const c = D.channelById(state.channelId);
+    title = c ? `#${c.name} · Knowledge` : "Channel Knowledge";
+    sub = "Entities, graph, Q&A";
+  }
+  if (screenId === "connectors") {
+    title = "Connectors";
+    sub = "Company & personal";
+  }
 
+  const unread = D.unreadNotificationCount();
+  const unreadBadge = unread > 0 ? `<span class="topbar-unread">${unread}</span>` : "";
   return `
     <button class="icon-btn" id="topbar-back" title="Back">${iconSvg("back", 16)}</button>
     <div>
@@ -179,7 +218,7 @@ function renderTopbar(screenId) {
     </div>
     <div class="top-actions">
       <span class="badge-ai">${iconSvg("ai", 12)} On-device AI</span>
-      <button class="icon-btn" title="Notifications">${iconSvg("shield", 16)}</button>
+      <button class="icon-btn" id="topbar-inbox" title="Inbox" style="position:relative">${iconSvg("shield", 16)}${unreadBadge}</button>
       <div class="avatar sm" style="background:${D.userById(D.currentUserId).color}">${D.userById(D.currentUserId).initials}</div>
     </div>
   `;
@@ -188,6 +227,8 @@ function renderTopbar(screenId) {
 function wireTopbarBackForward() {
   const back = document.getElementById("topbar-back");
   if (back) back.addEventListener("click", () => history.back());
+  const inbox = document.getElementById("topbar-inbox");
+  if (inbox) inbox.addEventListener("click", () => navigateTo("notifications"));
 }
 
 window.addEventListener("popstate", (e) => {
@@ -195,9 +236,13 @@ window.addEventListener("popstate", (e) => {
   if (!s || !s.screenId) return;
   // avoid recursive pushState
   state.screen = s.screenId;
-  if (s.channelId)  state.channelId = s.channelId;
-  if (s.domainId)   state.domainId = s.domainId;
-  if (s.threadId)   state.threadId = s.threadId;
+  if (s.channelId)     state.channelId     = s.channelId;
+  if (s.domainId)      state.domainId      = s.domainId;
+  if (s.threadId)      state.threadId      = s.threadId;
+  if (s.aiEmployeeId)  state.aiEmployeeId  = s.aiEmployeeId;
+  if (s.artifactId)    state.artifactId    = s.artifactId;
+  if (s.templateId)    state.templateId    = s.templateId;
+  if (s.recipeId)      state.recipeId      = s.recipeId;
   applyShellForScreen(s.screenId);
   showScreen(s.screenId);
   renderScreen(s.screenId);
@@ -219,6 +264,12 @@ function renderScreen(id) {
     case "thread-detail":     renderThread(state.threadId || "thread-vendor-tasks"); break;
     case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
     case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
+    case "template-intake":   renderTemplateIntake({ templateId: state.templateId, recipeId: state.recipeId }); break;
+    case "ai-processing":     renderAIProcessingScreen({ templateId: state.templateId, recipeId: state.recipeId }); break;
+    case "ai-output-review":  renderAIOutputReviewScreen({ templateId: state.templateId, recipeId: state.recipeId, artifactId: state.artifactId }); break;
+    case "notifications":     renderNotifications(); break;
+    case "channel-knowledge": renderKnowledge(state.channelId || "c-vendor"); break;
+    case "connectors":        renderConnectors(); break;
   }
 }
 
