@@ -59,7 +59,13 @@ function renderAIEmployees(state) {
     const idle = ai.status === "Idle" ? " idle" : "";
     const coolState = ai.budget?.cooldown?.state || "ready";
     const coolClass = coolState === "cooling-down" ? " cooling" : coolState === "throttled" ? " throttled" : "";
-    const coolDot = coolState === "cooling-down" ? " · cooling" : coolState === "throttled" ? " · throttled" : "";
+    const statusLc = (ai.status || "").toLowerCase();
+    const alreadyMentions =
+      (coolState === "cooling-down" && (statusLc.includes("cooling") || statusLc.includes("cool down"))) ||
+      (coolState === "throttled" && statusLc.includes("throttl"));
+    const coolDot = !alreadyMentions && coolState === "cooling-down" ? " · cooling"
+                  : !alreadyMentions && coolState === "throttled" ? " · throttled"
+                  : "";
     return `<div class="sb-ai${active}${idle}${coolClass}" data-nav="ai" data-id="${ai.id}">
       <div class="ai-avatar" style="background:${ai.color}">${ai.initials}</div>
       <div class="ai-meta">

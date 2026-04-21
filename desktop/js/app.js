@@ -236,9 +236,13 @@ window.addEventListener("popstate", (e) => {
   if (!s || !s.screenId) return;
   // avoid recursive pushState
   state.screen = s.screenId;
-  if (s.channelId)  state.channelId = s.channelId;
-  if (s.domainId)   state.domainId = s.domainId;
-  if (s.threadId)   state.threadId = s.threadId;
+  if (s.channelId)     state.channelId     = s.channelId;
+  if (s.domainId)      state.domainId      = s.domainId;
+  if (s.threadId)      state.threadId      = s.threadId;
+  if (s.aiEmployeeId)  state.aiEmployeeId  = s.aiEmployeeId;
+  if (s.artifactId)    state.artifactId    = s.artifactId;
+  if (s.templateId)    state.templateId    = s.templateId;
+  if (s.recipeId)      state.recipeId      = s.recipeId;
   applyShellForScreen(s.screenId);
   showScreen(s.screenId);
   renderScreen(s.screenId);
