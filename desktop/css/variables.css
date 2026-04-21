@@ -1,0 +1,92 @@
+:root {
+  /* Color system */
+  --bg:           #f6f7fb;
+  --surface:      #ffffff;
+  --surface-2:   #f1f3f9;
+  --surface-sunken: #eceff7;
+  --border:       #e4e7ef;
+  --border-strong:#c9cfdd;
+  --text:         #111827;
+  --text-muted:   #5b6372;
+  --text-soft:    #8a93a6;
+  --inverse:      #ffffff;
+
+  --primary:       #6366f1;
+  --primary-600:   #5457e5;
+  --primary-50:    #eef0ff;
+  --accent:        #8b5cf6;
+  --accent-50:     #f3efff;
+
+  --success:       #10b981;
+  --success-50:    #ecfdf5;
+  --warning:       #f59e0b;
+  --warning-50:    #fffbeb;
+  --danger:        #ef4444;
+  --danger-50:     #fef2f2;
+  --info:          #0ea5e9;
+  --info-50:       #eff9ff;
+
+  --ai:            #8b5cf6;
+  --ai-50:         #f3efff;
+  --ai-strong:     #7c3aed;
+
+  /* Sidebar / channel dark variant */
+  --sb-bg:         #1d2030;
+  --sb-bg-2:       #252a3d;
+  --sb-text:       #d6d9e6;
+  --sb-text-mut:   #8d93a8;
+  --sb-hover:      #2e3348;
+  --sb-active:     #3b4162;
+  --sb-divider:    #2e3348;
+
+  /* Typography */
+  --font-ui:       -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --fs-xs:         11px;
+  --fs-sm:         12px;
+  --fs-md:         13px;
+  --fs-base:       14px;
+  --fs-lg:         16px;
+  --fs-xl:         19px;
+  --fs-2xl:        24px;
+
+  /* Radius + shadow */
+  --r-sm:          6px;
+  --r-md:          10px;
+  --r-lg:          14px;
+  --r-xl:          20px;
+  --r-pill:        999px;
+
+  --shadow-sm:    0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md:    0 6px 16px rgba(16, 24, 40, 0.08);
+  --shadow-lg:    0 24px 48px rgba(16, 24, 40, 0.14);
+
+  /* Layout */
+  --sidebar-w:     260px;
+  --right-panel-w: 380px;
+  --topbar-h:      52px;
+  --compose-h:     78px;
+
+  /* Motion */
+  --ease:          cubic-bezier(.2,.7,.2,1);
+  --dur-fast:      120ms;
+  --dur-med:       220ms;
+  --dur-slow:      360ms;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font-family: inherit; font-size: inherit; }
+input, select, textarea { font-family: inherit; font-size: inherit; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

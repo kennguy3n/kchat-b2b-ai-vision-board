@@ -1,0 +1,443 @@
+// Entry point: state machine, routing, and screen wiring for the desktop demo.
+import * as D from "./demo-data.js";
+import { iconSvg } from "./icons.js";
+import { initModals, openModal, closeModal, closeAllModals } from "./modals.js";
+import { renderSidebar } from "./navigation.js";
+import { renderChannel } from "./chat.js";
+import { renderThread } from "./threads.js";
+import { renderTaskPanel, renderTaskDetail, renderForm, renderBase, renderSheet } from "./kapps.js";
+import { openActionLauncher, renderBrief, renderProcessing, renderOutputReview, renderSummary } from "./ai-actions.js";
+import { renderAIEmployee } from "./ai-employees.js";
+import { renderArtifactWorkspace } from "./artifacts.js";
+import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
+import { openSettings } from "./settings.js";
+import { showToast } from "./transitions.js";
+
+/* ---------- State ---------- */
+const state = {
+  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace
+  domainId: null,
+  channelId: null,
+  threadId: null,
+  aiEmployeeId: null,
+  artifactId: null,
+  rightView: null,           // brief | processing | output-review | task-panel | task-detail | form | base | sheet | approval-form | approval-review | summary
+  collapsed: new Set(),      // section / domain ids that are collapsed in sidebar
+};
+window.app = {
+  state,
+  navigateTo,
+  openRightView,
+  closeRightView,
+  openActionLauncher: () => openActionLauncher(),
+  openSettings: () => openSettings(),
+  toggleSection,
+};
+
+/* ---------- Init ---------- */
+document.addEventListener("DOMContentLoaded", init);
+
+function init() {
+  initModals();
+  wireLoginScreen();
+  wireHomeScreen();
+  wireDomainScreen();
+  wirePublishConfirm();
+  wireTopbarBackForward();
+
+  // Restore last screen from localStorage (except never restore to processing)
+  const saved = safeGetLastScreen();
+  if (saved && saved.screen && saved.screen !== "login") {
+    navigateTo(saved.screen, saved.params || {});
+  } else {
+    navigateTo("login");
+  }
+}
+
+function safeGetLastScreen() {
+  try {
+    const v = localStorage.getItem("kchat.lastScreen");
+    return v ? JSON.parse(v) : null;
+  } catch { return null; }
+}
+function persistLastScreen() {
+  try {
+    localStorage.setItem("kchat.lastScreen", JSON.stringify({
+      screen: state.screen,
+      params: {
+        domainId: state.domainId,
+        channelId: state.channelId,
+        threadId: state.threadId,
+        aiEmployeeId: state.aiEmployeeId,
+        artifactId: state.artifactId,
+      },
+    }));
+  } catch {}
+}
+
+/* ---------- Navigation ---------- */
+function navigateTo(screenId, params = {}, afterRender) {
+  // Merge params into state
+  if (params.domainId)     state.domainId     = params.domainId;
+  if (params.channelId)    state.channelId    = params.channelId;
+  if (params.threadId)     state.threadId     = params.threadId;
+  if (params.aiEmployeeId) state.aiEmployeeId = params.aiEmployeeId;
+  if (params.artifactId)   state.artifactId   = params.artifactId;
+
+  state.screen = screenId;
+
+  // Close right panel on screen changes unless explicitly keeping it
+  if (!params.keepRight) {
+    state.rightView = null;
+  }
+
+  applyShellForScreen(screenId);
+  showScreen(screenId);
+  renderScreen(screenId);
+  persistLastScreen();
+
+  // pushState for back/forward
+  try {
+    history.pushState({ screenId, ...params }, "", `#${screenId}`);
+  } catch {}
+
+  if (typeof afterRender === "function") afterRender();
+}
+
+function applyShellForScreen(screenId) {
+  const app = document.getElementById("app");
+  const work = document.getElementById("workarea");
+  const sidebar = document.getElementById("sidebar");
+
+  if (screenId === "login") {
+    app.classList.add("hidden");
+  } else {
+    app.classList.remove("hidden");
+    app.classList.remove("no-sidebar");
+    sidebar.classList.remove("hidden");
+    work.classList.remove("hidden");
+    renderSidebar(state);
+  }
+
+  // Right panel only applies inside chat-like screens
+  const allowRight = ["channel-chat", "thread-detail"].includes(screenId);
+  if (!allowRight || !state.rightView) {
+    work.classList.remove("with-right");
+  } else {
+    work.classList.add("with-right");
+  }
+
+  // Topbar content
+  const tb = document.getElementById("topbar");
+  if (tb) {
+    tb.innerHTML = renderTopbar(screenId);
+    wireTopbarBackForward();
+  }
+}
+
+function renderTopbar(screenId) {
+  let title = "KChat B2B";
+  let sub = "";
+  if (screenId === "workspace-home") { title = "Home"; sub = D.workspace.name; }
+  if (screenId === "domain-view") {
+    const d = D.domainById(state.domainId);
+    title = d ? d.name : "Domain";
+    sub = D.workspace.name;
+  }
+  if (screenId === "channel-chat") {
+    const c = D.channelById(state.channelId);
+    title = c ? "#" + c.name : "Channel";
+    sub = D.workspace.name;
+  }
+  if (screenId === "thread-detail") {
+    const t = D.threadById(state.threadId);
+    title = t ? "Thread · " + t.title : "Thread";
+    sub = "Threaded reply";
+  }
+  if (screenId === "ai-employee") {
+    const a = D.aiById(state.aiEmployeeId);
+    title = a ? a.name : "AI Employee";
+    sub = "AI workforce";
+  }
+  if (screenId === "artifact-workspace") {
+    const a = D.artifactById(state.artifactId);
+    title = a ? a.title : "Artifact";
+    sub = "Document workspace";
+  }
+
+  return `
+    <button class="icon-btn" id="topbar-back" title="Back">${iconSvg("back", 16)}</button>
+    <div>
+      <div class="topbar-title">${title}</div>
+      <div class="topbar-sub">${sub}</div>
+    </div>
+    <span class="spacer"></span>
+    <div class="top-search">
+      ${iconSvg("search", 14)}
+      <input placeholder="Search KChat"/>
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="top-actions">
+      <span class="badge-ai">${iconSvg("ai", 12)} On-device AI</span>
+      <button class="icon-btn" title="Notifications">${iconSvg("shield", 16)}</button>
+      <div class="avatar sm" style="background:${D.userById(D.currentUserId).color}">${D.userById(D.currentUserId).initials}</div>
+    </div>
+  `;
+}
+
+function wireTopbarBackForward() {
+  const back = document.getElementById("topbar-back");
+  if (back) back.addEventListener("click", () => history.back());
+}
+
+window.addEventListener("popstate", (e) => {
+  const s = e.state;
+  if (!s || !s.screenId) return;
+  // avoid recursive pushState
+  state.screen = s.screenId;
+  if (s.channelId)  state.channelId = s.channelId;
+  if (s.domainId)   state.domainId = s.domainId;
+  if (s.threadId)   state.threadId = s.threadId;
+  applyShellForScreen(s.screenId);
+  showScreen(s.screenId);
+  renderScreen(s.screenId);
+});
+
+/* ---------- Screen switching ---------- */
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const el = document.getElementById(`screen-${id}`);
+  if (el) el.classList.add("active");
+}
+
+function renderScreen(id) {
+  switch (id) {
+    case "login": /* static markup */ break;
+    case "workspace-home":    renderWorkspaceHome(); break;
+    case "domain-view":       renderDomainView(state.domainId); break;
+    case "channel-chat":      renderChannel(state.channelId || "c-vendor"); break;
+    case "thread-detail":     renderThread(state.threadId || "thread-vendor-tasks"); break;
+    case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
+    case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
+  }
+}
+
+/* ---------- Right panel management ---------- */
+function openRightView(name, params = {}) {
+  state.rightView = name;
+  const work = document.getElementById("workarea");
+  work.classList.add("with-right");
+
+  // Show the correct rp-view
+  document.querySelectorAll(".rp-view").forEach(v => v.classList.remove("active"));
+  const id = `rp-${name}`;
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.add("active");
+    switch (name) {
+      case "brief":           renderBrief(id, params); break;
+      case "processing":      renderProcessing(id); break;
+      case "output-review":   renderOutputReview(id, params); break;
+      case "task-panel":      renderTaskPanel(id, params); break;
+      case "task-detail":     renderTaskDetail(id, params); break;
+      case "form":            renderForm(id); break;
+      case "base":            renderBase(id); break;
+      case "sheet":           renderSheet(id); break;
+      case "approval-form":   renderApprovalForm(id); break;
+      case "approval-review": renderApprovalReview(id, params); break;
+      case "summary":         renderSummary(id); break;
+    }
+  }
+  // wire close buttons once
+  document.querySelectorAll("[data-close-right]").forEach(btn => {
+    btn.addEventListener("click", closeRightView, { once: true });
+  });
+}
+
+function closeRightView() {
+  state.rightView = null;
+  document.getElementById("workarea").classList.remove("with-right");
+  document.querySelectorAll(".rp-view").forEach(v => v.classList.remove("active"));
+}
+
+/* ---------- Sidebar section toggling ---------- */
+function toggleSection(id) {
+  if (state.collapsed.has(id)) state.collapsed.delete(id);
+  else state.collapsed.add(id);
+  renderSidebar(state);
+}
+
+/* ---------- Login ---------- */
+function wireLoginScreen() {
+  const btn = document.getElementById("login-continue");
+  if (btn) btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    navigateTo("workspace-home");
+  });
+}
+
+/* ---------- Workspace Home ---------- */
+function renderWorkspaceHome() {
+  const container = document.getElementById("screen-workspace-home");
+  container.innerHTML = `
+    <div class="dash-wrap">
+      <div class="hero">
+        <h1>Welcome back, ${D.userById(D.currentUserId).name.split(" ")[0]}</h1>
+        <p>3 domains · 7 channels · AI Employees: ${D.aiEmployees.length} active. On-device AI is preferred for ${D.workspace.name}.</p>
+      </div>
+
+      <div class="section-head"><h2>Domains</h2><span class="more">Explore all</span></div>
+      <div class="grid-3">
+        ${D.domains.map(d => {
+          const cnames = d.channels.map(cid => "#" + D.channels[cid].name).slice(0,3);
+          return `<div class="domain-card" data-domain-id="${d.id}">
+            <div class="icon">${d.name[0]}</div>
+            <h3>${d.name}</h3>
+            <div class="ccount">${d.channels.length} channels</div>
+            <div class="chip-row">
+              ${cnames.map(c => `<span class="tag">${c}</span>`).join("")}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div class="section-head"><h2>Recent channels</h2><span class="more">See all</span></div>
+      <div class="grid-2">
+        ${["c-vendor", "c-specs", "c-deals", "c-logistics"].map(cid => {
+          const c = D.channels[cid];
+          const d = D.domainById(c.domainId);
+          return `<div class="channel-row" data-channel-id="${cid}">
+            <span class="ch-hash">#</span>
+            <div>
+              <div class="ch-name">${c.name}</div>
+              <div class="ch-sub">${d.name} · ${c.description}</div>
+            </div>
+            <span class="mcount">${c.members} members</span>
+            <span class="tag">Active</span>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div class="section-head"><h2>Pinned</h2></div>
+      <div class="pinned-list">
+        <div class="pinned-item" data-open-artifact="a-prd-vendor-portal">
+          <div class="pi-icon">PRD</div>
+          <div>
+            <div class="pi-title">Vendor Portal v2 — PRD</div>
+            <div class="pi-sub">Draft v1 · Nina PM AI</div>
+          </div>
+          <span class="tag">On-device AI</span>
+        </div>
+        <div class="pinned-item" data-open-approval="ap-orbix">
+          <div class="pi-icon">AP</div>
+          <div>
+            <div class="pi-title">Orbix payment hold release</div>
+            <div class="pi-sub">Pending your approval · $42,500</div>
+          </div>
+          <span class="status-pill pending">pending</span>
+        </div>
+        <div class="pinned-item" data-open-tasks>
+          <div class="pi-icon">TK</div>
+          <div>
+            <div class="pi-title">Vendor review tasks</div>
+            <div class="pi-sub">5 tasks extracted · 3 due this week</div>
+          </div>
+          <span class="tag">AI-extracted</span>
+        </div>
+      </div>
+    </div>
+  `;
+  wireHomeScreen();
+}
+
+function wireHomeScreen() {
+  document.querySelectorAll("[data-domain-id]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("domain-view", { domainId: el.getAttribute("data-domain-id") }));
+  });
+  document.querySelectorAll("[data-channel-id]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("channel-chat", { channelId: el.getAttribute("data-channel-id") }));
+  });
+  document.querySelectorAll("[data-open-artifact]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("channel-chat", { channelId: "c-specs" }, () => openRightView("output-review", { artifactId: el.getAttribute("data-open-artifact") })));
+  });
+  document.querySelectorAll("[data-open-approval]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: el.getAttribute("data-open-approval") })));
+  });
+  document.querySelectorAll("[data-open-tasks]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel")));
+  });
+}
+
+/* ---------- Domain View ---------- */
+function renderDomainView(domainId) {
+  const d = D.domainById(domainId) || D.domains[0];
+  const container = document.getElementById("screen-domain-view");
+  const chans = d.channels.map(cid => {
+    const c = D.channels[cid];
+    return `<div class="channel-row" data-channel-id="${cid}">
+      <span class="ch-hash">#</span>
+      <div>
+        <div class="ch-name">${c.name}</div>
+        <div class="ch-sub">${c.description}</div>
+      </div>
+      <span class="mcount">${c.members} members</span>
+      <span class="tag">Active</span>
+    </div>`;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="domain-header">
+      <div class="big-icon">${d.name[0]}</div>
+      <div>
+        <h1>${d.name}</h1>
+        <div class="sub">${d.channels.length} channels · policy: on-device AI preferred</div>
+      </div>
+      <span style="flex:1"></span>
+      <button class="icon-btn" title="Domain settings">${iconSvg("gear", 16)}</button>
+    </div>
+    <div class="dash-wrap">
+      <div class="section-head"><h2>Channels</h2><span class="more">+ New channel</span></div>
+      <div class="grid-2">${chans}</div>
+
+      <div class="section-head"><h2>Highlights</h2></div>
+      <div class="grid-3">
+        <div class="domain-card">
+          <div class="icon">AI</div>
+          <h3>AI drafts this week</h3>
+          <div class="ccount">6 drafts · 4 reviewed</div>
+          <div class="chip-row"><span class="tag">PRDs</span><span class="tag">Summaries</span></div>
+        </div>
+        <div class="domain-card">
+          <div class="icon">AP</div>
+          <h3>Approvals</h3>
+          <div class="ccount">1 pending · 4 closed</div>
+          <div class="chip-row"><span class="tag">$60k open</span></div>
+        </div>
+        <div class="domain-card">
+          <div class="icon">RK</div>
+          <h3>Risk register</h3>
+          <div class="ccount">2 high · 3 medium</div>
+          <div class="chip-row"><span class="tag">Base table</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+  wireDomainScreen();
+}
+
+function wireDomainScreen() {
+  document.querySelectorAll("#screen-domain-view [data-channel-id]").forEach(el => {
+    el.addEventListener("click", () => navigateTo("channel-chat", { channelId: el.getAttribute("data-channel-id") }));
+  });
+}
+
+/* ---------- Publish confirm modal ---------- */
+function wirePublishConfirm() {
+  const btn = document.getElementById("publish-confirm-btn");
+  if (btn) btn.addEventListener("click", () => {
+    closeModal("publish-confirm");
+    showToast("Published to #specs — artifact card posted.");
+    // Route back to chat, where the card will appear
+    navigateTo("channel-chat", { channelId: state.channelId || "c-specs" });
+  });
+}
