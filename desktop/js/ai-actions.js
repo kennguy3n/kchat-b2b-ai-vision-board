@@ -312,9 +312,13 @@ export function renderSummary(containerId) {
 }
 
 /* ---------------- Full-screen AI Processing (Screen 8) ---------------- */
+// Generation counter prevents a stale in-flight run from advancing the
+// router when the user rapidly leaves and re-enters the processing screen.
+let processingGeneration = 0;
 export async function renderAIProcessingScreen(params = {}) {
   const container = document.getElementById("screen-ai-processing");
   if (!container) return;
+  const gen = ++processingGeneration;
   const tpl = D.templateById(params.templateId) || D.templateById("tpl-prd");
   const steps = [
     { label: "Reading sources",             state: "Scanning thread + attached files" },
@@ -349,15 +353,16 @@ export async function renderAIProcessingScreen(params = {}) {
 
   const stepEls = Array.from(container.querySelectorAll("#aip-steps .ai-step"));
   for (let i = 0; i < stepEls.length; i++) {
-    if (window.app.state.screen !== "ai-processing") return;
+    if (gen !== processingGeneration || window.app.state.screen !== "ai-processing") return;
     stepEls[i].classList.add("active");
     await delay(750);
+    if (gen !== processingGeneration) return;
     stepEls[i].classList.remove("active");
     stepEls[i].classList.add("done");
     stepEls[i].querySelector(".idx").textContent = "✓";
   }
   await delay(250);
-  if (window.app.state.screen === "ai-processing") {
+  if (gen === processingGeneration && window.app.state.screen === "ai-processing") {
     window.app.navigateTo("ai-output-review", {
       templateId: params.templateId,
       recipeId: params.recipeId,
@@ -383,7 +388,7 @@ const sectionEditsByHeading = {
 
 function renderOutputSectionHTML(s, i) {
   return `
-    <section class="or-section" data-sec-idx="${i}" data-sec-heading="${s.heading}">
+    <section class="or-section" data-sec-idx="${i}" data-sec-heading="${s.heading.replace(/"/g, "&quot;")}">
       <div class="or-sec-head">
         <h2>${s.heading}</h2>
         <span class="confidence ${s.confidence === "review" ? "review" : "high"}">${s.confidence === "review" ? "Review recommended" : "High confidence"}</span>
