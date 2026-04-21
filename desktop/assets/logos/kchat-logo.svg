@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" fill="none">
+  <defs>
+    <linearGradient id="kg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="4" width="24" height="24" rx="6" fill="url(#kg)"/>
+  <path d="M7 10v12M7 16l6-6M7 16l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="30" y="21" font-family="'Inter', system-ui, sans-serif" font-size="15" font-weight="700" fill="#111827">KChat</text>
+  <text x="78" y="21" font-family="'Inter', system-ui, sans-serif" font-size="12" font-weight="500" fill="#6366f1">B2B</text>
+</svg>

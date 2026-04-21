@@ -1,0 +1,105 @@
+/* App shell: three-column layout with top bar */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+.app.no-sidebar {
+  grid-template-columns: 1fr;
+}
+
+/* The main working area switches between single-column (home/domain/login)
+   and a center + right panel when in chat/artifact contexts. */
+.workarea {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: var(--topbar-h) 1fr;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+}
+.workarea.with-right {
+  grid-template-columns: 1fr var(--right-panel-w);
+  grid-template-areas:
+    "topbar topbar"
+    "center right";
+}
+.workarea.with-right .topbar { grid-area: topbar; }
+.workarea.with-right .center { grid-area: center; }
+.workarea.with-right .right-panel { grid-area: right; display: flex; }
+.right-panel { display: none; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: var(--topbar-h);
+  z-index: 3;
+}
+.topbar .topbar-title {
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  color: var(--text);
+}
+.topbar .topbar-sub {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+.topbar .spacer { flex: 1; }
+.topbar .top-actions { display: flex; gap: 8px; align-items: center; }
+
+.center {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+/* Screen sections: only one visible at a time */
+.screen { display: none; width: 100%; height: 100%; overflow: auto; }
+.screen.active { display: block; }
+
+/* Simple centered screen for login */
+.centered-screen {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(1200px 400px at 10% 0%, rgba(139, 92, 246, .18), transparent 50%),
+    radial-gradient(1000px 500px at 90% 100%, rgba(99, 102, 241, .18), transparent 55%),
+    var(--bg);
+}
+
+.hidden { display: none !important; }
+.visually-hidden {
+  clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; overflow: hidden;
+  position: absolute; white-space: nowrap; width: 1px;
+}
+
+.scroll-y { overflow-y: auto; }
+.scroll-x { overflow-x: auto; }
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; }
+.flex-1 { flex: 1; } .items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.mt-2 { margin-top: 8px; } .mt-4 { margin-top: 16px; } .mt-6 { margin-top: 24px; }
+.mb-2 { margin-bottom: 8px; } .mb-4 { margin-bottom: 16px; }
+.p-2 { padding: 8px; } .p-4 { padding: 16px; } .p-6 { padding: 24px; }
+.text-muted { color: var(--text-muted); }
+.text-soft { color: var(--text-soft); }
+.text-sm { font-size: var(--fs-sm); }
+.text-xs { font-size: var(--fs-xs); }
+.text-lg { font-size: var(--fs-lg); }
+.text-xl { font-size: var(--fs-xl); }
+.text-2xl { font-size: var(--fs-2xl); }
+.b { font-weight: 600; }
+.bb { font-weight: 700; }

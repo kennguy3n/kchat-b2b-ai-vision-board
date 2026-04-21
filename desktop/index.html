@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KChat B2B — Desktop Demo</title>
+  <meta name="description" content="Static HTML/CSS/JS click-through demo of the KChat B2B desktop experience."/>
+
+  <link rel="stylesheet" href="css/variables.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+  <link rel="stylesheet" href="css/sidebar.css"/>
+  <link rel="stylesheet" href="css/main-panel.css"/>
+  <link rel="stylesheet" href="css/right-panel.css"/>
+  <link rel="stylesheet" href="css/cards.css"/>
+  <link rel="stylesheet" href="css/modals.css"/>
+  <link rel="stylesheet" href="css/ai.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+</head>
+<body>
+
+<!-- Screen 1: Login sits at top level so shell visibility doesn't affect it. -->
+<section id="screen-login" class="screen" data-screen="login" aria-label="Sign in">
+  <div class="centered-screen">
+    <form class="login-card" onsubmit="return false;">
+      <div class="brand">
+        <img src="assets/logos/kchat-logo.svg" alt="KChat" style="height:28px"/>
+      </div>
+      <h1>Sign in to your workspace</h1>
+      <div class="subtitle">Enterprise messaging with on-device AI workers.</div>
+
+      <label for="login-email">Work email</label>
+      <input id="login-email" type="email" value="ken@acmecorp.com" autocomplete="email"/>
+
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" value="••••••••••" autocomplete="current-password"/>
+
+      <div class="mfa">MFA: 6-digit code will be required on next login.</div>
+
+      <label for="login-workspace">Select workspace</label>
+      <select id="login-workspace">
+        <option>Acme Corp</option>
+        <option>Acme EU</option>
+        <option>Acme Labs</option>
+      </select>
+
+      <div class="actions">
+        <button class="btn btn-primary btn-lg" id="login-continue">Continue</button>
+      </div>
+      <div class="mt-4 text-xs text-muted">By continuing you accept Acme Corp's workspace policy. On-device AI is preferred.</div>
+    </form>
+  </div>
+</section>
+
+<div class="app" id="app">
+
+  <!-- ============ Left Sidebar ============ -->
+  <aside class="sidebar" id="sidebar" aria-label="Primary navigation"></aside>
+
+  <!-- ============ Work Area ============ -->
+  <section class="workarea" id="workarea">
+    <header class="topbar" id="topbar"></header>
+
+    <!-- Center region hosts all non-login screens -->
+    <main class="center" id="center">
+
+      <!-- Screen 2: Workspace Home -->
+      <section id="screen-workspace-home" class="screen" data-screen="workspace-home"></section>
+
+      <!-- Screen 3: Domain View -->
+      <section id="screen-domain-view" class="screen" data-screen="domain-view"></section>
+
+      <!-- Screen 4: Channel Chat -->
+      <section id="screen-channel-chat" class="screen" data-screen="channel-chat"></section>
+
+      <!-- Screen 5: Thread Detail -->
+      <section id="screen-thread-detail" class="screen" data-screen="thread-detail"></section>
+
+      <!-- Screen 10: Document Artifact Workspace -->
+      <section id="screen-artifact-workspace" class="screen" data-screen="artifact-workspace"></section>
+
+      <!-- Screen 15: AI Employee profile -->
+      <section id="screen-ai-employee" class="screen" data-screen="ai-employee"></section>
+    </main>
+
+    <!-- ============ Right Panel (slide-in) ============ -->
+    <aside class="right-panel" id="right-panel" aria-label="Contextual panel">
+      <!-- Brief builder (Screen 7) -->
+      <div class="rp-view" id="rp-brief"></div>
+      <!-- AI processing (Screen 8) -->
+      <div class="rp-view" id="rp-processing"></div>
+      <!-- AI Output Review (Screen 9) -->
+      <div class="rp-view" id="rp-output-review"></div>
+      <!-- Tasks (Screen 11) -->
+      <div class="rp-view" id="rp-task-panel"></div>
+      <div class="rp-view" id="rp-task-detail"></div>
+      <!-- Approval (Screen 12) -->
+      <div class="rp-view" id="rp-approval-form"></div>
+      <div class="rp-view" id="rp-approval-review"></div>
+      <!-- Forms (Screen 13) -->
+      <div class="rp-view" id="rp-form"></div>
+      <!-- Base / Sheet (Screen 14) -->
+      <div class="rp-view" id="rp-base"></div>
+      <div class="rp-view" id="rp-sheet"></div>
+      <!-- Summary helper -->
+      <div class="rp-view" id="rp-summary"></div>
+    </aside>
+  </section>
+</div>
+
+<!-- ============ Screen 6: Action Launcher modal ============ -->
+<div class="modal-backdrop" id="action-launcher" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>AI Action Launcher</h2>
+      <span class="spacer"></span>
+      <button class="icon-btn" data-close-modal="action-launcher" title="Close">✕</button>
+    </div>
+    <div class="modal-body" id="action-launcher-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal="action-launcher">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Publish-confirm modal (from Document Artifact Workspace) -->
+<div class="modal-backdrop" id="publish-confirm" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal confirm-modal">
+    <div class="modal-head">
+      <h2>Publish to channel?</h2>
+      <span class="spacer"></span>
+      <button class="icon-btn" data-close-modal="publish-confirm">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="publish-confirm">
+        <span>✓</span>
+        <div>
+          <div><b>This will post an artifact card to #specs.</b></div>
+          <div class="text-sm text-muted">Collaborators in the channel will be notified. Version will increment to v1.</div>
+        </div>
+      </div>
+      <div class="text-sm text-muted">The document remains editable. Anyone with channel access can view and comment.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal="publish-confirm">Cancel</button>
+      <button class="btn btn-primary" id="publish-confirm-btn">Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 16: Settings modal -->
+<div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal settings-modal">
+    <div class="modal-head">
+      <h2>Workspace settings</h2>
+      <span class="spacer"></span>
+      <button class="icon-btn" data-close-modal="settings-modal">✕</button>
+    </div>
+    <div class="modal-body" id="settings-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal="settings-modal">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
