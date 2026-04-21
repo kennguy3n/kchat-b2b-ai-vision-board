@@ -433,7 +433,7 @@ function wireSectionChat(container, artifactId) {
         const before = bodyEl.innerHTML;
         chatHost.innerHTML = `
           <div class="or-chat">
-            <div class="or-chat-turn ai-turn">${iconSvg("ai", 14)} Thinking about "<em>${prompt}</em>"…</div>
+            <div class="or-chat-turn ai-turn">${iconSvg("ai", 14)} Thinking about "<em>${prompt.replace(/</g, "&lt;")}</em>"…</div>
           </div>
         `;
         await delay(1500);

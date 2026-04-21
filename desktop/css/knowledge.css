@@ -397,26 +397,4 @@
   font-size: 11px; color: var(--text-muted); white-space: nowrap; margin-left: 8px;
 }
 
-/* Sidebar inbox badge */
-.sb-inbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: var(--sb-text);
-  font-size: 13px;
-}
-.sb-inbox:hover { background: rgba(255,255,255,0.04); }
-.sb-inbox.active { background: rgba(255,255,255,0.06); }
-.sb-inbox .ib-icon { opacity: 0.8; }
-.sb-inbox .ib-badge {
-  background: var(--danger);
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 999px;
-  margin-left: auto;
-}
+/* Sidebar inbox badge styles live in ai.css (single source of truth). */

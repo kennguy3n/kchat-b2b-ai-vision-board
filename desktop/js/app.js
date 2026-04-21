@@ -52,9 +52,9 @@ function init() {
   wirePublishConfirm();
   wireTopbarBackForward();
 
-  // Restore last screen from localStorage (except never restore to processing)
+  // Restore last screen from localStorage (except never restore to processing or login)
   const saved = safeGetLastScreen();
-  if (saved && saved.screen && saved.screen !== "login") {
+  if (saved && saved.screen && saved.screen !== "login" && saved.screen !== "ai-processing") {
     navigateTo(saved.screen, saved.params || {});
   } else {
     navigateTo("login");
@@ -77,6 +77,8 @@ function persistLastScreen() {
         threadId: state.threadId,
         aiEmployeeId: state.aiEmployeeId,
         artifactId: state.artifactId,
+        templateId: state.templateId,
+        recipeId: state.recipeId,
       },
     }));
   } catch {}
