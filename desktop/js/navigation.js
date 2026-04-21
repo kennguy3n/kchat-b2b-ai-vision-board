@@ -57,11 +57,14 @@ function renderAIEmployees(state) {
   return D.aiEmployees.map(ai => {
     const active = state.aiEmployeeId === ai.id ? " active" : "";
     const idle = ai.status === "Idle" ? " idle" : "";
-    return `<div class="sb-ai${active}${idle}" data-nav="ai" data-id="${ai.id}">
+    const coolState = ai.budget?.cooldown?.state || "ready";
+    const coolClass = coolState === "cooling-down" ? " cooling" : coolState === "throttled" ? " throttled" : "";
+    const coolDot = coolState === "cooling-down" ? " · cooling" : coolState === "throttled" ? " · throttled" : "";
+    return `<div class="sb-ai${active}${idle}${coolClass}" data-nav="ai" data-id="${ai.id}">
       <div class="ai-avatar" style="background:${ai.color}">${ai.initials}</div>
       <div class="ai-meta">
         <div class="ai-name">${ai.name}</div>
-        <div class="ai-sub">${ai.status}</div>
+        <div class="ai-sub">${ai.status}${coolDot}</div>
       </div>
       <div class="ai-status" title="${ai.status}"></div>
     </div>`;
@@ -87,12 +90,17 @@ export function renderSidebar(state) {
     { id: "dms",      title: "Direct Messages", body: renderDMs() },
     { id: "ai",       title: "AI Employees", body: renderAIEmployees(state) },
   ];
+  const unread = D.unreadNotificationCount();
+  const inboxBadge = unread > 0 ? `<span class="ib-badge">${unread}</span>` : "";
   el.innerHTML = `
     ${renderWorkspaceHeader()}
     <div class="sb-scroll">
       <div class="sb-section" data-section="home">
         <div class="sb-item${state.screen === "workspace-home" ? " active" : ""}" data-nav="home">
           ${iconSvg("home", 14)} Home
+        </div>
+        <div class="sb-inbox${state.screen === "notifications" ? " active" : ""}" data-nav="inbox">
+          <span class="ib-icon">${iconSvg("shield", 14)}</span>Inbox${inboxBadge}
         </div>
         <div class="sb-item" data-nav="tasks">
           ${iconSvg("tasks", 14)} My Tasks
@@ -102,6 +110,9 @@ export function renderSidebar(state) {
         </div>
         <div class="sb-item" data-nav="artifacts">
           ${iconSvg("doc", 14)} Artifacts
+        </div>
+        <div class="sb-item${state.screen === "connectors" ? " active" : ""}" data-nav="connectors">
+          ${iconSvg("gear", 14)} Connectors
         </div>
       </div>
       ${sections.map(s => `
@@ -143,6 +154,8 @@ function wireSidebarEvents() {
       const id = item.getAttribute("data-id");
       switch (kind) {
         case "home":     window.app.navigateTo("workspace-home"); break;
+        case "inbox":    window.app.navigateTo("notifications"); break;
+        case "connectors": window.app.navigateTo("connectors"); break;
         case "tasks":    window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("task-panel")); break;
         case "approvals":window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("approval-review", { approvalId: "ap-orbix" })); break;
         case "artifacts":window.app.navigateTo("channel-chat", { channelId: "c-specs" }, () => window.app.openRightView("output-review", { artifactId: "a-prd-vendor-portal" })); break;

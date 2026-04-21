@@ -1,4 +1,4 @@
-// Pre-scripted demo data for the KChat B2B desktop click-through.
+// Pre-scripted demo data for the KChat B2B desktop click-through (v2).
 // All data is static; no network calls are ever made.
 
 export const workspace = {
@@ -9,16 +9,17 @@ export const workspace = {
 };
 
 export const users = [
-  { id: "u-ken",   name: "Ken Nguyen",   role: "Head of Ops",       initials: "KN", color: "#6366f1" },
-  { id: "u-mira",  name: "Mira Patel",   role: "Vendor Manager",    initials: "MP", color: "#ec4899" },
-  { id: "u-dan",   name: "Dan Kim",      role: "Logistics Lead",    initials: "DK", color: "#22c55e" },
-  { id: "u-sofia", name: "Sofia Reyes",  role: "Compliance",        initials: "SR", color: "#f59e0b" },
-  { id: "u-tom",   name: "Tom Becker",   role: "Sales Director",    initials: "TB", color: "#0ea5e9" },
-  { id: "u-ana",   name: "Ana Wu",       role: "Product Manager",   initials: "AW", color: "#a855f7" },
+  { id: "u-ken",   name: "Ken Nguyen",   role: "Head of Ops",     initials: "KN", color: "#6366f1" },
+  { id: "u-mira",  name: "Mira Patel",   role: "Vendor Manager",  initials: "MP", color: "#ec4899" },
+  { id: "u-dan",   name: "Dan Kim",      role: "Logistics Lead",  initials: "DK", color: "#22c55e" },
+  { id: "u-sofia", name: "Sofia Reyes",  role: "Compliance",      initials: "SR", color: "#f59e0b" },
+  { id: "u-tom",   name: "Tom Becker",   role: "Sales Director",  initials: "TB", color: "#0ea5e9" },
+  { id: "u-ana",   name: "Ana Wu",       role: "Product Manager", initials: "AW", color: "#a855f7" },
 ];
 
 export const currentUserId = "u-ken";
 
+/* ---------------- AI Employees (v2: budget + cooldown) ---------------- */
 export const aiEmployees = [
   {
     id: "ai-kara",
@@ -30,11 +31,21 @@ export const aiEmployees = [
     status: "Drafting weekly vendor risk summary",
     concurrency: 2,
     enabled: true,
+    budget: {
+      monthlyCap: 250.0,
+      spentThisPeriod: 182.4,
+      cooldown: { state: "ready", nextAvailable: null, reason: null },
+      recentRuns: [
+        { recipe: "summarize", cost: 0.42, at: "2m ago"  },
+        { recipe: "extract",   cost: 0.31, at: "12m ago" },
+        { recipe: "draft-sop", cost: 1.80, at: "1h ago"  },
+      ],
+    },
     queue: [
-      { id: "t-kara-1", title: "Weekly vendor risk summary",        status: "running", lastUpdated: "2m ago",  recipe: "summarize", sources: ["#vendor-management", "vendor-register base"] },
+      { id: "t-kara-1", title: "Weekly vendor risk summary",         status: "running", lastUpdated: "2m ago", recipe: "summarize", sources: ["#vendor-management", "vendor-register base"] },
       { id: "t-kara-2", title: "Update risk register from contracts", status: "queued",  lastUpdated: "5m ago", recipe: "extract",   sources: ["drive:/contracts"] },
-      { id: "t-kara-3", title: "Prepare compliance checklist",       status: "blocked", lastUpdated: "1h ago",  recipe: "draft-sop", sources: ["#compliance"] , blockedReason: "Waiting for user input: approver list" },
-      { id: "t-kara-4", title: "Last week's ops summary",            status: "done",    lastUpdated: "Mon",     recipe: "summarize", sources: ["#vendor-management"] },
+      { id: "t-kara-3", title: "Prepare compliance checklist",        status: "blocked", lastUpdated: "1h ago", recipe: "draft-sop", sources: ["#compliance"], blockedReason: "Waiting for approver list" },
+      { id: "t-kara-4", title: "Last week's ops summary",             status: "done",    lastUpdated: "Mon",    recipe: "summarize", sources: ["#vendor-management"] },
     ],
   },
   {
@@ -44,12 +55,25 @@ export const aiEmployees = [
     initials: "MI",
     color: "#10b981",
     allowedChannels: ["c-pipeline", "c-deals"],
-    status: "Idle",
+    status: "Cooling down — budget cap",
     concurrency: 2,
     enabled: true,
+    budget: {
+      monthlyCap: 180.0,
+      spentThisPeriod: 178.9,
+      cooldown: {
+        state: "cooling-down",
+        nextAvailable: "in 3h 42m",
+        reason: "98% of monthly AI budget used. Paused until Friday 09:00 or admin override.",
+      },
+      recentRuns: [
+        { recipe: "create-qbr", cost: 2.40, at: "1d"  },
+        { recipe: "summarize",  cost: 0.38, at: "30m" },
+      ],
+    },
     queue: [
-      { id: "t-mika-1", title: "QBR deck outline for Globex",    status: "done",    lastUpdated: "1d",  recipe: "create-qbr", sources: ["#deals"] },
-      { id: "t-mika-2", title: "Pipeline health digest",         status: "queued",  lastUpdated: "30m", recipe: "summarize",  sources: ["#pipeline"] },
+      { id: "t-mika-1", title: "QBR deck outline for Globex", status: "done",   lastUpdated: "1d",  recipe: "create-qbr", sources: ["#deals"] },
+      { id: "t-mika-2", title: "Pipeline health digest",       status: "queued", lastUpdated: "30m", recipe: "summarize",  sources: ["#pipeline"] },
     ],
   },
   {
@@ -62,42 +86,37 @@ export const aiEmployees = [
     status: "Drafting PRD: Vendor Portal v2",
     concurrency: 1,
     enabled: true,
+    budget: {
+      monthlyCap: 300.0,
+      spentThisPeriod: 96.2,
+      cooldown: { state: "ready", nextAvailable: null, reason: null },
+      recentRuns: [
+        { recipe: "draft-prd", cost: 3.10, at: "just now" },
+        { recipe: "compare",   cost: 0.90, at: "10m" },
+      ],
+    },
     queue: [
-      { id: "t-nina-1", title: "PRD draft: Vendor Portal v2",   status: "running", lastUpdated: "just now", recipe: "draft-prd", sources: ["#specs", "thread: vendor portal"] },
-      { id: "t-nina-2", title: "Compare competitor feature set", status: "queued", lastUpdated: "10m", recipe: "compare", sources: ["drive:/research"] },
+      { id: "t-nina-1", title: "PRD draft: Vendor Portal v2",    status: "running", lastUpdated: "just now", recipe: "draft-prd", sources: ["#specs", "thread: vendor portal"] },
+      { id: "t-nina-2", title: "Compare competitor feature set", status: "queued",  lastUpdated: "10m",      recipe: "compare",   sources: ["drive:/research"] },
     ],
   },
 ];
 
+/* ---------------- Domains / Channels / DMs ---------------- */
 export const domains = [
-  {
-    id: "d-ops",
-    name: "Operations",
-    icon: "ops",
-    channels: ["c-vendor", "c-logistics", "c-compliance"],
-  },
-  {
-    id: "d-sales",
-    name: "Sales",
-    icon: "sales",
-    channels: ["c-pipeline", "c-deals"],
-  },
-  {
-    id: "d-product",
-    name: "Product",
-    icon: "product",
-    channels: ["c-roadmap", "c-specs"],
-  },
+  { id: "d-ops",     name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
+  { id: "d-sales",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
+  { id: "d-product", name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
 ];
 
 export const channels = {
-  "c-vendor":     { id: "c-vendor",     domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk",           members: 14 },
-  "c-logistics":  { id: "c-logistics",  domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",              members: 9 },
-  "c-compliance": { id: "c-compliance", domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",                        members: 6 },
-  "c-pipeline":   { id: "c-pipeline",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",                  members: 11 },
-  "c-deals":      { id: "c-deals",      domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",                          members: 7 },
-  "c-roadmap":    { id: "c-roadmap",    domainId: "d-product", name: "roadmap",            description: "Quarterly planning",                          members: 10 },
-  "c-specs":      { id: "c-specs",      domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",                     members: 12 },
+  "c-vendor":     { id: "c-vendor",     domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk", members: 14, knowledgeRebuilt: "12m ago", knowledgeEntityCount: 18 },
+  "c-logistics":  { id: "c-logistics",  domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",   members:  9, knowledgeRebuilt: "1h ago",  knowledgeEntityCount: 11 },
+  "c-compliance": { id: "c-compliance", domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",             members:  6, knowledgeRebuilt: "3h ago",  knowledgeEntityCount:  7 },
+  "c-pipeline":   { id: "c-pipeline",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",       members: 11, knowledgeRebuilt: "23m ago", knowledgeEntityCount: 14 },
+  "c-deals":      { id: "c-deals",      domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",               members:  7, knowledgeRebuilt: "45m ago", knowledgeEntityCount: 22 },
+  "c-roadmap":    { id: "c-roadmap",    domainId: "d-product", name: "roadmap",            description: "Quarterly planning",               members: 10, knowledgeRebuilt: "2h ago",  knowledgeEntityCount:  9 },
+  "c-specs":      { id: "c-specs",      domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",          members: 12, knowledgeRebuilt: "15m ago", knowledgeEntityCount: 26 },
 };
 
 export const directMessages = [
@@ -106,7 +125,7 @@ export const directMessages = [
   { id: "dm-ana",  withUserId: "u-ana",  unread: 1 },
 ];
 
-// Messages keyed by channelId (or dm id). Timestamps are demo strings.
+/* ---------------- Messages ---------------- */
 export const messages = {
   "c-vendor": [
     { id: "m-v-1", senderId: "u-mira", ts: "09:12", text: "Hey team — quarterly vendor reviews are due Friday. Sharing the latest contract dump from Drive.", attachments: [{ name: "vendor-contracts-q2.zip", size: "12.4 MB" }] },
@@ -117,7 +136,7 @@ export const messages = {
     { id: "m-v-6", senderId: "ai-kara", isAI: true, ts: "09:22", text: "Draft ready for review.", card: { type: "artifact", refId: "a-vendor-checklist" } },
     { id: "m-v-7", senderId: "u-mira", ts: "09:27", text: "Meanwhile I opened a task list — see the thread below.", threadOf: "m-v-7", card: { type: "task-list", count: 5, refId: "thread-vendor-tasks" } },
     { id: "m-v-8", senderId: "u-dan",  ts: "09:31", text: "Logistics angle: Orbix is blocking two shipments. Needs an approval to unblock payment hold.", card: { type: "approval", refId: "ap-orbix" } },
-    { id: "m-v-9", senderId: "u-ken",  ts: "09:35", text: "Approved path — let's get a summary and formal approval filed.", mentions: [] },
+    { id: "m-v-9", senderId: "u-ken",  ts: "09:35", text: "Approved path — let's get a summary and formal approval filed." },
     { id: "m-v-10", senderId: "u-sofia", ts: "09:40", text: "Filed. Pending your review.", card: { type: "approval", refId: "ap-orbix" } },
   ],
   "c-logistics": [
@@ -139,11 +158,12 @@ export const messages = {
     { id: "m-r-1", senderId: "u-ana", ts: "13:05", text: "Q3 themes forming up: vendor portal v2, approval unification, analytics." },
   ],
   "c-specs": [
-    { id: "m-s-1", senderId: "u-ana",  ts: "14:30", text: "Kicking off PRD for Vendor Portal v2. Thread below with scope notes.", card: null },
+    { id: "m-s-1", senderId: "u-ana",  ts: "14:30", text: "Kicking off PRD for Vendor Portal v2. Thread below with scope notes." },
     { id: "m-s-2", senderId: "ai-nina", isAI: true, ts: "14:33", text: "Drafting from the linked thread + research folder.", card: { type: "artifact", refId: "a-prd-vendor-portal" } },
   ],
 };
 
+/* ---------------- Threads ---------------- */
 export const threads = {
   "thread-vendor-tasks": {
     id: "thread-vendor-tasks",
@@ -151,11 +171,11 @@ export const threads = {
     parentMessageId: "m-v-7",
     title: "Vendor review task breakdown",
     messages: [
-      { id: "tr-1", senderId: "u-mira", ts: "09:28", text: "Here are the open actions for this quarter:" },
+      { id: "tr-1", senderId: "u-mira",  ts: "09:28", text: "Here are the open actions for this quarter:" },
       { id: "tr-2", senderId: "u-sofia", ts: "09:30", text: "I'll own the compliance check for NimbusLogix." },
-      { id: "tr-3", senderId: "u-ken", ts: "09:32", text: "@kara extract tasks and assign owners.", mentions: ["ai-kara"] },
+      { id: "tr-3", senderId: "u-ken",   ts: "09:32", text: "@kara extract tasks and assign owners.", mentions: ["ai-kara"] },
       { id: "tr-4", senderId: "ai-kara", isAI: true, ts: "09:33", text: "Extracted 5 tasks with owners and due dates.", card: { type: "task-list", count: 5 } },
-      { id: "tr-5", senderId: "u-mira", ts: "09:35", text: "Looks right. Converting the risk items into a formal approval too." },
+      { id: "tr-5", senderId: "u-mira",  ts: "09:35", text: "Looks right. Converting the risk items into a formal approval too." },
     ],
     linkedObjects: [
       { type: "task-list", refId: "tasks-vendor" },
@@ -168,8 +188,8 @@ export const threads = {
     parentMessageId: "m-s-1",
     title: "Vendor Portal v2 scope",
     messages: [
-      { id: "pr-1", senderId: "u-ana", ts: "14:31", text: "Scope: self-serve onboarding, doc vault, risk scoring, SSO." },
-      { id: "pr-2", senderId: "u-ken", ts: "14:32", text: "Priority on risk scoring — surfaces in ops." },
+      { id: "pr-1", senderId: "u-ana",   ts: "14:31", text: "Scope: self-serve onboarding, doc vault, risk scoring, SSO." },
+      { id: "pr-2", senderId: "u-ken",   ts: "14:32", text: "Priority on risk scoring — surfaces in ops." },
       { id: "pr-3", senderId: "ai-nina", isAI: true, ts: "14:34", text: "Reading sources — thread + research folder — drafting PRD." },
       { id: "pr-4", senderId: "ai-nina", isAI: true, ts: "14:37", text: "PRD draft v1 ready.", card: { type: "artifact", refId: "a-prd-vendor-portal" } },
     ],
@@ -179,15 +199,16 @@ export const threads = {
   },
 };
 
+/* ---------------- Tasks / Approvals / Artifacts / Forms / Base / Sheet ---------------- */
 export const tasks = [
-  { id: "tk-1", title: "Collect renewal terms for NimbusLogix",   ownerId: "u-sofia", due: "Fri",       status: "in-progress", isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
-  { id: "tk-2", title: "Re-score Orbix risk based on latest audit", ownerId: "u-mira", due: "Thu",       status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
-  { id: "tk-3", title: "Confirm Paperstack contract owner",        ownerId: "u-ken",   due: "Wed",       status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
-  { id: "tk-4", title: "Draft vendor portal PRD v1",               ownerId: "u-ana",   due: "Mon",       status: "in-progress", isAIExtracted: false, sourceThreadId: "thread-prd-vendor-portal" },
-  { id: "tk-5", title: "Approve Orbix exception payment",          ownerId: "u-ken",   due: "Today",     status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
-  { id: "tk-6", title: "Pull logistics variance report",           ownerId: "u-dan",   due: "Fri",       status: "todo",        isAIExtracted: false, sourceThreadId: null },
-  { id: "tk-7", title: "QBR slides for Globex",                    ownerId: "u-tom",   due: "Tue",       status: "done",        isAIExtracted: true,  sourceThreadId: null },
-  { id: "tk-8", title: "SOC2 evidence staging",                    ownerId: "u-sofia", due: "Next week", status: "todo",        isAIExtracted: false, sourceThreadId: null },
+  { id: "tk-1", title: "Collect renewal terms for NimbusLogix",     ownerId: "u-sofia", due: "Fri",       status: "in-progress", isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
+  { id: "tk-2", title: "Re-score Orbix risk based on latest audit", ownerId: "u-mira",  due: "Thu",       status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
+  { id: "tk-3", title: "Confirm Paperstack contract owner",         ownerId: "u-ken",   due: "Wed",       status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
+  { id: "tk-4", title: "Draft vendor portal PRD v1",                ownerId: "u-ana",   due: "Mon",       status: "in-progress", isAIExtracted: false, sourceThreadId: "thread-prd-vendor-portal" },
+  { id: "tk-5", title: "Approve Orbix exception payment",           ownerId: "u-ken",   due: "Today",     status: "todo",        isAIExtracted: true,  sourceThreadId: "thread-vendor-tasks" },
+  { id: "tk-6", title: "Pull logistics variance report",            ownerId: "u-dan",   due: "Fri",       status: "todo",        isAIExtracted: false, sourceThreadId: null },
+  { id: "tk-7", title: "QBR slides for Globex",                     ownerId: "u-tom",   due: "Tue",       status: "done",        isAIExtracted: true,  sourceThreadId: null },
+  { id: "tk-8", title: "SOC2 evidence staging",                     ownerId: "u-sofia", due: "Next week", status: "todo",        isAIExtracted: false, sourceThreadId: null },
 ];
 
 export const approvals = {
@@ -196,7 +217,7 @@ export const approvals = {
     title: "Orbix payment hold release",
     description: "Release $42,500 payment hold for Orbix to unblock two shipments. Vendor has remediated SLA breaches; risk re-scored to Medium.",
     amount: "$42,500",
-    status: "pending", // pending | approved | denied
+    status: "pending",
     submittedBy: "u-sofia",
     submittedAt: "Today, 09:40",
     approverId: "u-ken",
@@ -222,8 +243,8 @@ export const approvals = {
     supportingDocs: [{ name: "Paperstack quote.pdf" }],
     audit: [
       { step: "submitted", actorId: "u-mira", ts: "Mon 14:12", note: "Filed from #vendor-management" },
-      { step: "reviewed",  actorId: "u-ken",   ts: "Mon 14:30", note: "Standard renewal, no changes" },
-      { step: "approved",  actorId: "u-ken",   ts: "Mon 14:32", note: "Approved — proceed with renewal" },
+      { step: "reviewed",  actorId: "u-ken",  ts: "Mon 14:30", note: "Standard renewal, no changes" },
+      { step: "approved",  actorId: "u-ken",  ts: "Mon 14:32", note: "Approved — proceed with renewal" },
     ],
     comment: "Approved — proceed with renewal",
   },
@@ -235,17 +256,18 @@ export const artifacts = {
     type: "doc",
     title: "Vendor Renewal Checklist — Q2",
     template: "SOP",
+    templateId: "tpl-sop",
     version: "Draft v1",
     status: "Private Draft",
     sources: [
       { name: "vendor-contracts-q2.zip", kind: "file" },
-      { name: "#vendor-management", kind: "channel" },
+      { name: "#vendor-management",      kind: "channel" },
     ],
     sections: [
-      { heading: "Overview",            body: "This checklist covers Q2 vendor renewals for NimbusLogix, Orbix, and Paperstack. Use this document to track evidence collection and approval gates.", confidence: "high" },
-      { heading: "Pre-renewal checks",  body: "Verify current SLA performance, PII handling agreement [1], and insurance certificates. Flag deviations to the compliance owner.", confidence: "high", cite: [1] },
-      { heading: "Risk re-scoring",     body: "Re-score risk using the updated scoring matrix [2]. Any vendor at 'High' requires executive sign-off prior to renewal.", confidence: "review", cite: [2] },
-      { heading: "Approval flow",       body: "File a formal approval using the approval KApp. Attach remediation memos for any previously flagged issues.", confidence: "high" },
+      { heading: "Overview",           body: "This checklist covers Q2 vendor renewals for NimbusLogix, Orbix, and Paperstack. Use this document to track evidence collection and approval gates.", confidence: "high" },
+      { heading: "Pre-renewal checks", body: "Verify current SLA performance, PII handling agreement [1], and insurance certificates. Flag deviations to the compliance owner.", confidence: "high" },
+      { heading: "Risk re-scoring",    body: "Re-score risk using the updated scoring matrix [2]. Any vendor at 'High' requires executive sign-off prior to renewal.", confidence: "review" },
+      { heading: "Approval flow",      body: "File a formal approval using the approval KApp. Attach remediation memos for any previously flagged issues.", confidence: "high" },
     ],
   },
   "a-qbr-globex": {
@@ -253,6 +275,7 @@ export const artifacts = {
     type: "deck",
     title: "Globex Q2 QBR",
     template: "Deck",
+    templateId: "tpl-qbr",
     version: "Draft v2",
     status: "Private Draft",
     sources: [{ name: "#deals", kind: "channel" }, { name: "CRM export", kind: "file" }],
@@ -268,15 +291,17 @@ export const artifacts = {
     type: "doc",
     title: "Vendor Portal v2 — PRD",
     template: "Standard PRD",
+    templateId: "tpl-prd",
     version: "Draft v1",
     status: "Private Draft",
     sources: [
       { name: "thread: Vendor Portal v2 scope", kind: "thread" },
       { name: "research/competitor-scan.pdf",   kind: "file" },
+      { name: "#specs knowledge",               kind: "knowledge" },
     ],
     sections: [
-      { heading: "Overview",          body: "Vendor Portal v2 modernizes the onboarding experience, introduces a document vault, and exposes live risk scores to vendor admins [1].", confidence: "high", cite: [1] },
-      { heading: "Problem Statement", body: "Today vendors onboard via email and shared drives, leading to manual effort and inconsistent compliance evidence [2].", confidence: "high", cite: [2] },
+      { heading: "Overview",          body: "Vendor Portal v2 modernizes the onboarding experience, introduces a document vault, and exposes live risk scores to vendor admins [1].", confidence: "high" },
+      { heading: "Problem Statement", body: "Today vendors onboard via email and shared drives, leading to manual effort and inconsistent compliance evidence [2].", confidence: "high" },
       { heading: "Requirements",      body: "Self-serve onboarding, doc vault with expiration tracking, real-time risk scoring, SSO via OIDC, admin audit trail.", confidence: "review" },
       { heading: "Success Metrics",   body: "Onboarding time reduced 60%; evidence completeness > 95%; admin NPS > 40.", confidence: "high" },
       { heading: "Open Questions",    body: "SSO provider list; tenant-level data residency; scoring model ownership.", confidence: "review" },
@@ -289,21 +314,21 @@ export const forms = {
     id: "f-vendor-intake",
     title: "New Vendor Intake Form",
     fields: [
-      { id: "name",     label: "Vendor Name",    type: "text",   prefill: "NimbusLogix",         aiPrefilled: true },
-      { id: "category", label: "Category",       type: "select", options: ["Software", "Logistics", "Consulting", "Hardware"], prefill: "Logistics", aiPrefilled: true },
-      { id: "email",    label: "Contact Email",  type: "email",  prefill: "vendors@nimbuslogix.com", aiPrefilled: true },
-      { id: "annual",   label: "Annual Value",   type: "text",   prefill: "$120,000",             aiPrefilled: false },
-      { id: "risk",     label: "Risk Level",     type: "select", options: ["Low", "Medium", "High"], prefill: "Medium", aiPrefilled: true },
+      { id: "name",     label: "Vendor Name",   type: "text",   prefill: "NimbusLogix",             aiPrefilled: true  },
+      { id: "category", label: "Category",      type: "select", options: ["Software", "Logistics", "Consulting", "Hardware"], prefill: "Logistics", aiPrefilled: true },
+      { id: "email",    label: "Contact Email", type: "email",  prefill: "vendors@nimbuslogix.com", aiPrefilled: true  },
+      { id: "annual",   label: "Annual Value",  type: "text",   prefill: "$120,000",                 aiPrefilled: false },
+      { id: "risk",     label: "Risk Level",    type: "select", options: ["Low", "Medium", "High"],  prefill: "Medium",   aiPrefilled: true },
     ],
   },
 };
 
 export const baseRows = [
-  { name: "NimbusLogix",    category: "Logistics",  risk: "Medium", value: "$120,000", status: "Renewing",  lastReview: "Apr 12" },
-  { name: "Orbix",          category: "Logistics",  risk: "Medium", value: "$42,500",  status: "On Hold",   lastReview: "Apr 15" },
-  { name: "Paperstack",     category: "Software",   risk: "Low",    value: "$18,000",  status: "Active",    lastReview: "Mar 29" },
-  { name: "FleetOne",       category: "Logistics",  risk: "Low",    value: "$88,000",  status: "Active",    lastReview: "Mar 30" },
-  { name: "Globex Analytics", category: "Software", risk: "High",   value: "$210,000", status: "Review",    lastReview: "Apr 02" },
+  { name: "NimbusLogix",      category: "Logistics", risk: "Medium", value: "$120,000", status: "Renewing", lastReview: "Apr 12" },
+  { name: "Orbix",            category: "Logistics", risk: "Medium", value: "$42,500",  status: "On Hold",  lastReview: "Apr 15" },
+  { name: "Paperstack",       category: "Software",  risk: "Low",    value: "$18,000",  status: "Active",   lastReview: "Mar 29" },
+  { name: "FleetOne",         category: "Logistics", risk: "Low",    value: "$88,000",  status: "Active",   lastReview: "Mar 30" },
+  { name: "Globex Analytics", category: "Software",  risk: "High",   value: "$210,000", status: "Review",   lastReview: "Apr 02" },
 ];
 
 export const sheetData = {
@@ -337,55 +362,250 @@ export const aiOutputs = {
     "Decisions: proceed with Orbix approval; re-score vendor risk on Thursday.",
     "Actions: 5 tasks extracted.",
   ],
+  // Pre-scripted before/after section edits for the contextual section chat.
+  sectionEdits: {
+    Overview: {
+      before: "Vendor Portal v2 modernizes the onboarding experience, introduces a document vault, and exposes live risk scores to vendor admins [1].",
+      after:  "Vendor Portal v2 modernizes the onboarding experience, introduces a document vault with expiration tracking, and exposes live risk scores to vendor admins. Primary users are vendor admins and Acme's compliance team [1].",
+    },
+    "Problem Statement": {
+      before: "Today vendors onboard via email and shared drives, leading to manual effort and inconsistent compliance evidence [2].",
+      after:  "Today vendors onboard via email and shared drives, leading to manual effort and inconsistent compliance evidence. Ops spends an estimated 9 hours/vendor on manual follow-up [2].",
+    },
+    Requirements: {
+      before: "Self-serve onboarding, doc vault with expiration tracking, real-time risk scoring, SSO via OIDC, admin audit trail.",
+      after:  "Self-serve onboarding, doc vault with expiration tracking, real-time risk scoring with tier thresholds, SSO via OIDC, SCIM provisioning, admin audit trail with immutable export.",
+    },
+    "Success Metrics": {
+      before: "Onboarding time reduced 60%; evidence completeness > 95%; admin NPS > 40.",
+      after:  "Onboarding time reduced 60% (baseline 9h); evidence completeness > 95%; admin NPS > 40; time-to-first-shipment reduced 30%.",
+    },
+    "Open Questions": {
+      before: "SSO provider list; tenant-level data residency; scoring model ownership.",
+      after:  "SSO provider list (Okta, Azure AD, Google); tenant-level data residency (US/EU); scoring model ownership (Ops vs Risk team).",
+    },
+  },
 };
 
+/* ---------------- Recipes + Action Launcher groups ---------------- */
 export const recipes = [
-  { id: "r-summarize",    display: "Summarize thread",    group: "Analyze", intake: ["Audience", "Length"], sources: ["current thread"] },
-  { id: "r-extract-tasks", display: "Extract tasks",       group: "Plan",    intake: ["Owner hints", "Due date rules"], sources: ["current thread"] },
-  { id: "r-draft-prd",    display: "Draft PRD",           group: "Create",  intake: ["Goal", "Audience", "Template", "Tone"], sources: ["current thread", "linked files"] },
-  { id: "r-draft-proposal", display: "Draft Proposal",    group: "Create",  intake: ["Customer", "Template"], sources: ["deal thread", "CRM export"] },
-  { id: "r-create-qbr",   display: "Create QBR",          group: "Create",  intake: ["Customer", "Quarter"], sources: ["deal thread", "CRM export"] },
+  { id: "r-summarize",      display: "Summarize thread", group: "Analyze", intake: ["Audience", "Length"],            sources: ["current thread"] },
+  { id: "r-extract-tasks",  display: "Extract tasks",    group: "Plan",    intake: ["Owner hints", "Due date rules"], sources: ["current thread"] },
+  { id: "r-draft-prd",      display: "Draft PRD",        group: "Create",  intake: ["Goal", "Audience", "Template"],  sources: ["current thread", "linked files", "channel knowledge"] },
+  { id: "r-draft-proposal", display: "Draft Proposal",   group: "Create",  intake: ["Customer", "Template"],          sources: ["deal thread", "CRM export"] },
+  { id: "r-create-qbr",     display: "Create QBR",       group: "Create",  intake: ["Customer", "Quarter"],           sources: ["deal thread", "CRM export"] },
 ];
 
-// Action Launcher groups
 export const actionGroups = [
-  { group: "Create",  actions: [
-    { id: "create-doc",       label: "Doc",       recipeId: "r-draft-prd" },
-    { id: "create-deck",      label: "Deck",      recipeId: "r-create-qbr" },
-    { id: "create-proposal",  label: "Proposal",  recipeId: "r-draft-proposal" },
-    { id: "create-sop",       label: "SOP",       recipeId: "r-draft-prd" },
-    { id: "create-prd",       label: "PRD",       recipeId: "r-draft-prd" },
+  { group: "Create", actions: [
+    { id: "create-doc",      label: "Doc",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "D" },
+    { id: "create-deck",     label: "Deck",     recipeId: "r-create-qbr",     templateId: "tpl-qbr",      icon: "K" },
+    { id: "create-proposal", label: "Proposal", recipeId: "r-draft-proposal", templateId: "tpl-proposal", icon: "P" },
+    { id: "create-sop",      label: "SOP",      recipeId: "r-draft-prd",      templateId: "tpl-sop",      icon: "S" },
+    { id: "create-prd",      label: "PRD",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "R" },
   ]},
-  { group: "Track",   actions: [
-    { id: "track-sheet",      label: "Sheet" },
-    { id: "track-base",       label: "Base Table" },
-    { id: "track-budget",     label: "Budget" },
-    { id: "track-risk",       label: "Risk Register" },
+  { group: "Track", actions: [
+    { id: "track-sheet",   label: "Sheet",         icon: "≡" },
+    { id: "track-base",    label: "Base Table",    icon: "B" },
+    { id: "track-budget",  label: "Budget",        icon: "$" },
+    { id: "track-risk",    label: "Risk Register", icon: "!" },
   ]},
-  { group: "Plan",    actions: [
-    { id: "plan-tasks",       label: "Tasks" },
-    { id: "plan-agenda",      label: "Agenda" },
-    { id: "plan-project",     label: "Project Plan" },
+  { group: "Plan", actions: [
+    { id: "plan-tasks",   label: "Tasks",        icon: "✓" },
+    { id: "plan-agenda",  label: "Agenda",       icon: "A" },
+    { id: "plan-project", label: "Project Plan", icon: "P" },
   ]},
   { group: "Approve", actions: [
-    { id: "approve-purchase", label: "Purchase" },
-    { id: "approve-exception",label: "Exception" },
-    { id: "approve-policy",   label: "Policy" },
-    { id: "approve-budget",   label: "Budget" },
+    { id: "approve-purchase",  label: "Purchase",  icon: "$" },
+    { id: "approve-exception", label: "Exception", icon: "!" },
+    { id: "approve-policy",    label: "Policy",    icon: "§" },
+    { id: "approve-budget",    label: "Budget",    icon: "B" },
   ]},
   { group: "Collect", actions: [
-    { id: "collect-form",     label: "Form" },
-    { id: "collect-intake",   label: "Intake" },
-    { id: "collect-feedback", label: "Feedback" },
+    { id: "collect-form",     label: "Form",     icon: "F" },
+    { id: "collect-intake",   label: "Intake",   icon: "I" },
+    { id: "collect-feedback", label: "Feedback", icon: "✎" },
   ]},
   { group: "Analyze", actions: [
-    { id: "analyze-summary",  label: "Summarize",  recipeId: "r-summarize" },
-    { id: "analyze-compare",  label: "Compare" },
-    { id: "analyze-extract",  label: "Extract",    recipeId: "r-extract-tasks" },
-    { id: "analyze-report",   label: "Report" },
+    { id: "analyze-summary", label: "Summarize", recipeId: "r-summarize",     icon: "Σ" },
+    { id: "analyze-compare", label: "Compare",                                icon: "⇄" },
+    { id: "analyze-extract", label: "Extract",   recipeId: "r-extract-tasks", icon: "E" },
+    { id: "analyze-report",  label: "Report",                                 icon: "R" },
   ]},
 ];
 
+/* ---------------- Templates (v2: curated with hidden meta-prompts) ---------------- */
+export const templates = {
+  "tpl-prd": {
+    id: "tpl-prd",
+    name: "Standard PRD",
+    kind: "doc",
+    description: "Product Requirements Document with problem, requirements, metrics, and open questions.",
+    curatedBy: "Acme PM Guild",
+    metaPrompt: "You are writing a PRD. Cite every assumption with the thread or file it came from. Prefer on-device summarization for PII. Use Acme tone: neutral, specific, quantitative. Keep sections concise and actionable.",
+    required: [
+      { id: "goal",     label: "Goal",     type: "textarea", placeholder: "What shipping this doc achieves, in 1–2 sentences." },
+      { id: "audience", label: "Audience", type: "chips",    options: ["Engineering", "Leadership", "Customer-facing", "Compliance"] },
+      { id: "tone",     label: "Tone",     type: "select",   options: ["Neutral", "Authoritative", "Narrative"] },
+    ],
+    optional: [
+      { id: "length",     label: "Length target", type: "select",   options: ["Short (1–2 pages)", "Standard (3–4 pages)", "Long (5+ pages)"] },
+      { id: "exclusions", label: "Out of scope",  type: "textarea" },
+    ],
+    outputSections: ["Overview", "Problem Statement", "Requirements", "Success Metrics", "Open Questions"],
+  },
+  "tpl-sop": {
+    id: "tpl-sop",
+    name: "SOP",
+    kind: "doc",
+    description: "Standard Operating Procedure with steps, owners, and evidence checklist.",
+    curatedBy: "Ops Council",
+    metaPrompt: "You are writing an SOP. Every step must have an owner. Reference the canonical risk matrix. Flag PII at each step.",
+    required: [
+      { id: "subject", label: "Subject", type: "text",   placeholder: "What operation does this SOP cover?" },
+      { id: "owner",   label: "Owner",   type: "select", options: ["Ops", "Compliance", "Logistics", "Finance"] },
+    ],
+    optional: [
+      { id: "trigger", label: "Trigger", type: "text", placeholder: "When should this SOP be invoked?" },
+    ],
+    outputSections: ["Overview", "Pre-renewal checks", "Risk re-scoring", "Approval flow"],
+  },
+  "tpl-proposal": {
+    id: "tpl-proposal",
+    name: "Proposal",
+    kind: "doc",
+    description: "Customer-facing proposal with scope, pricing, and success criteria.",
+    curatedBy: "Sales Enablement",
+    metaPrompt: "You are writing a customer proposal. Match the customer's tone. Prices must be cited from the CRM export.",
+    required: [
+      { id: "customer", label: "Customer", type: "text" },
+      { id: "scope",    label: "Scope",    type: "textarea" },
+    ],
+    optional: [
+      { id: "deadline", label: "Deadline", type: "text" },
+    ],
+    outputSections: ["Executive summary", "Scope", "Pricing", "Success criteria", "Next steps"],
+  },
+  "tpl-qbr": {
+    id: "tpl-qbr",
+    name: "QBR Deck",
+    kind: "deck",
+    description: "Quarterly Business Review: wins, risks, next quarter.",
+    curatedBy: "Sales Enablement",
+    metaPrompt: "You are writing a QBR deck. Wins and risks must cite the CRM or deal thread. Lead with the executive summary.",
+    required: [
+      { id: "customer", label: "Customer", type: "text" },
+      { id: "quarter",  label: "Quarter",  type: "select", options: ["Q1", "Q2", "Q3", "Q4"] },
+    ],
+    optional: [
+      { id: "attendees", label: "Attendees", type: "text" },
+    ],
+    outputSections: ["Executive summary", "Wins", "Risks", "Next quarter"],
+  },
+  "tpl-rfc": {
+    id: "tpl-rfc",
+    name: "RFC",
+    kind: "doc",
+    description: "Technical Request for Comments for architectural decisions.",
+    curatedBy: "Eng Guild",
+    metaPrompt: "You are writing a technical RFC. Be explicit about alternatives considered and trade-offs.",
+    required: [
+      { id: "problem",      label: "Problem",                 type: "textarea" },
+      { id: "alternatives", label: "Alternatives considered", type: "textarea" },
+    ],
+    optional: [],
+    outputSections: ["Summary", "Motivation", "Design", "Alternatives", "Risks"],
+  },
+};
+
+/* ---------------- Channel knowledge (v2) ---------------- */
+export const knowledge = {
+  "c-vendor": {
+    channelId: "c-vendor",
+    rebuiltAt: "12m ago",
+    coverage: "High",
+    entities: [
+      { id: "k-nimbus",   type: "Vendor",   label: "NimbusLogix",                summary: "Logistics vendor, $120k annual, renewing Q2",    sourceRefs: 6 },
+      { id: "k-orbix",    type: "Vendor",   label: "Orbix",                      summary: "Logistics vendor, on payment hold",               sourceRefs: 4 },
+      { id: "k-paperstk", type: "Vendor",   label: "Paperstack",                 summary: "Software vendor, standard renewal approved",      sourceRefs: 3 },
+      { id: "k-sla",      type: "Policy",   label: "Vendor SLA Policy",          summary: "Defines latency, uptime, remediation windows",    sourceRefs: 2 },
+      { id: "k-risk",     type: "Policy",   label: "Risk Scoring Matrix",        summary: "Scoring rubric for vendor risk tiers",            sourceRefs: 2 },
+      { id: "k-renewal",  type: "Template", label: "Renewal Checklist Template", summary: "SOP used for Q2 renewal cycles",                  sourceRefs: 1 },
+    ],
+    relationships: [
+      { from: "k-orbix",   rel: "has",        to: "k-sla" },
+      { from: "k-nimbus",  rel: "has",        to: "k-sla" },
+      { from: "k-orbix",   rel: "scored_by",  to: "k-risk" },
+      { from: "k-nimbus",  rel: "scored_by",  to: "k-risk" },
+      { from: "k-renewal", rel: "applies_to", to: "k-nimbus"   },
+      { from: "k-renewal", rel: "applies_to", to: "k-orbix"    },
+      { from: "k-renewal", rel: "applies_to", to: "k-paperstk" },
+    ],
+    qa: [
+      { q: "Which vendors are on payment hold?",
+        a: "Orbix is currently on payment hold. An approval to release $42,500 is pending review.",
+        sources: ["thread: vendor tasks", "ap-orbix"] },
+      { q: "What does the renewal checklist require?",
+        a: "Pre-renewal checks (SLA, PII, insurance), risk re-scoring, and a filed approval with remediation memos.",
+        sources: ["a-vendor-checklist", "k-renewal"] },
+      { q: "Who owns risk re-scoring?",
+        a: "Mira Patel owns re-scoring for Orbix; Sofia Reyes owns compliance checks overall.",
+        sources: ["thread-vendor-tasks"] },
+    ],
+  },
+  "c-specs": {
+    channelId: "c-specs",
+    rebuiltAt: "15m ago",
+    coverage: "High",
+    entities: [
+      { id: "k-portal",  type: "Product",  label: "Vendor Portal v2",       summary: "Self-serve onboarding + risk scoring", sourceRefs: 7 },
+      { id: "k-sso",     type: "Concept",  label: "SSO via OIDC",           summary: "Authentication requirement",           sourceRefs: 3 },
+      { id: "k-scoring", type: "Concept",  label: "Real-time risk scoring", summary: "Exposed to vendor admins",             sourceRefs: 4 },
+      { id: "k-comp",    type: "Research", label: "Competitor scan",        summary: "Research file uploaded by Ana",        sourceRefs: 2 },
+    ],
+    relationships: [
+      { from: "k-portal", rel: "uses",             to: "k-sso"     },
+      { from: "k-portal", rel: "uses",             to: "k-scoring" },
+      { from: "k-portal", rel: "reviewed_against", to: "k-comp"    },
+    ],
+    qa: [
+      { q: "What are the core requirements of Vendor Portal v2?",
+        a: "Self-serve onboarding, doc vault with expiration tracking, real-time risk scoring, SSO via OIDC, and an admin audit trail.",
+        sources: ["thread-prd-vendor-portal", "a-prd-vendor-portal"] },
+    ],
+  },
+};
+
+/* ---------------- Connectors (v2: company-wide + personal tiers) ---------------- */
+export const connectors = {
+  companyWide: [
+    { id: "gdrive-corp",     name: "Google Drive", provider: "google",     connected: true,  scope: "#vendor-management, #specs", connectedBy: "u-ken", lastSync: "5m ago",  tier: "company" },
+    { id: "jira-corp",       name: "Jira",         provider: "atlassian",  connected: true,  scope: "#roadmap, #specs",           connectedBy: "u-ana", lastSync: "12m ago", tier: "company" },
+    { id: "salesforce-corp", name: "Salesforce",   provider: "salesforce", connected: true,  scope: "#deals, #pipeline",          connectedBy: "u-tom", lastSync: "3m ago",  tier: "company" },
+    { id: "onedrive-corp",   name: "OneDrive",     provider: "microsoft",  connected: false, scope: null,                         connectedBy: null,    lastSync: null,      tier: "company" },
+    { id: "sharepoint-corp", name: "SharePoint",   provider: "microsoft",  connected: false, scope: null,                         connectedBy: null,    lastSync: null,      tier: "company" },
+  ],
+  personal: [
+    { id: "gdrive-me",   name: "Google Drive (personal)", provider: "google", connected: true,  scope: "Only visible to you", connectedBy: "u-ken", lastSync: "just now", tier: "personal" },
+    { id: "notion-me",   name: "Notion",                  provider: "notion", connected: true,  scope: "Only visible to you", connectedBy: "u-ken", lastSync: "1h ago",   tier: "personal" },
+    { id: "calendar-me", name: "Google Calendar",         provider: "google", connected: false, scope: null,                  connectedBy: null,    lastSync: null,       tier: "personal" },
+    { id: "github-me",   name: "GitHub",                  provider: "github", connected: false, scope: null,                  connectedBy: null,    lastSync: null,       tier: "personal" },
+  ],
+};
+
+/* ---------------- Notifications (v2: inbox) ---------------- */
+export const notifications = [
+  { id: "n-1", kind: "mention",  title: "Sofia mentioned you in #vendor-management",   preview: "@ken Orbix remediation memo attached…",               channelId: "c-vendor",  ts: "5m ago",    unread: true,  actorId: "u-sofia" },
+  { id: "n-2", kind: "approval", title: "Approval pending: Orbix payment hold",        preview: "Sofia filed a $42,500 approval for your review",     approvalId: "ap-orbix", ts: "25m ago",   unread: true,  actorId: "u-sofia" },
+  { id: "n-3", kind: "ai",       title: "Kara Ops AI finished a draft",                preview: "Vendor Renewal Checklist is ready for review",       artifactId: "a-vendor-checklist",  ts: "1h ago",   unread: true,  actorId: "ai-kara" },
+  { id: "n-4", kind: "thread",   title: "New reply in 'Vendor review task breakdown'", preview: "Mira: converting risk items into a formal approval", threadId: "thread-vendor-tasks",   ts: "2h ago",   unread: false, actorId: "u-mira" },
+  { id: "n-5", kind: "ai",       title: "Nina PM AI posted a PRD draft in #specs",     preview: "Vendor Portal v2 PRD draft v1 ready",                 artifactId: "a-prd-vendor-portal", ts: "3h ago",   unread: false, actorId: "ai-nina" },
+  { id: "n-6", kind: "budget",   title: "Mika Sales AI hit 98% of monthly budget",     preview: "Cooling down until Friday 09:00 or admin override",   aiEmployeeId: "ai-mika", ts: "4h ago",    unread: false, actorId: "ai-mika" },
+  { id: "n-7", kind: "mention",  title: "Ana mentioned you in #specs",                 preview: "@ken priority on risk scoring — surfaces in ops",     channelId: "c-specs",    ts: "yesterday", unread: false, actorId: "u-ana" },
+  { id: "n-8", kind: "approval", title: "Approval approved: Paperstack renewal",       preview: "You approved the Paperstack annual renewal",          approvalId: "ap-software-license", ts: "Mon", unread: false, actorId: "u-ken" },
+];
+
+/* ---------------- Settings ---------------- */
 export const settings = {
   privacy: {
     allowConfidentialServerAI: false,
@@ -393,25 +613,34 @@ export const settings = {
     requirePIITokenization:    true,
     onDevicePreferred:         true,
   },
-  connectors: [
-    { id: "gdrive",   name: "Google Drive", connected: true,  scope: "#vendor-management" },
-    { id: "onedrive", name: "OneDrive",     connected: false, scope: null },
-  ],
+  // Used by the Settings modal's "Templates" tab — keep in sync with `templates`.
   templates: [
-    { id: "tpl-prd",      name: "PRD",      kind: "doc" },
-    { id: "tpl-rfc",      name: "RFC",      kind: "doc" },
-    { id: "tpl-proposal", name: "Proposal", kind: "doc" },
-    { id: "tpl-sop",      name: "SOP",      kind: "doc" },
+    { id: "tpl-prd",      name: "Standard PRD", kind: "doc"  },
+    { id: "tpl-sop",      name: "SOP",          kind: "doc"  },
+    { id: "tpl-proposal", name: "Proposal",     kind: "doc"  },
+    { id: "tpl-qbr",      name: "QBR Deck",     kind: "deck" },
+    { id: "tpl-rfc",      name: "RFC",          kind: "doc"  },
+  ],
+  // Legacy connectors list used by the Settings modal's Connectors tab; the
+  // dedicated Connectors screen uses `connectors` above.
+  connectors: [
+    { id: "gdrive",     name: "Google Drive", connected: true,  scope: "#vendor-management, #specs" },
+    { id: "jira",       name: "Jira",         connected: true,  scope: "#roadmap, #specs"           },
+    { id: "salesforce", name: "Salesforce",   connected: true,  scope: "#deals, #pipeline"          },
+    { id: "onedrive",   name: "OneDrive",     connected: false, scope: null                         },
   ],
 };
 
-// Utility lookup helpers
+/* ---------------- Utility lookup helpers ---------------- */
 export function userById(id) {
   return users.find(u => u.id === id) || aiEmployees.find(a => a.id === id) || null;
 }
-export function channelById(id)     { return channels[id] || null; }
-export function domainById(id)      { return domains.find(d => d.id === id) || null; }
-export function aiById(id)          { return aiEmployees.find(a => a.id === id) || null; }
-export function artifactById(id)    { return artifacts[id] || null; }
-export function approvalById(id)    { return approvals[id] || null; }
-export function threadById(id)      { return threads[id] || null; }
+export function channelById(id)   { return channels[id] || null; }
+export function domainById(id)    { return domains.find(d => d.id === id) || null; }
+export function aiById(id)        { return aiEmployees.find(a => a.id === id) || null; }
+export function artifactById(id)  { return artifacts[id] || null; }
+export function approvalById(id)  { return approvals[id] || null; }
+export function threadById(id)    { return threads[id] || null; }
+export function templateById(id)  { return templates[id] || null; }
+export function knowledgeForChannel(channelId) { return knowledge[channelId] || null; }
+export function unreadNotificationCount()      { return notifications.filter(n => n.unread).length; }

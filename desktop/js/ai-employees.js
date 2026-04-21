@@ -2,6 +2,39 @@
 import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 
+function renderBudgetSection(ai) {
+  const b = ai.budget;
+  if (!b) return "";
+  const cap = b.monthlyCapUsd || 0;
+  const spent = b.spentUsd || 0;
+  const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0;
+  const cool = b.cooldown || { state: "ready" };
+  const stateLabel = cool.state === "cooling-down" ? "Cooling down" : cool.state === "throttled" ? "Throttled" : "Ready";
+  const stateClass = cool.state === "cooling-down" ? "danger" : cool.state === "throttled" ? "warning" : "success";
+  const barClass = pct >= 95 ? "danger" : pct >= 75 ? "warning" : "success";
+  const next = cool.nextAvailableAt ? `<span class="text-xs text-muted">Resumes ${cool.nextAvailableAt}</span>` : "";
+  const reason = cool.reason ? `<div class="text-xs text-muted" style="margin-top:4px">${cool.reason}</div>` : "";
+  return `
+    <div class="section-head">
+      <h2>Monthly AI budget</h2>
+      <span class="pill-${stateClass}">${stateLabel}</span>
+    </div>
+    <div class="output-sec budget-card">
+      <div class="row items-center gap-3" style="justify-content:space-between">
+        <div>
+          <div class="b">$${spent.toFixed(2)} <span class="text-muted">/ $${cap.toFixed(2)} cap</span></div>
+          <div class="text-xs text-muted">Budget window: ${b.window || "this month"}</div>
+          ${reason}
+        </div>
+        ${next}
+      </div>
+      <div class="budget-bar" style="margin-top:10px">
+        <div class="budget-fill ${barClass}" style="width:${pct}%"></div>
+      </div>
+    </div>
+  `;
+}
+
 export function renderAIEmployee(aiId) {
   const ai = D.aiById(aiId) || D.aiEmployees[0];
   const container = document.getElementById("screen-ai-employee");
@@ -61,6 +94,8 @@ export function renderAIEmployee(aiId) {
           <span class="text-xs text-muted">Concurrency ${ai.concurrency}</span>
         </div>
       </div>
+
+      ${renderBudgetSection(ai)}
 
       <div class="section-head">
         <h2>Task queue</h2>
