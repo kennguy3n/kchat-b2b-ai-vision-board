@@ -5,14 +5,14 @@ import { iconSvg } from "./icons.js";
 function renderBudgetSection(ai) {
   const b = ai.budget;
   if (!b) return "";
-  const cap = b.monthlyCapUsd || 0;
-  const spent = b.spentUsd || 0;
+  const cap = b.monthlyCap || 0;
+  const spent = b.spentThisPeriod || 0;
   const pct = cap > 0 ? Math.min(100, Math.round((spent / cap) * 100)) : 0;
   const cool = b.cooldown || { state: "ready" };
   const stateLabel = cool.state === "cooling-down" ? "Cooling down" : cool.state === "throttled" ? "Throttled" : "Ready";
   const stateClass = cool.state === "cooling-down" ? "danger" : cool.state === "throttled" ? "warning" : "success";
   const barClass = pct >= 95 ? "danger" : pct >= 75 ? "warning" : "success";
-  const next = cool.nextAvailableAt ? `<span class="text-xs text-muted">Resumes ${cool.nextAvailableAt}</span>` : "";
+  const next = cool.nextAvailable ? `<span class="text-xs text-muted">Resumes ${cool.nextAvailable}</span>` : "";
   const reason = cool.reason ? `<div class="text-xs text-muted" style="margin-top:4px">${cool.reason}</div>` : "";
   return `
     <div class="section-head">

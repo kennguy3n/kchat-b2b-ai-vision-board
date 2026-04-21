@@ -48,8 +48,9 @@ function handleNotifClick(n) {
     }
   }
   if (n.kind === "approval" && n.approvalId) {
-    window.app.openRightView("approval-review", { approvalId: n.approvalId });
-    window.app.navigateTo("channel-chat", { channelId: "c-vendor" });
+    window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => {
+      window.app.openRightView("approval-review", { approvalId: n.approvalId });
+    });
     return;
   }
   if (n.kind === "ai" && n.artifactId) {
