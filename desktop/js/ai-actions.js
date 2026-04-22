@@ -22,7 +22,7 @@ const CHANNEL_SUGGESTIONS = {
   ],
   "c-deals": [
     { id: "create-qbr", label: "Create QBR", recipeId: "r-create-qbr", templateId: "tpl-qbr", sub: "Quarterly business review deck" },
-    { id: "create-proposal", label: "Draft Proposal", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Customer-ready proposal" },
+    { id: "create-proposal", label: "Draft Proposal", recipeId: "r-draft-proposal", templateId: "tpl-proposal", sub: "Customer-ready proposal" },
     { id: "analyze-summary", label: "Summarize", sub: "Pipeline + risk highlights" },
   ],
 };

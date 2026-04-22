@@ -137,6 +137,7 @@ function applyShellForScreen(screenId) {
   const allowRight = ["channel-chat", "thread-detail", "ai-employee"].includes(screenId);
   if (!allowRight || !state.rightView) {
     work.classList.remove("with-right");
+    work.classList.remove("right-expanded");
   } else {
     work.classList.add("with-right");
   }

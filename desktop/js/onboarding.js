@@ -183,6 +183,14 @@ function onResize() {
 
 export function startOnboarding({ force = false } = {}) {
   if (!force && hasSeenTour()) return;
+  // Clean up any in-progress tour before restarting so we don't stack listeners.
+  if (isActive) {
+    document.querySelector(".onb-backdrop")?.remove();
+    document.querySelector(".onb-spotlight")?.remove();
+    document.querySelector(".onb-tooltip")?.remove();
+    window.removeEventListener("keydown", onKey);
+    window.removeEventListener("resize", onResize);
+  }
   stepIndex = 0;
   isActive = true;
   window.addEventListener("keydown", onKey);
