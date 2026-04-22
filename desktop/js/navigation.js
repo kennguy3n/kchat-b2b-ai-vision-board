@@ -10,10 +10,16 @@ function avatarHTML(user, size = "md") {
 function renderWorkspaceHeader() {
   return `
     <div class="sb-head">
-      <div class="sb-ws-logo">Ac</div>
+      <div class="sb-ws-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <defs><linearGradient id="kg-sb" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+          <rect width="24" height="24" rx="6" fill="url(#kg-sb)"/>
+          <path d="M5 6v12M5 12l6-6M5 12l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <div>
         <div class="sb-ws-name">${D.workspace.name}</div>
-        <div class="sb-ws-tier">Business • ${D.workspace.memberCount} members</div>
+        <div class="sb-ws-tier">KChat Business · ${D.workspace.memberCount} members</div>
       </div>
     </div>
     <div class="sb-search" role="search">
@@ -25,11 +31,15 @@ function renderWorkspaceHeader() {
 }
 
 function renderDomainSection(domain, state) {
+  const unreadChannels = new Set(["c-vendor", "c-specs"]);
   const chanItems = domain.channels.map(cid => {
     const c = D.channels[cid];
     const active = state.channelId === cid ? " active" : "";
-    return `<div class="sb-item${active}" data-nav="channel" data-id="${cid}">
-      <span class="hash">#</span>${c.name}
+    const hasUnread = unreadChannels.has(cid);
+    const unreadClass = hasUnread ? " unread" : "";
+    const unreadBadge = hasUnread ? `<span class="unread-dot" aria-hidden="true"></span>` : "";
+    return `<div class="sb-item${active}${unreadClass}" data-nav="channel" data-id="${cid}">
+      <span class="hash">#</span>${c.name}${unreadBadge}
     </div>`;
   }).join("");
   const collapsed = state.collapsed.has(domain.id) ? " collapsed" : "";
@@ -102,6 +112,9 @@ export function renderSidebar(state) {
   const inboxBadge = unread > 0 ? `<span class="ib-badge">${unread}</span>` : "";
   el.innerHTML = `
     ${renderWorkspaceHeader()}
+    <button class="sb-new-btn" id="sb-new-btn" type="button">
+      ${iconSvg("plus", 14)} New
+    </button>
     <div class="sb-scroll">
       <div class="sb-section" data-section="home">
         <div class="sb-item${state.screen === "workspace-home" ? " active" : ""}" data-nav="home">
@@ -110,17 +123,8 @@ export function renderSidebar(state) {
         <div class="sb-inbox${state.screen === "notifications" ? " active" : ""}" data-nav="inbox" role="button" aria-label="Open inbox">
           <span class="ib-icon">${iconSvg("inbox", 14)}</span>Inbox${inboxBadge}
         </div>
-        <div class="sb-item" data-nav="tasks">
-          ${iconSvg("tasks", 14)} My Tasks
-        </div>
-        <div class="sb-item" data-nav="approvals">
-          ${iconSvg("approve", 14)} Approvals
-        </div>
-        <div class="sb-item" data-nav="artifacts">
-          ${iconSvg("doc", 14)} Artifacts
-        </div>
-        <div class="sb-item${state.screen === "connectors" ? " active" : ""}" data-nav="connectors">
-          ${iconSvg("gear", 14)} Connectors
+        <div class="sb-item" data-nav="my-work">
+          ${iconSvg("briefcase", 14)} My Work
         </div>
       </div>
       ${sections.map(s => `
@@ -164,6 +168,7 @@ function wireSidebarEvents() {
         case "home":     window.app.navigateTo("workspace-home"); break;
         case "inbox":    window.app.navigateTo("notifications"); break;
         case "connectors": window.app.navigateTo("connectors"); break;
+        case "my-work":  window.app.navigateTo("workspace-home", { workTab: "tasks" }); break;
         case "tasks":    window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("task-panel")); break;
         case "approvals":window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("approval-review", { approvalId: "ap-orbix" })); break;
         case "artifacts":window.app.navigateTo("channel-chat", { channelId: "c-specs" }, () => window.app.openRightView("output-review", { artifactId: "a-prd-vendor-portal" })); break;
@@ -173,6 +178,11 @@ function wireSidebarEvents() {
         case "ai":       window.app.navigateTo("ai-employee", { aiEmployeeId: id }); break;
       }
     });
+  });
+  const newBtn = el.querySelector("#sb-new-btn");
+  if (newBtn) newBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    window.app.openActionLauncher();
   });
   const gear = el.querySelector("[data-open-settings]");
   if (gear) gear.addEventListener("click", () => window.app.openSettings());

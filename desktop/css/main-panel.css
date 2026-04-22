@@ -14,6 +14,14 @@
   position: relative;
 }
 .message:hover { background: var(--surface-2); }
+.message { animation: msgIn 150ms var(--ease); }
+@keyframes msgIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.message.continuation { padding-top: 1px; padding-bottom: 1px; }
+.message.continuation .ts-hover {
+  display: none; font-size: 10px; color: var(--text-soft); margin-left: 8px;
+}
+.message.continuation:hover .ts-hover { display: inline; }
+.message .avatar-spacer { width: 36px; height: 1px; }
 .message .avatar { width: 36px; height: 36px; border-radius: 8px; }
 .message .head { display: flex; align-items: baseline; gap: 8px; }
 .message .name { font-weight: 600; font-size: 13.5px; }
@@ -86,8 +94,17 @@
 }
 .channel-header .ch-title { font-weight: 700; font-size: 15px; }
 .channel-header .ch-hash { color: var(--text-soft); margin-right: 1px; font-weight: 500; }
-.channel-header .ch-desc { color: var(--text-muted); font-size: 12.5px; }
+.channel-header .ch-title { position: relative; padding-bottom: 2px; }
+.channel-header .ch-desc { color: var(--text-muted); font-size: 12.5px; border-top: 1px solid var(--border); padding-top: 2px; }
 .channel-header .spacer { flex: 1; }
+.channel-header .ch-members { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+/* Typing indicator */
+.typing-indicator { padding: 4px 24px 8px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.typing-dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--text-soft); animation: typeDot 1.2s infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typeDot { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
 
 /* Compose area */
 .compose {
@@ -109,7 +126,7 @@
 .compose textarea {
   resize: none;
   border: 0; outline: 0; background: transparent;
-  min-height: 30px; max-height: 140px;
+  min-height: 38px; max-height: 140px;
   padding: 6px 4px;
   color: var(--text);
 }
@@ -118,6 +135,8 @@
   color: var(--text-muted); padding: 6px; border-radius: 8px;
 }
 .compose .btn-compose:hover { color: var(--text); background: var(--surface-2); }
+.compose .btn-ai-sparkle { color: var(--ai-strong); }
+.compose .btn-ai-sparkle:hover { background: var(--ai-50); color: var(--ai-strong); }
 .compose .btn-ai {
   background: var(--ai-50); color: var(--ai-strong);
   border-radius: 8px; padding: 6px 10px; border: 0; cursor: pointer; font-weight: 600;
