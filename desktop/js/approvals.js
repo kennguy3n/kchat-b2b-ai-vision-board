@@ -139,8 +139,6 @@ export function renderApprovalReview(containerId, params = {}) {
   function showConfirmFoot(kind) {
     const foot = view.querySelector(".rp-foot");
     if (!foot) return;
-    const noteEl = document.getElementById("approve-comment");
-    const note = (noteEl && noteEl.value) || (kind === "approve" ? "Approved" : "Denied");
     const verb = kind === "approve" ? "approving" : "denying";
     const primary = kind === "approve"
       ? `<button class="btn btn-success" id="confirm-primary-btn">${iconSvg("check", 14)} Confirm Approve</button>`
@@ -161,6 +159,10 @@ export function renderApprovalReview(containerId, params = {}) {
       renderApprovalReview(containerId, params);
     });
     document.getElementById("confirm-primary-btn")?.addEventListener("click", () => {
+      // Read the comment at confirm time so late edits to the textarea are
+      // captured in the sealed audit trail.
+      const noteEl = document.getElementById("approve-comment");
+      const note = (noteEl && noteEl.value) || (kind === "approve" ? "Approved" : "Denied");
       if (kind === "approve") {
         a.status = "approved";
         a.audit.push({ step: "approved", actorId: a.approverId, ts: "now", note });
@@ -168,7 +170,7 @@ export function renderApprovalReview(containerId, params = {}) {
         showToast("Approved — audit trail sealed.");
       } else {
         a.status = "denied";
-        a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note: note === "Approved" ? "Denied" : note });
+        a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note });
         showToast("Denied — audit trail sealed.");
       }
       renderApprovalReview(containerId, params);

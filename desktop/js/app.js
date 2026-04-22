@@ -327,6 +327,7 @@ function expandRightView() {
   document.querySelectorAll("[data-expand-right]").forEach(btn => {
     btn.setAttribute("title", expanded ? "Collapse" : "Expand");
     btn.setAttribute("aria-label", expanded ? "Collapse right panel" : "Expand right panel");
+    btn.innerHTML = iconSvg(expanded ? "collapse" : "expand", 14);
     btn.dataset.expanded = expanded ? "true" : "false";
   });
 }
