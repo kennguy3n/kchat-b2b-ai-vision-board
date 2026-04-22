@@ -25,10 +25,10 @@ const STEPS = [
     placement: "right",
   },
   {
-    target: ".compose .btn-ai, .compose .btn-compose, #topbar-inbox",
+    target: ".quick-actions, .compose .btn-ai, .compose .btn-compose",
     title: "Ask AI from anywhere",
-    body: "Click the + in the compose bar to ask AI to draft documents, extract tasks, or summarize a thread.",
-    placement: "top",
+    body: "Kick off AI work from these quick actions, or from the + button in the compose bar of any channel — draft documents, extract tasks, or summarize threads.",
+    placement: "bottom",
   },
   {
     target: "#right-panel, .workarea",
