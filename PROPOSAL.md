@@ -331,7 +331,7 @@ KChat B2B ships AI-Employee-native from day one, with governance as the default,
 
 ---
 
-## 11. UX Audit Findings & Mitigations
+## 10. UX Audit Findings & Mitigations
 
 A UX audit of the v0.1 click-through against mass SME office-worker
 segments (Finance, HR, Sales, Ops, Compliance, non-technical) surfaced
@@ -363,7 +363,7 @@ architecture, recipe router, and governance model are unchanged.
 
 ---
 
-## 10. Open questions
+## 11. Open questions
 
 1. Template authoring — is the v1 template set curated (PRD, RFC, Proposal, SOP, QBR) or open to customers from day one?
 2. Data-residency granularity — per-workspace, per-domain, or per-channel?
