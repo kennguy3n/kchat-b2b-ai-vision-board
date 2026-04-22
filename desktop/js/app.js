@@ -351,7 +351,7 @@ function wireLoginScreen() {
 /* ---------- Workspace Home ---------- */
 function renderWorkspaceHome() {
   const container = document.getElementById("screen-workspace-home");
-  const pendingApprovals = D.approvals ? D.approvals.filter(a => a.status === "pending").length : 1;
+  const pendingApprovals = D.approvals ? Object.values(D.approvals).filter(a => a.status === "pending").length : 1;
   const dueTasks = D.tasks ? D.tasks.filter(t => t.status !== "done").length : 3;
   const unreadInbox = D.unreadNotificationCount ? D.unreadNotificationCount() : 0;
 
