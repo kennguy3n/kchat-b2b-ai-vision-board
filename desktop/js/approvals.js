@@ -133,6 +133,13 @@ export function renderApprovalReview(containerId, params = {}) {
     });
   }
 
+  // Re-wire close buttons on every render. openRightView() only wires them on
+  // first open; re-renders (confirm, cancel, final approve/deny) replace the
+  // DOM under this view, so we must reattach the listener ourselves.
+  view.querySelectorAll("[data-close-right]").forEach(btn => {
+    btn.addEventListener("click", () => window.app?.closeRightView?.(), { once: true });
+  });
+
   // Replace the footer with an inline confirmation step. Nothing mutates
   // until the user clicks the second, explicit confirm button — mirrors
   // the audit-trail-is-immutable messaging the approval flow relies on.
