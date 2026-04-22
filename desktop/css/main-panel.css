@@ -118,7 +118,7 @@
   padding: 8px 10px;
   background: var(--surface);
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto auto;
   align-items: end;
   gap: 8px;
 }
