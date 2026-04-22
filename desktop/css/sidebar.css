@@ -19,9 +19,21 @@
   background: linear-gradient(135deg, var(--primary), var(--accent));
   display: grid; place-items: center; color: white; font-weight: 700;
   font-size: 13px;
+  overflow: hidden;
 }
+.sb-ws-logo svg { display: block; }
 .sb-ws-name { font-weight: 600; color: white; font-size: 14px; line-height: 1.1; }
 .sb-ws-tier { color: var(--sb-text-mut); font-size: 11px; }
+
+.sb-new-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 6px 12px 2px; padding: 8px 0;
+  background: var(--primary); color: white;
+  border: 0; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  transition: background var(--dur-fast) var(--ease);
+}
+.sb-new-btn:hover { background: var(--primary-600); }
 
 .sb-search {
   margin: 10px 12px;
@@ -81,6 +93,14 @@
 }
 .sb-item .hash { color: var(--sb-text-mut); margin-right: 2px; font-weight: 500; }
 .sb-item.active .hash { color: white; }
+.sb-item.unread { color: white; font-weight: 700; }
+.sb-item.unread .hash { color: white; }
+.sb-item .unread-dot {
+  margin-left: auto;
+  width: 7px; height: 7px; border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99,102,241,.25);
+}
 .sb-item .badge {
   margin-left: auto;
   background: var(--primary);

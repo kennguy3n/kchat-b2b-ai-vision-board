@@ -209,6 +209,13 @@ function renderTopbar(screenId) {
   const unread = D.unreadNotificationCount();
   const unreadBadge = unread > 0 ? `<span class="topbar-unread">${unread}</span>` : "";
   return `
+    <span class="topbar-kmark" aria-label="KChat" title="KChat">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <defs><linearGradient id="kg-tb" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
+        <rect width="24" height="24" rx="6" fill="url(#kg-tb)"/>
+        <path d="M5 6v12M5 12l6-6M5 12l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
     <button class="icon-btn" id="topbar-back" title="Back">${iconSvg("back", 16)}</button>
     <div>
       <div class="topbar-title">${title}</div>
@@ -221,7 +228,7 @@ function renderTopbar(screenId) {
       <span class="kbd">⌘K</span>
     </div>
     <div class="top-actions">
-      <span class="badge-ai">${iconSvg("ai", 12)} <span class="glossary-tip" data-tip="AI runs on your device. No chat data leaves your company.">On-device AI</span></span>
+      <button class="badge-ai glossary-tip" type="button" data-tip="AI runs on your device. Chat data never leaves your workspace — no cloud training, no cross-tenant sharing.">${iconSvg("ai", 12)} On-device AI</button>
       <button class="icon-btn" id="topbar-inbox" title="Inbox" aria-label="Open inbox" style="position:relative">${iconSvg("inbox", 16)}${unreadBadge}</button>
       <div class="avatar sm" style="background:${D.userById(D.currentUserId).color}">${D.userById(D.currentUserId).initials}</div>
     </div>
@@ -366,27 +373,25 @@ function renderWorkspaceHome() {
 
       <div class="section-head"><h2>Quick actions</h2><span class="more" data-restart-tour title="Replay the product tour">Take the tour</span></div>
       <div class="quick-actions">
-        <div class="qa-card" data-quick="approvals">
-          <div class="qa-icon">${iconSvg("approve", 18)}</div>
-          <div class="qa-label">Review pending approvals</div>
-          <div class="qa-sub">${pendingApprovals} waiting on you</div>
-          ${pendingApprovals > 0 ? `<span class="qa-badge">${pendingApprovals}</span>` : ""}
-        </div>
-        <div class="qa-card" data-quick="tasks">
-          <div class="qa-icon">${iconSvg("tasks", 18)}</div>
-          <div class="qa-label">Check my tasks</div>
-          <div class="qa-sub">${dueTasks} due this week</div>
-        </div>
-        <div class="qa-card" data-quick="draft">
-          <div class="qa-icon">${iconSvg("doc", 18)}</div>
-          <div class="qa-label">Draft a document</div>
-          <div class="qa-sub">PRD, summary, SOP…</div>
-        </div>
-        <div class="qa-card" data-quick="inbox">
+        <div class="qa-item" data-qa="inbox">
           <div class="qa-icon">${iconSvg("inbox", 18)}</div>
-          <div class="qa-label">View inbox</div>
-          <div class="qa-sub">${unreadInbox} unread</div>
-          ${unreadInbox > 0 ? `<span class="qa-badge">${unreadInbox}</span>` : ""}
+          <div class="qa-label">Inbox</div>
+          <div class="qa-count">${unreadInbox} unread</div>
+        </div>
+        <div class="qa-item" data-qa="tasks">
+          <div class="qa-icon">${iconSvg("tasks", 18)}</div>
+          <div class="qa-label">My Tasks</div>
+          <div class="qa-count">${D.tasks.filter(t => t.ownerId === D.currentUserId && t.status !== 'done').length} open</div>
+        </div>
+        <div class="qa-item" data-qa="approvals">
+          <div class="qa-icon">${iconSvg("approve", 18)}</div>
+          <div class="qa-label">Approvals</div>
+          <div class="qa-count">${pendingApprovals} pending</div>
+        </div>
+        <div class="qa-item" data-qa="create">
+          <div class="qa-icon">${iconSvg("ai", 18)}</div>
+          <div class="qa-label">Create with AI</div>
+          <div class="qa-count">5 templates</div>
         </div>
       </div>
 
@@ -470,12 +475,12 @@ function wireHomeScreen() {
   document.querySelectorAll("[data-open-tasks]").forEach(el => {
     el.addEventListener("click", () => navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel")));
   });
-  document.querySelectorAll("[data-quick]").forEach(el => {
+  document.querySelectorAll("[data-qa]").forEach(el => {
     el.addEventListener("click", () => {
-      const kind = el.getAttribute("data-quick");
+      const kind = el.getAttribute("data-qa");
       if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
-      else if (kind === "draft") openActionLauncher();
+      else if (kind === "create") openActionLauncher();
       else if (kind === "inbox") navigateTo("notifications");
     });
   });

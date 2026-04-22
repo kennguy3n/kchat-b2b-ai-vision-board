@@ -1,14 +1,17 @@
 .right-panel {
   background: var(--surface);
   border-left: 1px solid var(--border);
-  display: flex;
+  display: none;
   flex-direction: column;
   overflow: hidden;
-  animation: rpSlide var(--dur-med) var(--ease);
 }
-@keyframes rpSlide {
-  from { transform: translateX(24px); opacity: 0; }
-  to   { transform: translateX(0);     opacity: 1; }
+.workarea.with-right .right-panel {
+  display: flex;
+  animation: panelSlideIn 220ms var(--ease);
+}
+@keyframes panelSlideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: none;             opacity: 1; }
 }
 
 .rp-head {

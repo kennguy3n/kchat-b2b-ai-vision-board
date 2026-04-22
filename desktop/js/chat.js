@@ -8,7 +8,7 @@ function avatarHTML(user, size = "md") {
   return `<div class="avatar ${size}" style="background:${color}">${user.initials}</div>`;
 }
 
-function renderMessage(m) {
+function renderMessage(m, isContinuation = false) {
   const sender = D.userById(m.senderId);
   if (!sender) return "";
   const aiClass = m.isAI ? " ai" : "";
@@ -39,16 +39,25 @@ function renderMessage(m) {
 
   const card = renderCard(m.card) + (m.cardType === "ai-suggest" ? renderCard({ type: "ai-suggest" }) : "");
 
-  return `
-    <div class="message" data-msg-id="${m.id}">
-      ${avatarHTML(sender)}
-      <div class="col">
-        <div class="head">
+  const leftCol = isContinuation
+    ? `<div class="avatar-spacer" aria-hidden="true"></div>`
+    : avatarHTML(sender);
+  const headBlock = isContinuation
+    ? ""
+    : `<div class="head">
           <span class="name${aiClass}">${sender.name}</span>
           ${aiPill}
           <span class="ts">${m.ts}</span>
-        </div>
-        <div class="body">${body}</div>
+        </div>`;
+  const hoverTs = isContinuation ? `<span class="ts-hover">${m.ts}</span>` : "";
+  const contClass = isContinuation ? " continuation" : "";
+
+  return `
+    <div class="message${contClass}" data-msg-id="${m.id}">
+      ${leftCol}
+      <div class="col">
+        ${headBlock}
+        <div class="body">${body}${hoverTs}</div>
         ${attachments ? `<div class="attachments">${attachments}</div>` : ""}
         ${card}
       </div>
@@ -67,24 +76,25 @@ export function renderChannel(channelId) {
   const ch = D.channelById(channelId);
   if (!ch) return;
   const domain = D.domainById(ch.domainId);
-  const msgs = (D.messages[channelId] || []).map(renderMessage).join("");
+  const msgs = (D.messages[channelId] || []).map((m, i, arr) => {
+    const prev = i > 0 ? arr[i - 1] : null;
+    const isContinuation = !!(prev && prev.senderId === m.senderId && !m.card && !m.cardType);
+    return renderMessage(m, isContinuation);
+  }).join("");
 
   const container = document.getElementById("screen-channel-chat");
-  const kh = D.knowledgeForChannel(ch.id);
-  const khBadge = kh
-    ? `<button class="kh-badge" data-open-knowledge title="Open channel knowledge">${iconSvg("ai", 12)} Knowledge · rebuilt ${kh.rebuiltAt}</button>`
-    : `<button class="kh-badge" data-open-knowledge title="No knowledge indexed yet">${iconSvg("ai", 12)} Knowledge</button>`;
+  // Domain/knowledge references are retained for right-panel wiring below.
+  void domain;
 
   container.innerHTML = `
     <div class="channel-header">
       <div>
         <div class="ch-title"><span class="ch-hash">#</span>${ch.name}</div>
-        <div class="ch-desc">${ch.description} · ${ch.members} members · in ${domain?.name || ""}</div>
+        <div class="ch-desc">${ch.description}</div>
       </div>
       <span class="spacer"></span>
-      ${khBadge}
-      <button class="icon-btn" title="Pin">${iconSvg("shield", 16)}</button>
-      <button class="icon-btn" title="Search">${iconSvg("search", 16)}</button>
+      <span class="ch-members">${ch.members} members</span>
+      <button class="icon-btn" title="Search channel">${iconSvg("search", 16)}</button>
       <div class="avatar-stack">
         ${D.users.slice(0,4).map(u => avatarHTML(u, "sm")).join("")}
       </div>
@@ -93,18 +103,34 @@ export function renderChannel(channelId) {
       <div class="divider-day">Today</div>
       ${msgs}
     </div>
+    <div class="typing-indicator" id="typing-indicator" style="display:none">
+      <span class="typing-dots"><span></span><span></span><span></span></span>
+      <span class="typing-name">Kara Ops AI is typing...</span>
+    </div>
     <div class="compose">
       <div class="compose-box">
-        <button class="btn-compose" title="Attach">${iconSvg("attach", 18)}</button>
-        <textarea placeholder="Message #${ch.name}" rows="1"></textarea>
-        <button class="btn-ai" id="compose-ai">${iconSvg("plus", 14)} AI Actions</button>
-        <button class="btn-send" id="compose-send">${iconSvg("send", 14)} Send</button>
+        <button class="btn-compose" title="Attach file">${iconSvg("attach", 18)}</button>
+        <textarea placeholder="Write a message..." rows="1"></textarea>
+        <button class="btn-compose" title="Emoji">😊</button>
+        <button class="btn-compose btn-ai-sparkle" id="compose-ai" title="AI Actions">${iconSvg("ai", 18)}</button>
+        <button class="btn-send" id="compose-send">${iconSvg("send", 14)}</button>
       </div>
-      <div class="compose-hint">Tip: press <span class="kbd">+</span> for AI actions or <span class="kbd">/</span> for slash commands.</div>
+      <div class="compose-hint">
+        <span class="kbd">/</span> commands · <span class="kbd">@</span> mention · <span class="kbd">⌘K</span> search
+      </div>
     </div>
   `;
 
   wireChannelEvents();
+
+  // Briefly show the typing indicator for demo feel.
+  setTimeout(() => {
+    const ti = document.getElementById("typing-indicator");
+    if (ti) {
+      ti.style.display = "flex";
+      setTimeout(() => { ti.style.display = "none"; }, 3000);
+    }
+  }, 1500);
 }
 
 function wireChannelEvents() {
@@ -145,12 +171,6 @@ function wireChannelEvents() {
   // Make task-list cards clickable on the body too
   document.querySelectorAll(".kcard-tasks").forEach(c => {
     c.addEventListener("click", () => window.app.openRightView("task-panel"));
-  });
-
-  const kh = document.querySelector("[data-open-knowledge]");
-  if (kh) kh.addEventListener("click", () => {
-    const cid = window.app.state.channelId;
-    if (cid) window.app.navigateTo("channel-knowledge", { channelId: cid });
   });
 
   const ai = document.getElementById("compose-ai");
