@@ -56,14 +56,14 @@
 <div class="app" id="app">
 
   <!-- ============ Left Sidebar ============ -->
-  <aside class="sidebar" id="sidebar" aria-label="Primary navigation"></aside>
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Primary navigation"></aside>
 
   <!-- ============ Work Area ============ -->
   <section class="workarea" id="workarea">
-    <header class="topbar" id="topbar"></header>
+    <header class="topbar" id="topbar" role="banner"></header>
 
     <!-- Center region hosts all non-login screens -->
-    <main class="center" id="center">
+    <main class="center" id="center" role="main" aria-live="polite">
 
       <!-- Screen 2: Workspace Home -->
       <section id="screen-workspace-home" class="screen" data-screen="workspace-home"></section>
@@ -103,7 +103,7 @@
     </main>
 
     <!-- ============ Right Panel (slide-in) ============ -->
-    <aside class="right-panel" id="right-panel" aria-label="Contextual panel">
+    <aside class="right-panel" id="right-panel" role="complementary" aria-label="Contextual panel">
       <!-- Brief builder (Screen 7) -->
       <div class="rp-view" id="rp-brief"></div>
       <!-- AI processing (Screen 8) -->

@@ -26,6 +26,10 @@
     "topbar topbar"
     "center right";
 }
+.workarea.with-right.right-expanded {
+  grid-template-columns: 0 1fr;
+}
+.workarea.with-right.right-expanded .center { visibility: hidden; }
 .workarea.with-right .topbar { grid-area: topbar; }
 .workarea.with-right .center { grid-area: center; }
 .workarea.with-right .right-panel { grid-area: right; display: flex; }

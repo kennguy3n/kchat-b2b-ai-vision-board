@@ -213,6 +213,9 @@
 .risk-pill.Low    { background: var(--success-50); color: #066a4f; }
 .risk-pill.Medium { background: var(--warning-50); color: #8a5200; }
 .risk-pill.High   { background: var(--danger-50);  color: #8a1f1f; }
+.risk-pill.Low::before    { content: "\25BD "; }
+.risk-pill.Medium::before { content: "\25C6 "; }
+.risk-pill.High::before   { content: "\25B2 "; }
 
 .status-pill.todo       { background: var(--surface-2); color: var(--text-muted); }
 .status-pill.in-progress{ background: var(--primary-50); color: var(--primary-600); }
@@ -223,3 +226,7 @@
 .status-pill.pending    { background: var(--warning-50); color: #8a5200; }
 .status-pill.approved   { background: var(--success-50); color: #066a4f; }
 .status-pill.denied     { background: var(--danger-50); color: #8a1f1f; }
+.status-pill.todo::before        { content: "\25CB "; }
+.status-pill.in-progress::before { content: "\25D0 "; }
+.status-pill.done::before        { content: "\25CF "; }
+.status-pill.blocked::before     { content: "\2298 "; }

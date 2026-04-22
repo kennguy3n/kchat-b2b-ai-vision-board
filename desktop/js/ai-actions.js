@@ -5,16 +5,75 @@ import { openModal, closeModal } from "./modals.js";
 import { delay, showToast } from "./transitions.js";
 
 /* ---------------- Action Launcher modal ---------------- */
+
+// Small catalog of contextual suggestions per channel. Keeps the action
+// launcher approachable for non-technical SME users — the most-relevant
+// actions surface without forcing them to scan every group.
+const CHANNEL_SUGGESTIONS = {
+  "c-vendor": [
+    { id: "plan-tasks", label: "Extract Tasks", sub: "Pull action items out of this thread" },
+    { id: "approve-new", label: "Create Approval", sub: "Prefill from the conversation" },
+    { id: "analyze-summary", label: "Summarize Thread", sub: "Key points with source pins" },
+  ],
+  "c-specs": [
+    { id: "create-prd", label: "Draft PRD", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Standard product requirements doc" },
+    { id: "analyze-summary", label: "Summarize Thread", sub: "Catch up in seconds" },
+    { id: "plan-tasks", label: "Extract Tasks", sub: "Turn discussion into assignments" },
+  ],
+  "c-deals": [
+    { id: "create-qbr", label: "Create QBR", recipeId: "r-create-qbr", templateId: "tpl-qbr", sub: "Quarterly business review deck" },
+    { id: "create-proposal", label: "Draft Proposal", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Customer-ready proposal" },
+    { id: "analyze-summary", label: "Summarize", sub: "Pipeline + risk highlights" },
+  ],
+};
+const DEFAULT_SUGGESTIONS = [
+  { id: "analyze-summary", label: "Summarize Thread", sub: "Key points with sources" },
+  { id: "plan-tasks", label: "Extract Tasks", sub: "Turn messages into action items" },
+  { id: "create-prd", label: "Draft Doc", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Kick off a structured draft" },
+];
+const RECENTLY_USED = [
+  { id: "analyze-summary", label: "Summarize" },
+  { id: "plan-tasks", label: "Extract Tasks" },
+];
+
 export function openActionLauncher() {
   const body = document.getElementById("action-launcher-body");
+  const channelId = window.app?.state?.channelId || null;
+  const suggestions = CHANNEL_SUGGESTIONS[channelId] || DEFAULT_SUGGESTIONS;
+
+  const suggestHTML = suggestions.map(a => `
+    <div class="action-tile suggest" data-action="${a.id}" data-recipe="${a.recipeId || ""}" data-template="${a.templateId || ""}">
+      <div class="at-icon">${iconSvg("ai", 16)}</div>
+      <div class="at-label">${a.label}</div>
+      <div class="text-xs text-muted">${a.sub}</div>
+    </div>
+  `).join("");
+
+  const recentHTML = RECENTLY_USED.map(a => `
+    <div class="action-chip" data-action="${a.id}" data-recipe="" data-template="">${a.label}</div>
+  `).join("");
+
   body.innerHTML = `
     <div class="launcher-top">
       <div class="launcher-search">
         ${iconSvg("search", 14)}
         <input placeholder="Search actions — e.g. 'draft PRD', 'summarize thread'"/>
       </div>
-      <span class="badge-ai">${iconSvg("ai", 12)} On-device AI</span>
+      <span class="badge-ai">${iconSvg("ai", 12)} <span class="glossary-tip" data-tip="AI runs on your device. No chat data leaves your company.">On-device AI</span></span>
     </div>
+
+    <div class="action-group suggest-group">
+      <h4>Suggested for you</h4>
+      <div class="action-tiles suggest-tiles">${suggestHTML}</div>
+    </div>
+
+    <div class="action-recent">
+      <span class="ar-label">Recently used</span>
+      ${recentHTML}
+    </div>
+
+    <div class="divider"></div>
+    <div class="action-groups-label">All actions</div>
     <div class="action-groups">
       ${D.actionGroups.map(g => `
         <div class="action-group">
@@ -37,6 +96,14 @@ export function openActionLauncher() {
 }
 
 function wireLauncherEvents() {
+  document.querySelectorAll("#action-launcher-body .action-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const id = chip.getAttribute("data-action");
+      closeModal("action-launcher");
+      if (id === "analyze-summary") window.app.openRightView("summary");
+      else if (id === "plan-tasks") window.app.openRightView("task-panel");
+    });
+  });
   document.querySelectorAll("#action-launcher-body .action-tile").forEach(tile => {
     tile.addEventListener("click", () => {
       const id = tile.getAttribute("data-action");
@@ -139,8 +206,8 @@ export function renderBrief(containerId, params = {}) {
           <a><span>#specs</span><span class="kind">✓ approved</span></a>
         </div>
         <div class="compute-card">
-          <h5>Compute mode: on-device</h5>
-          <p>0 bytes leave the workspace. Model: kchat-lite-7b. Egress summary: none.</p>
+          <h5><span class="glossary-tip" data-tip="AI inference happens on your device only — no chat or document data is sent to external servers.">Compute mode: on-device</span></h5>
+          <p>0 bytes leave the workspace. Model: kchat-lite-7b. <span class="glossary-tip" data-tip="Egress is data leaving your workspace. Zero egress means nothing is shared externally.">Egress</span> summary: none. <span class="glossary-tip" data-tip="Personally identifiable information (emails, names, IDs) is masked before AI sees it.">PII tokenization</span> enabled.</p>
         </div>
       </div>
     </div>

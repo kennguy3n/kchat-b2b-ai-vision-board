@@ -126,16 +126,51 @@ export function renderApprovalReview(containerId, params = {}) {
 
   if (isPending) {
     document.getElementById("approve-btn")?.addEventListener("click", () => {
-      a.status = "approved";
-      a.audit.push({ step: "approved", actorId: a.approverId, ts: "now", note: document.getElementById("approve-comment")?.value || "Approved" });
-      a.comment = document.getElementById("approve-comment")?.value || "Approved";
-      showToast("Approved — audit trail sealed.");
-      renderApprovalReview(containerId, params);
+      showConfirmFoot("approve");
     });
     document.getElementById("deny-btn")?.addEventListener("click", () => {
-      a.status = "denied";
-      a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note: document.getElementById("approve-comment")?.value || "Denied" });
-      showToast("Denied — audit trail sealed.");
+      showConfirmFoot("deny");
+    });
+  }
+
+  // Replace the footer with an inline confirmation step. Nothing mutates
+  // until the user clicks the second, explicit confirm button — mirrors
+  // the audit-trail-is-immutable messaging the approval flow relies on.
+  function showConfirmFoot(kind) {
+    const foot = view.querySelector(".rp-foot");
+    if (!foot) return;
+    const noteEl = document.getElementById("approve-comment");
+    const note = (noteEl && noteEl.value) || (kind === "approve" ? "Approved" : "Denied");
+    const verb = kind === "approve" ? "approving" : "denying";
+    const primary = kind === "approve"
+      ? `<button class="btn btn-success" id="confirm-primary-btn">${iconSvg("check", 14)} Confirm Approve</button>`
+      : `<button class="btn btn-danger" id="confirm-primary-btn">Confirm Deny</button>`;
+    foot.outerHTML = `
+      <div class="rp-foot rp-confirm-foot" role="alertdialog" aria-live="polite">
+        <div class="rp-confirm-msg">
+          You are ${verb} <b>${a.title}</b> for <b>${a.amount}</b>.
+          <span class="text-soft">This action is immutable and sealed in the audit trail.</span>
+        </div>
+        <div class="rp-confirm-actions">
+          <button class="btn btn-ghost" id="confirm-cancel-btn">Cancel</button>
+          ${primary}
+        </div>
+      </div>
+    `;
+    document.getElementById("confirm-cancel-btn")?.addEventListener("click", () => {
+      renderApprovalReview(containerId, params);
+    });
+    document.getElementById("confirm-primary-btn")?.addEventListener("click", () => {
+      if (kind === "approve") {
+        a.status = "approved";
+        a.audit.push({ step: "approved", actorId: a.approverId, ts: "now", note });
+        a.comment = note;
+        showToast("Approved — audit trail sealed.");
+      } else {
+        a.status = "denied";
+        a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note: note === "Approved" ? "Denied" : note });
+        showToast("Denied — audit trail sealed.");
+      }
       renderApprovalReview(containerId, params);
     });
   }

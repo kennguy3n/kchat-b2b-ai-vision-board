@@ -11,14 +11,43 @@ const intakeState = {
   values: {},     // fieldId -> string or array
 };
 
+// Contextual helper copy — keyed by field label/id so we don't have to
+// modify the demo-data templates. Anything matched renders as italic
+// guidance directly beneath the label so SME users understand what to write.
+function helpTextFor(field) {
+  if (field.helpText) return field.helpText;
+  const label = (field.label || "").toLowerCase();
+  const id = (field.id || "").toLowerCase();
+  if (label.includes("goal") || id.includes("goal"))
+    return "e.g., Ship a PRD that engineering can estimate from.";
+  if (label.includes("audience") || id.includes("audience"))
+    return "Who will read this document?";
+  if (label.includes("tone") || id.includes("tone"))
+    return "How formal should the output be?";
+  if (label.includes("scope") || id.includes("scope"))
+    return "What is in and out of scope for this draft?";
+  if (label.includes("deadline") || label.includes("due") || id.includes("due"))
+    return "When do you need the final output ready?";
+  if (label.includes("metric") || label.includes("success"))
+    return "How will you know this was successful?";
+  return "";
+}
+
+function helpHTML(field) {
+  const t = helpTextFor(field);
+  return t ? `<div class="ti-help">${t}</div>` : "";
+}
+
 function renderField(field, required) {
   const val = intakeState.values[field.id];
   const reqDot = required ? `<span class="req-dot" aria-hidden="true">*</span>` : "";
+  const help = helpHTML(field);
 
   if (field.type === "textarea") {
     return `
       <div class="ti-field" data-field-id="${field.id}" data-required="${required}">
         <label>${field.label}${reqDot}</label>
+        ${help}
         <textarea data-intake="${field.id}" placeholder="${field.placeholder || ""}">${val || ""}</textarea>
         <div class="ti-hint"></div>
       </div>
@@ -29,6 +58,7 @@ function renderField(field, required) {
     return `
       <div class="ti-field" data-field-id="${field.id}" data-required="${required}">
         <label>${field.label}${reqDot}</label>
+        ${help}
         <select data-intake="${field.id}">
           <option value="" ${!val ? "selected" : ""}>Select…</option>
           ${opts}
@@ -45,6 +75,7 @@ function renderField(field, required) {
     return `
       <div class="ti-field" data-field-id="${field.id}" data-required="${required}" data-kind="chips">
         <label>${field.label}${reqDot}</label>
+        ${help}
         <div class="ti-chips" data-intake="${field.id}">${chips}</div>
         <div class="ti-hint"></div>
       </div>
@@ -54,6 +85,7 @@ function renderField(field, required) {
   return `
     <div class="ti-field" data-field-id="${field.id}" data-required="${required}">
       <label>${field.label}${reqDot}</label>
+      ${help}
       <input type="text" data-intake="${field.id}" placeholder="${field.placeholder || ""}" value="${val || ""}"/>
       <div class="ti-hint"></div>
     </div>

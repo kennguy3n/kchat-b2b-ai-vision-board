@@ -361,6 +361,18 @@
   border-color: var(--primary-strong);
 }
 .inbox-list { display: flex; flex-direction: column; gap: 4px; }
+.inbox-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin: 14px 2px 6px;
+}
+.inbox-section-title:first-child { margin-top: 4px; }
+.inbox-list .inbox-item.priority {
+  border-left: 3px solid var(--warning);
+}
 .inbox-item {
   display: flex;
   gap: 12px;

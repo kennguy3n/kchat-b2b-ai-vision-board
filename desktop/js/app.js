@@ -16,6 +16,7 @@ import { renderKnowledge } from "./knowledge.js";
 import { renderConnectors } from "./connectors.js";
 import { renderNotifications } from "./notifications.js";
 import { showToast } from "./transitions.js";
+import { startOnboarding } from "./onboarding.js";
 
 /* ---------- State ---------- */
 const state = {
@@ -35,10 +36,12 @@ window.app = {
   navigateTo,
   openRightView,
   closeRightView,
+  expandRightView,
   openActionLauncher: () => openActionLauncher(),
   openSettings: () => openSettings(),
   toggleSection,
   refreshSidebar: () => renderSidebar(state),
+  startOnboarding: (opts) => startOnboarding(opts),
 };
 
 /* ---------- Init ---------- */
@@ -217,8 +220,8 @@ function renderTopbar(screenId) {
       <span class="kbd">⌘K</span>
     </div>
     <div class="top-actions">
-      <span class="badge-ai">${iconSvg("ai", 12)} On-device AI</span>
-      <button class="icon-btn" id="topbar-inbox" title="Inbox" style="position:relative">${iconSvg("shield", 16)}${unreadBadge}</button>
+      <span class="badge-ai">${iconSvg("ai", 12)} <span class="glossary-tip" data-tip="AI runs on your device. No chat data leaves your company.">On-device AI</span></span>
+      <button class="icon-btn" id="topbar-inbox" title="Inbox" aria-label="Open inbox" style="position:relative">${iconSvg("inbox", 16)}${unreadBadge}</button>
       <div class="avatar sm" style="background:${D.userById(D.currentUserId).color}">${D.userById(D.currentUserId).initials}</div>
     </div>
   `;
@@ -307,8 +310,24 @@ function openRightView(name, params = {}) {
 
 function closeRightView() {
   state.rightView = null;
-  document.getElementById("workarea").classList.remove("with-right");
+  const work = document.getElementById("workarea");
+  work.classList.remove("with-right");
+  work.classList.remove("right-expanded");
   document.querySelectorAll(".rp-view").forEach(v => v.classList.remove("active"));
+}
+
+/* Expand or restore the right panel to take over the center column. Any
+   [data-expand-right] button inside a right-view calls this to toggle. */
+function expandRightView() {
+  const work = document.getElementById("workarea");
+  if (!work.classList.contains("with-right")) return;
+  work.classList.toggle("right-expanded");
+  const expanded = work.classList.contains("right-expanded");
+  document.querySelectorAll("[data-expand-right]").forEach(btn => {
+    btn.setAttribute("title", expanded ? "Collapse" : "Expand");
+    btn.setAttribute("aria-label", expanded ? "Collapse right panel" : "Expand right panel");
+    btn.dataset.expanded = expanded ? "true" : "false";
+  });
 }
 
 /* ---------- Sidebar section toggling ---------- */
@@ -324,17 +343,49 @@ function wireLoginScreen() {
   if (btn) btn.addEventListener("click", (e) => {
     e.preventDefault();
     navigateTo("workspace-home");
+    // First-run tour kicks off once the workspace home has painted.
+    startOnboarding();
   });
 }
 
 /* ---------- Workspace Home ---------- */
 function renderWorkspaceHome() {
   const container = document.getElementById("screen-workspace-home");
+  const pendingApprovals = D.approvals ? D.approvals.filter(a => a.status === "pending").length : 1;
+  const dueTasks = D.tasks ? D.tasks.filter(t => t.status !== "done").length : 3;
+  const unreadInbox = D.unreadNotificationCount ? D.unreadNotificationCount() : 0;
+
   container.innerHTML = `
     <div class="dash-wrap">
       <div class="hero">
         <h1>Welcome back, ${D.userById(D.currentUserId).name.split(" ")[0]}</h1>
         <p>3 domains · 7 channels · AI Employees: ${D.aiEmployees.length} active. On-device AI is preferred for ${D.workspace.name}.</p>
+      </div>
+
+      <div class="section-head"><h2>Quick actions</h2><span class="more" data-restart-tour title="Replay the product tour">Take the tour</span></div>
+      <div class="quick-actions">
+        <div class="qa-card" data-quick="approvals">
+          <div class="qa-icon">${iconSvg("approve", 18)}</div>
+          <div class="qa-label">Review pending approvals</div>
+          <div class="qa-sub">${pendingApprovals} waiting on you</div>
+          ${pendingApprovals > 0 ? `<span class="qa-badge">${pendingApprovals}</span>` : ""}
+        </div>
+        <div class="qa-card" data-quick="tasks">
+          <div class="qa-icon">${iconSvg("tasks", 18)}</div>
+          <div class="qa-label">Check my tasks</div>
+          <div class="qa-sub">${dueTasks} due this week</div>
+        </div>
+        <div class="qa-card" data-quick="draft">
+          <div class="qa-icon">${iconSvg("doc", 18)}</div>
+          <div class="qa-label">Draft a document</div>
+          <div class="qa-sub">PRD, summary, SOP…</div>
+        </div>
+        <div class="qa-card" data-quick="inbox">
+          <div class="qa-icon">${iconSvg("inbox", 18)}</div>
+          <div class="qa-label">View inbox</div>
+          <div class="qa-sub">${unreadInbox} unread</div>
+          ${unreadInbox > 0 ? `<span class="qa-badge">${unreadInbox}</span>` : ""}
+        </div>
       </div>
 
       <div class="section-head"><h2>Domains</h2><span class="more">Explore all</span></div>
@@ -417,6 +468,17 @@ function wireHomeScreen() {
   document.querySelectorAll("[data-open-tasks]").forEach(el => {
     el.addEventListener("click", () => navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel")));
   });
+  document.querySelectorAll("[data-quick]").forEach(el => {
+    el.addEventListener("click", () => {
+      const kind = el.getAttribute("data-quick");
+      if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
+      else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
+      else if (kind === "draft") openActionLauncher();
+      else if (kind === "inbox") navigateTo("notifications");
+    });
+  });
+  const tourLink = document.querySelector("[data-restart-tour]");
+  if (tourLink) tourLink.addEventListener("click", () => startOnboarding({ force: true }));
 }
 
 /* ---------- Domain View ---------- */
