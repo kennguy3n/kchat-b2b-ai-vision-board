@@ -117,7 +117,6 @@ export function renderApprovalReview(containerId, params = {}) {
         <h4>Audit trail — immutable</h4>
         <div class="audit-trail mt-2">
           ${auditHTML}
-          ${a.status === "approved" ? `<div class="audit-step"><span class="dot"></span>approved by ${approver?.name} — ${a.comment || "Approved"}<span class="text-soft">${a.audit.at(-1)?.ts || ""}</span></div>` : ""}
         </div>
       </div>
     </div>
