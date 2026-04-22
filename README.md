@@ -5,6 +5,7 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
 - **Mobile / shared:** reserved for future tasks.
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.2 UX audit pass).
 
 ---
 
@@ -30,12 +31,13 @@ npx --yes http-server -p 8000 -c-1
 
 There is nothing to install — all CSS and JS are in the repo and the demo data is pre-scripted in `desktop/js/demo-data.js`.
 
-## Click-through guide (16 screens)
+## Click-through guide (17 screens + onboarding)
 
 The demo is a state machine. `desktop/js/app.js` controls which `<section data-screen="...">` is visible. You can click through the whole story in order:
 
 1. **Login / workspace select** — click *Continue*.
-2. **Workspace home** — 3 domain cards, recent channels, pinned items. Click a domain.
+1a. **Guided onboarding tour (first visit only)** — a 5-step overlay walks through sidebar domains, channels, AI Employees, the compose bar, and the right panel. Completion is stored in `localStorage` under `kchat.onboarded`; clear local storage to see it again.
+2. **Workspace home** — hero, **Role-based Quick Actions** (approvals / tasks / draft / inbox), then domain cards, recent channels, pinned items.
 3. **Domain view** — channel list for the domain. Click `#vendor-management`.
 4. **Channel chat** — 3-column layout. Hover a message for action icons. Click `+` in the compose bar for the Action Launcher.
 5. **Thread detail** — click *Open Thread* on any message; use the thread action bar (Extract Tasks / Summarize / Draft Doc / Create Approval).
@@ -86,13 +88,41 @@ The demo is a state machine. `desktop/js/app.js` controls which `<section data-s
 └── shared/                  # Reserved for future cross-surface primitives
 ```
 
+## UX considerations
+
+The v0.2 "UX audit" pass (see [`PROGRESS.md`](./PROGRESS.md)) adds the following so the demo is approachable by mass SME office workers, not just power users:
+
+- **Guided onboarding** — 5-step overlay tour on first visit (`desktop/js/onboarding.js`).
+- **Role-based quick actions on home** — approvals / tasks / draft / inbox cards with live counts.
+- **Simplified Action Launcher** — channel-aware "Suggested for you" + "Recently used" surface common tasks before the full grouped grid.
+- **Approval confirmation dialog** — Approve / Deny requires a second, explicit click before the audit trail is sealed.
+- **Contextual help on template intake** — Goal / Audience / Tone / Scope / Deadline fields carry italic guidance.
+- **Empty states** — Tasks, Forms, Base columns, and Channel Knowledge all have helpful empty/first-run states with next-action CTAs.
+- **Priority inbox** — notifications split into "Action required" (unread approvals + mentions) and "Updates", with a warning-color left border on high-priority items.
+- **Accessibility** — larger touch targets in the sidebar and hover actions, shape prefixes (▲ / ◆ / ▽, ○ / ◐ / ● / ⊘) on risk and status pills so state is not color-only, and `role` / `aria-label` attributes on all major landmarks.
+- **Glossary tooltips** — "On-device AI", "Compute mode: on-device", "Egress", "PII tokenization" carry hover tooltips so non-technical users aren't gated by jargon.
+- **Expandable right panel** — Tasks / Base / Sheet views now have an expand button that hides the chat column for focused KApp work.
+
+### Segment suitability
+
+| Segment         | Biggest wins |
+|-----------------|------------------------------------------------------|
+| Finance         | Approval confirmation, priority inbox, glossary tips |
+| HR              | Priority inbox, quick actions, empty states          |
+| Sales           | Channel-aware launcher suggestions, quick actions    |
+| Ops             | Expandable right panel, empty states, base tooltips  |
+| Compliance      | Confirmation dialog, status/risk pill prefixes       |
+| Non-technical   | Onboarding tour, glossary tips, intake help text     |
+
 ## Design notes
 
-- **Three-column layout**: sidebar (260px) + center (flexible) + right panel (380px, toggleable).
+- **Three-column layout**: sidebar (260px) + center (flexible) + right panel (380px, toggleable). Right panel can **expand to full width** for focused KApp work.
 - **State lives in `app.js`**: one `state` object, one `navigateTo()` entry point; right-panel view is tracked separately from the center screen.
-- **Inline SVG icons** (`js/icons.js`) keep the demo self-contained.
+- **Inline SVG icons** (`js/icons.js`) keep the demo self-contained. Icon semantics are intentional — `shield` is reserved for privacy/security; `inbox` is used for notifications.
 - **`desktop/js/demo-data.js`** is the single source of truth for all pre-scripted data — edit there to tweak content.
-- The demo writes `lastScreen` to `localStorage` for refresh persistence. To reset, clear local storage or open in an incognito window.
+- The demo writes `lastScreen` and `kchat.onboarded` to `localStorage`. To reset (replay onboarding, clear last screen), clear local storage or open in an incognito window.
+- **Confirmation dialogs** on destructive / immutable actions (approvals, publish) are always a second explicit step.
+- **Notifications** are priority-grouped: "Action required" (unread approvals + mentions) and "Updates".
 
 ## What this demo is not
 

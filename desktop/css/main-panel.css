@@ -59,7 +59,7 @@
 .message .hover-actions .btn-icon {
   background: transparent;
   border: 0;
-  padding: 6px 8px;
+  padding: 8px 10px;
   cursor: pointer;
   border-radius: 6px;
   color: var(--text-muted);

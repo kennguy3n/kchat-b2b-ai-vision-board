@@ -91,6 +91,8 @@ function renderFooter() {
 export function renderSidebar(state) {
   const el = document.getElementById("sidebar");
   if (!el) return;
+  el.setAttribute("role", "navigation");
+  el.setAttribute("aria-label", "Workspace navigation");
   const sections = [
     { id: "channels", title: "Domains", body: D.domains.map(d => renderDomainSection(d, state)).join("") },
     { id: "dms",      title: "Direct Messages", body: renderDMs() },
@@ -105,8 +107,8 @@ export function renderSidebar(state) {
         <div class="sb-item${state.screen === "workspace-home" ? " active" : ""}" data-nav="home">
           ${iconSvg("home", 14)} Home
         </div>
-        <div class="sb-inbox${state.screen === "notifications" ? " active" : ""}" data-nav="inbox">
-          <span class="ib-icon">${iconSvg("shield", 14)}</span>Inbox${inboxBadge}
+        <div class="sb-inbox${state.screen === "notifications" ? " active" : ""}" data-nav="inbox" role="button" aria-label="Open inbox">
+          <span class="ib-icon">${iconSvg("inbox", 14)}</span>Inbox${inboxBadge}
         </div>
         <div class="sb-item" data-nav="tasks">
           ${iconSvg("tasks", 14)} My Tasks

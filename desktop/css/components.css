@@ -122,6 +122,215 @@
   font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
 }
 
+/* Glossary tooltip — hover a term to see a plain-language explanation */
+.glossary-tip {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted var(--text-soft);
+}
+.glossary-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: normal;
+  width: max-content;
+  max-width: 260px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms;
+  z-index: 50;
+  margin-bottom: 6px;
+  box-shadow: var(--shadow-sm);
+  line-height: 1.4;
+}
+.glossary-tip:hover::after,
+.glossary-tip:focus::after { opacity: 1; }
+
+/* Quick actions grid on workspace home */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+@media (max-width: 900px) {
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
+}
+.qa-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  position: relative;
+}
+.qa-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--primary);
+}
+.qa-card .qa-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+.qa-card .qa-label { font-weight: 600; font-size: 13.5px; color: var(--text); }
+.qa-card .qa-sub { font-size: 12px; color: var(--text-muted); }
+.qa-card .qa-badge {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--warning);
+  color: white;
+  font-size: 10.5px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* Empty state primitive used by KApps */
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.empty-state .es-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--primary-50);
+  color: var(--primary-600);
+  display: grid; place-items: center;
+  font-weight: 800;
+}
+.empty-state .es-title { color: var(--text); font-weight: 600; font-size: 14px; }
+.empty-state .es-desc { font-size: 12.5px; max-width: 360px; }
+.empty-state .es-actions {
+  display: flex; gap: 8px; margin-top: 6px;
+}
+
+/* Onboarding tour overlay */
+.onb-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 200;
+  animation: onbFade 180ms ease;
+}
+@keyframes onbFade { from { opacity: 0; } to { opacity: 1; } }
+.onb-spotlight {
+  position: fixed;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.55);
+  pointer-events: none;
+  transition: all 240ms var(--ease);
+  z-index: 201;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.onb-tooltip {
+  position: fixed;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px 12px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  box-shadow: var(--shadow-lg);
+  z-index: 202;
+  font-size: 13.5px;
+}
+.onb-tooltip .onb-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.onb-tooltip .onb-body { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+.onb-tooltip .onb-foot {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px;
+}
+.onb-tooltip .onb-step { font-size: 11.5px; color: var(--text-soft); }
+.onb-tooltip .onb-foot .spacer { flex: 1; }
+
+/* Action launcher — suggested + recently used */
+.action-groups-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  font-weight: 700;
+  margin: 8px 2px 6px;
+}
+.suggest-group h4 { color: var(--primary-600); }
+.suggest-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.action-tile.suggest {
+  background: var(--primary-50);
+  border-color: var(--primary-100, var(--border));
+}
+.action-tile.suggest .at-icon {
+  background: white;
+  color: var(--primary-600);
+}
+.action-recent {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 0 4px;
+  flex-wrap: wrap;
+}
+.action-recent .ar-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  font-weight: 700;
+}
+.action-chip {
+  display: inline-flex; align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+.action-chip:hover { border-color: var(--primary); color: var(--primary-600); }
+
+/* Approval confirmation footer — replaces default rp-foot during confirm step */
+.rp-confirm-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--warning-50, #fff6e5);
+}
+.rp-confirm-foot .rp-confirm-msg {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.45;
+}
+.rp-confirm-foot .rp-confirm-msg .text-soft { display: block; margin-top: 2px; font-size: 12px; }
+.rp-confirm-foot .rp-confirm-actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+
 /* Typing / loading */
 .loading-bar {
   height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent);

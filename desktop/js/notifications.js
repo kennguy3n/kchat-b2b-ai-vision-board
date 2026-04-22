@@ -17,13 +17,21 @@ function kindLabel(k) {
   return ({ mention: "@", approval: "AP", ai: "AI", thread: "TH", budget: "$" })[k] || "•";
 }
 
+// "Action required" items get a colored left-border so the queue visually
+// separates do-now items from passive updates. Other items still fall into
+// "Updates" underneath and render without the priority accent.
+function isActionRequired(n) {
+  return n.unread && (n.kind === "approval" || n.kind === "mention");
+}
+
 function renderNotif(n) {
   const actor = D.userById(n.actorId);
   const avatar = actor
     ? `<div class="avatar sm" style="background:${actor.color || "#6b7280"};flex-shrink:0">${actor.initials}</div>`
     : "";
+  const priorityCls = isActionRequired(n) ? " priority" : "";
   return `
-    <div class="inbox-item ${n.unread ? "unread" : ""}" data-notif-id="${n.id}" data-kind="${n.kind}">
+    <div class="inbox-item ${n.unread ? "unread" : ""}${priorityCls}" data-notif-id="${n.id}" data-kind="${n.kind}">
       <div class="ii-kind ${n.kind}">${kindLabel(n.kind)}</div>
       ${avatar}
       <div class="ii-body">
@@ -74,9 +82,21 @@ export function renderNotifications() {
     <button class="if-btn ${activeFilter === f.id ? "active" : ""}" data-filter="${f.id}">${f.label}</button>
   `).join("");
 
-  const items = list.length
-    ? list.map(renderNotif).join("")
-    : `<div class="text-muted text-sm" style="padding:20px 4px">No notifications in this view.</div>`;
+  const actionItems = list.filter(isActionRequired);
+  const updateItems = list.filter(n => !isActionRequired(n));
+
+  let items;
+  if (!list.length) {
+    items = `<div class="text-muted text-sm" style="padding:20px 4px">No notifications in this view.</div>`;
+  } else if (activeFilter === "all") {
+    items = `
+      ${actionItems.length ? `<h3 class="inbox-section-title">Action required</h3>${actionItems.map(renderNotif).join("")}` : ""}
+      ${updateItems.length ? `<h3 class="inbox-section-title">Updates</h3>${updateItems.map(renderNotif).join("")}` : ""}
+    `;
+  } else {
+    // Filtered views keep a single flat list so the filter intent is clear.
+    items = list.map(renderNotif).join("");
+  }
 
   container.innerHTML = `
     <div class="inbox">

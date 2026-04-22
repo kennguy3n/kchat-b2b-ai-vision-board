@@ -117,7 +117,6 @@ export function renderApprovalReview(containerId, params = {}) {
         <h4>Audit trail — immutable</h4>
         <div class="audit-trail mt-2">
           ${auditHTML}
-          ${a.status === "approved" ? `<div class="audit-step"><span class="dot"></span>approved by ${approver?.name} — ${a.comment || "Approved"}<span class="text-soft">${a.audit.at(-1)?.ts || ""}</span></div>` : ""}
         </div>
       </div>
     </div>
@@ -126,16 +125,60 @@ export function renderApprovalReview(containerId, params = {}) {
 
   if (isPending) {
     document.getElementById("approve-btn")?.addEventListener("click", () => {
-      a.status = "approved";
-      a.audit.push({ step: "approved", actorId: a.approverId, ts: "now", note: document.getElementById("approve-comment")?.value || "Approved" });
-      a.comment = document.getElementById("approve-comment")?.value || "Approved";
-      showToast("Approved — audit trail sealed.");
-      renderApprovalReview(containerId, params);
+      showConfirmFoot("approve");
     });
     document.getElementById("deny-btn")?.addEventListener("click", () => {
-      a.status = "denied";
-      a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note: document.getElementById("approve-comment")?.value || "Denied" });
-      showToast("Denied — audit trail sealed.");
+      showConfirmFoot("deny");
+    });
+  }
+
+  // Re-wire close buttons on every render. openRightView() only wires them on
+  // first open; re-renders (confirm, cancel, final approve/deny) replace the
+  // DOM under this view, so we must reattach the listener ourselves.
+  view.querySelectorAll("[data-close-right]").forEach(btn => {
+    btn.addEventListener("click", () => window.app?.closeRightView?.(), { once: true });
+  });
+
+  // Replace the footer with an inline confirmation step. Nothing mutates
+  // until the user clicks the second, explicit confirm button — mirrors
+  // the audit-trail-is-immutable messaging the approval flow relies on.
+  function showConfirmFoot(kind) {
+    const foot = view.querySelector(".rp-foot");
+    if (!foot) return;
+    const verb = kind === "approve" ? "approving" : "denying";
+    const primary = kind === "approve"
+      ? `<button class="btn btn-success" id="confirm-primary-btn">${iconSvg("check", 14)} Confirm Approve</button>`
+      : `<button class="btn btn-danger" id="confirm-primary-btn">Confirm Deny</button>`;
+    foot.outerHTML = `
+      <div class="rp-foot rp-confirm-foot" role="alertdialog" aria-live="polite">
+        <div class="rp-confirm-msg">
+          You are ${verb} <b>${a.title}</b> for <b>${a.amount}</b>.
+          <span class="text-soft">This action is immutable and sealed in the audit trail.</span>
+        </div>
+        <div class="rp-confirm-actions">
+          <button class="btn btn-ghost" id="confirm-cancel-btn">Cancel</button>
+          ${primary}
+        </div>
+      </div>
+    `;
+    document.getElementById("confirm-cancel-btn")?.addEventListener("click", () => {
+      renderApprovalReview(containerId, params);
+    });
+    document.getElementById("confirm-primary-btn")?.addEventListener("click", () => {
+      // Read the comment at confirm time so late edits to the textarea are
+      // captured in the sealed audit trail.
+      const noteEl = document.getElementById("approve-comment");
+      const note = (noteEl && noteEl.value) || (kind === "approve" ? "Approved" : "Denied");
+      if (kind === "approve") {
+        a.status = "approved";
+        a.audit.push({ step: "approved", actorId: a.approverId, ts: "now", note });
+        a.comment = note;
+        showToast("Approved — audit trail sealed.");
+      } else {
+        a.status = "denied";
+        a.audit.push({ step: "denied", actorId: a.approverId, ts: "now", note });
+        showToast("Denied — audit trail sealed.");
+      }
       renderApprovalReview(containerId, params);
     });
   }

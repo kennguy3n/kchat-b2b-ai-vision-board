@@ -124,7 +124,8 @@ Grouped by capability area. Each row maps to a screen in the desktop click-throu
 | Feature                       | Screen in demo          | Notes                                                  |
 |-------------------------------|-------------------------|--------------------------------------------------------|
 | Login / workspace select      | Screen 1                | MFA hint, workspace dropdown.                          |
-| Workspace home                | Screen 2                | Domain cards, recent channels, pinned items.           |
+| Workspace home                | Screen 2                | Hero, **role-based quick actions** (approvals / tasks / draft / inbox), domain cards, recent channels, pinned items. |
+| Onboarding tour (first run)   | Overlay (new in v0.2)   | 5-step guided overlay on first visit. Stored in `localStorage`. |
 | Domain view                   | Screen 3                | Domain-scoped channel list.                            |
 | Sidebar (domains, DMs, AI)    | all post-login screens  | Accordion domains, DM unread counts, AI status dots.   |
 
@@ -140,7 +141,7 @@ Grouped by capability area. Each row maps to a screen in the desktop click-throu
 
 | Feature                       | Screen in demo          | Notes                                                  |
 |-------------------------------|-------------------------|--------------------------------------------------------|
-| Action Launcher               | Screen 6 (modal)        | Grouped by Create / Track / Plan / Approve / Collect / Analyze. |
+| Action Launcher               | Screen 6 (modal)        | **Suggested for you** (channel-aware) + **Recently used** chips above the grouped Create / Track / Plan / Approve / Collect / Analyze grid. |
 | Guided intake / brief builder | Screen 7 (right panel)  | Goal, audience, sources, template, tone, missing info. |
 | Processing animation          | Screen 8 (right panel)  | 4-step on-device run; compute mode always visible.     |
 | Output review with citations  | Screen 9 (right panel)  | Section-level confidence, source pins, actions.        |
@@ -151,7 +152,7 @@ Grouped by capability area. Each row maps to a screen in the desktop click-throu
 |-------------------------------|-------------------------|--------------------------------------------------------|
 | Document artifact workspace   | Screen 10               | Outline nav, version history, Publish to channel.      |
 | Task KApp (list + Kanban)     | Screen 11 (right panel) | AI-extracted badge, owner/due/status, source thread.   |
-| Approval flow                 | Screen 12 (right panel) | Form → review → immutable decision with audit trail.   |
+| Approval flow                 | Screen 12 (right panel) | Form → review → **inline confirmation dialog** → immutable decision with audit trail. |
 | Forms KApp                    | Screen 13 (right panel) | AI-prefilled fields, response linking.                 |
 | Base / Sheet KApp             | Screen 14 (right panel) | Vendor register table, budget tracker grid.            |
 
@@ -167,6 +168,7 @@ Grouped by capability area. Each row maps to a screen in the desktop click-throu
 | Feature                       | Screen in demo          | Notes                                                  |
 |-------------------------------|-------------------------|--------------------------------------------------------|
 | Workspace settings            | Screen 16 (modal)       | General / Privacy & AI / Connectors / AI Employees / Templates. |
+| Notifications inbox           | Screen 18               | **Priority grouping**: "Action required" (unread approvals + mentions) vs "Updates". |
 | Compute-mode badge            | shell + every AI view   | `On-device AI` / `Confidential server` / `Frontier`.   |
 | Source pins on every output   | Screen 9, Screen 10     | Every section shows the exact sources used.            |
 
@@ -190,7 +192,7 @@ The desktop click-through walks through a single realistic week in the life of a
 ### Flow
 
 **Step 1 — Sign in (Screen 1).**
-Ken signs into Acme Corp. Workspace policy is on-device-preferred.
+Ken signs into Acme Corp. Workspace policy is on-device-preferred. On the first visit the **guided onboarding tour** overlays the home screen, walking through Sidebar domains → Channels → AI Employees → Compose bar → Right panel. Any step can be skipped; completion is stored in `localStorage` so returning users jump straight to work.
 
 **Step 2 — Home (Screen 2).**
 Home surfaces: 3 domains (Operations / Sales / Product), recent channels, and pinned items — including a pending approval and an AI-extracted task list. One click to any.
@@ -329,12 +331,46 @@ KChat B2B ships AI-Employee-native from day one, with governance as the default,
 
 ---
 
-## 10. Open questions
+## 10. UX Audit Findings & Mitigations
+
+A UX audit of the v0.1 click-through against mass SME office-worker
+segments (Finance, HR, Sales, Ops, Compliance, non-technical) surfaced
+five first-order risks. All are mitigated in the v0.2 vision board pass
+and logged in [`PROGRESS.md`](./PROGRESS.md).
+
+| Finding                                            | Mitigation in v0.2                                                                 |
+|----------------------------------------------------|-------------------------------------------------------------------------------------|
+| **Onboarding gap.** Users land in the workspace with no guidance on domains vs channels vs AI Employees. | Guided 5-step overlay tour on first visit (`desktop/js/onboarding.js`), stored in `localStorage` and resumable via reset. |
+| **AI jargon barrier.** Terms like "on-device AI", "PII tokenization", "egress", "source pins" block non-technical segments. | `.glossary-tip` hover tooltips on every occurrence across the topbar, Action Launcher, and Brief view; plain-language definitions inline. |
+| **Approval safety.** A single-click Approve on an immutable audit entry is a foot-gun for Finance / Compliance. | `renderApprovalReview()` now requires a second explicit click via an inline confirmation footer that restates title + amount and flags immutability. |
+| **Action Launcher complexity.** Full recipe grid overwhelms first-time users who want a common task. | "Suggested for you" (channel-aware) and "Recently used" chips rendered above the grouped grid under an "All actions" divider. |
+| **Accessibility / color-only state.** Status and risk pills relied on color alone; hover actions and sidebar items had sub-minimum touch targets. | Padding bumped to ≥ 8px vertical; shape prefixes (▲ / ◆ / ▽ and ○ / ◐ / ● / ⊘) added to risk + status pills; `role` / `aria-label` added on sidebar, topbar, main, right panel, and the inbox button. |
+
+Supporting UX wins layered on top:
+
+- Role-based quick actions on the home screen so the most common daily
+  jobs (approvals, tasks, draft, inbox) are one click from sign-in.
+- Empty states on Tasks, Forms, Base, and Channel Knowledge so first-run
+  channels don't look broken.
+- Priority grouping in the inbox ("Action required" vs "Updates").
+- Expandable right panel so power users can focus on a KApp without the
+  chat column.
+- Contextual help on template intake fields (Goal, Audience, Tone,
+  Scope, Deadline, Success metric).
+
+These are surface-level UX changes; the underlying information
+architecture, recipe router, and governance model are unchanged.
+
+---
+
+## 11. Open questions
 
 1. Template authoring — is the v1 template set curated (PRD, RFC, Proposal, SOP, QBR) or open to customers from day one?
 2. Data-residency granularity — per-workspace, per-domain, or per-channel?
 3. AI Employee concurrency — flat limit, or budget-tiered per workspace?
 4. Mobile priority — does mobile ship with full KApp authoring, or read/approve only?
 5. Connector scope — first-party set (Drive, OneDrive, Jira, Salesforce) vs an open connector SDK.
+6. Segment-specific view simplification — should different roles (Finance, HR, Sales, Ops, Compliance) see different sidebar items and default quick actions, or is one workspace layout good enough with per-user pinning?
+7. Onboarding depth — is a guided overlay tour sufficient, or should v1 ship an interactive sandbox workspace and/or a short video walkthrough for regulated segments?
 
 These are intentionally flagged here rather than silently resolved in the click-through; each one changes the scope of Phase 3/4.

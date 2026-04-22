@@ -3,12 +3,47 @@ import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { showToast } from "./transitions.js";
 
+// Shared empty-state primitive. Returned as HTML so callers can inline it
+// into their rp-body when a collection is empty.
+export function renderEmptyState({ icon = "?", title, description, ctaLabel, ctaId }) {
+  return `
+    <div class="empty-state" role="status">
+      <div class="es-icon">${icon}</div>
+      <div class="es-title">${title}</div>
+      <div class="es-desc">${description}</div>
+      ${ctaLabel ? `<div class="es-actions"><button class="btn btn-primary btn-sm" id="${ctaId || ""}">${ctaLabel}</button></div>` : ""}
+    </div>
+  `;
+}
+
+// Expand/collapse toggle used by Tasks / Base / Sheet right-panel views.
+function expandBtnHTML() {
+  return `<button class="icon-btn" data-expand-right title="Expand" aria-label="Expand right panel">${iconSvg("expand", 14)}</button>`;
+}
+function wireExpandButtons() {
+  document.querySelectorAll("[data-expand-right]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.app.expandRightView();
+    });
+  });
+}
+
 /* ---------------- Tasks panel ---------------- */
 export function renderTaskPanel(containerId, params = {}) {
   const view = document.getElementById(containerId);
   if (!view) return;
   const mode = params.mode || "list";
-  const list = D.tasks.map(taskRow).join("");
+  const hasTasks = D.tasks && D.tasks.length > 0;
+  const list = hasTasks
+    ? D.tasks.map(taskRow).join("")
+    : renderEmptyState({
+        icon: iconSvg("tasks", 20),
+        title: "No tasks yet",
+        description: "Extract tasks from a thread with AI, or create one manually.",
+        ctaLabel: "+ Create Task",
+        ctaId: "empty-create-task",
+      });
   const kanban = ["todo", "in-progress", "done"].map(col => {
     const items = D.tasks.filter(t => t.status === col).map(t => {
       const owner = D.userById(t.ownerId);
@@ -34,6 +69,7 @@ export function renderTaskPanel(containerId, params = {}) {
         <button class="${mode === "list" ? "active" : ""}" data-mode="list">List</button>
         <button class="${mode === "board" ? "active" : ""}" data-mode="board">Board</button>
       </div>
+      ${expandBtnHTML()}
       <button class="rp-close" data-close-right>${iconSvg("close", 14)}</button>
     </div>
     <div class="rp-body">
@@ -51,6 +87,10 @@ export function renderTaskPanel(containerId, params = {}) {
     </div>
   `;
   wireTaskEvents();
+  wireExpandButtons();
+  document.getElementById("empty-create-task")?.addEventListener("click", () => {
+    showToast("Demo: new task form would open here.");
+  });
 }
 
 function taskRow(t) {
@@ -166,11 +206,12 @@ export function renderForm(containerId) {
       <div class="ai-inline-hint">${iconSvg("ai", 14)} Prefilled from the current thread. Review before submitting.</div>
       ${fields}
       <div class="divider"></div>
-      <div class="text-sm text-muted">Response will be linked to:</div>
-      <div class="row gap-2 mt-2">
-        <a href="#" class="tag">Task #12</a>
-        <a href="#" class="tag">Base: Vendor Register</a>
-      </div>
+      <div class="text-sm text-muted">After submission, this response will be:</div>
+      <ul class="text-sm text-muted" style="padding-left:18px;margin:6px 0">
+        <li>Linked to <a href="#" class="tag" style="display:inline-flex">Task #12</a> and <a href="#" class="tag" style="display:inline-flex">Base: Vendor Register</a></li>
+        <li>Posted back to the thread so the team sees the outcome</li>
+        <li>Reviewable by the approver before any amount-based action fires</li>
+      </ul>
     </div>
     <div class="rp-foot">
       <button class="btn btn-ghost" data-close-right>Cancel</button>
@@ -204,15 +245,21 @@ export function renderBase(containerId) {
         <div class="sub">Base · ${D.baseRows.length} rows</div>
       </div>
       <span class="spacer"></span>
-      <button class="icon-btn" title="Filter">${iconSvg("filter", 14)}</button>
-      <button class="icon-btn" title="Sort">${iconSvg("sort", 14)}</button>
+      <button class="icon-btn" title="Filter" aria-label="Filter rows">${iconSvg("filter", 14)}</button>
+      <button class="icon-btn" title="Sort" aria-label="Sort rows">${iconSvg("sort", 14)}</button>
+      ${expandBtnHTML()}
       <button class="rp-close" data-close-right>${iconSvg("close", 14)}</button>
     </div>
     <div class="rp-body" style="padding:0">
       <table class="table">
         <thead>
           <tr>
-            <th>Name</th><th>Category</th><th>Risk</th><th>Contract Value</th><th>Status</th><th>Last Review</th>
+            <th title="Vendor display name">Name</th>
+            <th title="Procurement category used for policy + risk weighting">Category</th>
+            <th title="Risk score — combines data sensitivity, financial exposure, and SLA history">Risk</th>
+            <th title="Signed contract value for the current term">Contract Value</th>
+            <th title="Lifecycle stage — active, in renewal, suspended, etc.">Status</th>
+            <th title="Date of the last compliance / risk re-review">Last Review</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -223,6 +270,7 @@ export function renderBase(containerId) {
       <button class="btn btn-primary">+ Add Row</button>
     </div>
   `;
+  wireExpandButtons();
 }
 
 /* ---------------- Sheet KApp ---------------- */
@@ -246,6 +294,7 @@ export function renderSheet(containerId) {
       </div>
       <span class="spacer"></span>
       <button class="btn btn-ai btn-sm" id="sheet-ai">${iconSvg("ai", 12)} Generate Summary</button>
+      ${expandBtnHTML()}
       <button class="rp-close" data-close-right>${iconSvg("close", 14)}</button>
     </div>
     <div class="rp-body" style="padding:0">
@@ -261,4 +310,5 @@ export function renderSheet(containerId) {
   `;
   const ai = document.getElementById("sheet-ai");
   if (ai) ai.addEventListener("click", () => window.app.openRightView("summary"));
+  wireExpandButtons();
 }

@@ -66,9 +66,37 @@ export function renderKnowledge(channelId) {
             <h1>#${ch.name} knowledge</h1>
             <div class="kh-sub">No knowledge has been indexed for this channel yet.</div>
           </div>
+          <span class="spacer" style="flex:1"></span>
+          <button class="btn btn-secondary btn-sm" id="kh-back-empty">${iconSvg("back", 14)} Back to channel</button>
+        </div>
+        <div class="empty-state" style="margin-top:24px">
+          <div class="es-icon">${iconSvg("ai", 22)}</div>
+          <div class="es-title">Channel knowledge is still warming up</div>
+          <div class="es-desc">Knowledge is automatically built from your conversations, files, and decisions. Once the channel has a few threads, you'll see entities, relationships, and a searchable Q&amp;A here.</div>
+          <div class="es-actions">
+            <a class="btn btn-ghost btn-sm" href="#" id="kh-learn-more">Learn more</a>
+            <button class="btn btn-primary btn-sm" id="kh-rebuild-empty">${iconSvg("ai", 14)} Rebuild now</button>
+          </div>
         </div>
       </div>
     `;
+    document.getElementById("kh-back-empty")?.addEventListener("click", () => {
+      window.app.navigateTo("channel-chat", { channelId: ch.id });
+    });
+    document.getElementById("kh-learn-more")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Demo: no external docs — surface inline guidance instead.
+      alert("Channel knowledge indexes entities (vendors, policies, products), relationships, and FAQs from the channel. On-device AI keeps it private to this workspace.");
+    });
+    document.getElementById("kh-rebuild-empty")?.addEventListener("click", (ev) => {
+      const btn = ev.currentTarget;
+      btn.disabled = true;
+      btn.textContent = "Rebuilding…";
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `${iconSvg("check", 14)} Rebuilt just now`;
+      }, 1400);
+    });
     return;
   }
 
