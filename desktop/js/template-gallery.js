@@ -145,7 +145,7 @@ export function renderTemplateGallery() {
         <div class="tg-header-actions">
           <div class="tg-search">
             ${iconSvg("search", 14)}
-            <input id="tg-search-input" type="search" placeholder="Search templates — e.g., 'PRD', 'budget', 'onboarding'" autocomplete="off" aria-label="Search templates"/>
+            <input id="tg-search-input" type="search" placeholder="Search templates — e.g., 'PRD', 'budget', 'onboarding'" autocomplete="off" aria-label="Search templates" value="${galleryState.query.replace(/"/g, "&quot;")}"/>
           </div>
           <button class="btn btn-ghost" id="tg-create-custom" type="button">${iconSvg("plus", 14)} Create custom template</button>
         </div>
