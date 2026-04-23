@@ -285,6 +285,48 @@ export const artifacts = {
       { heading: "Risks",             body: "Implementation delay on analytics module; pricing exposure in EU.", confidence: "review" },
       { heading: "Next quarter",      body: "Accelerate analytics rollout; expand to LATAM pilot.", confidence: "high" },
     ],
+    slides: [
+      {
+        heading: "Executive Summary",
+        layout: "title-bullets",
+        bullets: [
+          "Globex expanded 18% YoY, led by logistics SKUs",
+          "Two risks flagged for Q3 mitigation",
+          "Renewal on track; analytics module delayed 2 weeks",
+        ],
+        speakerNotes: "Open with the headline number. Globex is a reference account; lean on the YoY growth story. Acknowledge risks early so leadership knows we have a plan.",
+      },
+      {
+        heading: "Wins",
+        layout: "title-bullets",
+        bullets: [
+          "Master agreement renewed through FY27",
+          "Added 2 new regions (LATAM, APAC)",
+          "Reference customer converted from deal thread",
+        ],
+        speakerNotes: "Celebrate the master agreement renewal. Mention the reference customer by name and tie back to the deal thread the AI pulled from.",
+      },
+      {
+        heading: "Risks",
+        layout: "title-bullets",
+        bullets: [
+          "Analytics module implementation delayed 2 weeks",
+          "EU pricing exposure from currency shift (~$180k)",
+          "Executive sponsor change on FleetOne account",
+        ],
+        speakerNotes: "Be direct about the analytics delay. We have a mitigation plan — do not sugarcoat. EU pricing exposure is the real risk to flag.",
+      },
+      {
+        heading: "Next Quarter",
+        layout: "title-bullets",
+        bullets: [
+          "Accelerate analytics rollout (target: end of Q3)",
+          "Expand to LATAM pilot with 3 new accounts",
+          "Dedicated CSM motion for at-risk accounts",
+        ],
+        speakerNotes: "End on the forward plan. Analytics acceleration is the key commitment. LATAM pilot is stretch — set expectations.",
+      },
+    ],
   },
   "a-prd-vendor-portal": {
     id: "a-prd-vendor-portal",
@@ -384,6 +426,125 @@ export const aiOutputs = {
       before: "SSO provider list; tenant-level data residency; scoring model ownership.",
       after:  "SSO provider list (Okta, Azure AD, Google); tenant-level data residency (US/EU); scoring model ownership (Ops vs Risk team).",
     },
+  },
+};
+
+/* ---------------- AI Co-pilot data (inline, human-driven) ---------------- */
+
+// Document co-pilot: pre-scripted rewrite / shorten / expand / tone / translate
+// variants keyed by section heading. The inline floating toolbar swaps selected
+// text with one of these based on the button clicked.
+export const docCopilotSuggestions = {
+  Overview: {
+    rewrite: "Vendor Portal v2 rebuilds onboarding from the ground up, introduces a compliance-grade document vault, and surfaces live risk scores to every vendor admin.",
+    shorten: "Vendor Portal v2 modernizes onboarding, adds a doc vault, and exposes live risk scores.",
+    expand:  "Vendor Portal v2 modernizes the onboarding experience end-to-end, introduces a document vault with expiration tracking and audit trail, and exposes live risk scores to vendor admins alongside the compliance team, replacing today's fragmented email + drive workflow.",
+    tone:    "Vendor Portal v2 represents a decisive step forward: a modern onboarding system, a first-class document vault, and live risk scoring surfaced directly to every vendor admin.",
+    translate: "Vendor Portal v2 moderniza la experiencia de incorporación, introduce una bóveda de documentos y expone puntuaciones de riesgo en vivo a los administradores de proveedores.",
+  },
+  "Problem Statement": {
+    rewrite: "Vendors today onboard through ad-hoc email threads and shared drives, producing manual work and inconsistent evidence.",
+    shorten: "Today's onboarding is manual email + drives, with inconsistent evidence.",
+    expand:  "Today vendors onboard via email threads and shared drives, creating significant manual follow-up (9 hours/vendor on average), inconsistent compliance evidence, and no single source of truth for contract status or risk posture.",
+    tone:    "The current onboarding flow is unsustainable: manual, inconsistent, and actively blocking our ability to scale.",
+    translate: "Hoy los proveedores se incorporan por correo electrónico y unidades compartidas, lo que genera trabajo manual y evidencia inconsistente.",
+  },
+  Requirements: {
+    rewrite: "Scope covers: self-serve onboarding, a document vault with expiration tracking, real-time risk scoring, OIDC SSO, and an admin audit trail.",
+    shorten: "Self-serve onboarding, doc vault, live risk scoring, SSO, audit trail.",
+    expand:  "Self-serve onboarding with progressive disclosure, document vault with expiration tracking and renewal reminders, real-time risk scoring with tier thresholds, SSO via OIDC (Okta, Azure AD, Google), SCIM provisioning, and an immutable admin audit trail exportable to SOC2 evidence packs.",
+    tone:    "Requirements are non-negotiable: self-serve onboarding, compliant document vault, real-time risk scoring, enterprise SSO, and a complete audit trail.",
+    translate: "Incorporación autoservicio, bóveda de documentos, puntuación de riesgo en tiempo real, SSO vía OIDC y registro de auditoría de administrador.",
+  },
+  "Success Metrics": {
+    rewrite: "Target metrics: 60% reduction in onboarding time, evidence completeness above 95%, and admin NPS above 40.",
+    shorten: "Onboarding −60%, evidence ≥95%, admin NPS ≥40.",
+    expand:  "Onboarding time reduced 60% from a 9-hour baseline; evidence completeness > 95% measured at quarterly compliance review; admin NPS > 40; time-to-first-shipment reduced 30%; SOC2 evidence export < 15 minutes.",
+    tone:    "We will ship this when onboarding drops 60%, evidence clears 95%, and admin NPS exceeds 40. No earlier.",
+    translate: "Tiempo de incorporación reducido 60%; integridad de evidencia > 95%; NPS de administrador > 40.",
+  },
+  "Open Questions": {
+    rewrite: "Unresolved: which SSO providers to support in v2, data residency tier, and scoring model ownership.",
+    shorten: "Open: SSO list, residency, scoring owner.",
+    expand:  "Open questions: which SSO providers (Okta, Azure AD, Google, Ping?) ship in v2; tenant-level data residency (US/EU/APAC) commitment; scoring model ownership (Ops vs Risk team) and escalation path for disputed scores.",
+    tone:    "These must be resolved before spec freeze: SSO provider list, data residency commitment, and scoring model ownership.",
+    translate: "Abiertas: lista de proveedores SSO, residencia de datos por inquilino y propiedad del modelo de puntuación.",
+  },
+  "Executive summary": {
+    rewrite: "Q2 delivered 18% YoY growth at Globex, concentrated in logistics SKUs, with two risks flagged for Q3 mitigation.",
+    shorten: "Globex grew 18% YoY in Q2; two Q3 risks flagged.",
+    expand:  "Q2 delivered 18% YoY growth at Globex, concentrated in logistics SKUs, with the master agreement renewed through FY27 and two risks (analytics delay, EU FX exposure) flagged for Q3 mitigation.",
+    tone:    "Q2 was decisive for Globex: 18% YoY growth, renewal locked, and a clear plan for the two risks we are calling out.",
+    translate: "Globex creció 18% interanual en el segundo trimestre; se marcaron dos riesgos para mitigación en el tercer trimestre.",
+  },
+};
+
+// Doc-level chat: pre-scripted Q&A for the "Ask AI about this document" input
+// in the right aside.
+export const docCopilotChatResponses = [
+  { match: /authoritative|tone.*authoritative|more.*formal/i, response: "Tone updated across 3 sections.", effect: "toast" },
+  { match: /shorter|tighten|condense/i,                       response: "Document shortened by 22%. Review changes.", effect: "toast" },
+  { match: /translate|spanish|español/i,                      response: "Translated 5 sections to Spanish. Draft v2 saved.", effect: "toast" },
+  { match: /metric|quantif/i,                                 response: "Added 4 quantitative anchors across Metrics + Overview.", effect: "toast" },
+  { match: /risk|flag/i,                                      response: "Flagged 2 under-supported claims in Requirements.", effect: "toast" },
+];
+
+// Ghost autocomplete suggestions keyed by section heading (doc co-pilot).
+export const docGhostCompletions = {
+  Overview:          "Primary users are vendor admins and Acme's compliance team.",
+  "Problem Statement": "Ops spends an estimated 9 hours per vendor on manual follow-up.",
+  Requirements:      "SCIM provisioning and immutable audit export are required for SOC2.",
+  "Success Metrics": "Time-to-first-shipment reduced 30% is a stretch goal.",
+  "Open Questions":  "Confirm scoring model ownership split between Ops and Risk.",
+  "Executive summary": "Renewal locked through FY27; two risks queued for Q3 mitigation.",
+};
+
+// Sheet co-pilot: formula suggestions, column insights, NL query → highlight.
+export const sheetCopilotData = {
+  formulaSuggestions: [
+    { match: /total.*variance|overall.*variance|net.*variance/i,
+      formula: "=SUM(F2:F8)/COUNT(F2:F8)",
+      result:  "-2.1%",
+      explain: "Average variance across all 7 categories.",
+    },
+    { match: /over.*budget|positive.*variance|exceeds/i,
+      formula: "=COUNTIF(F2:F8,\">0%\")",
+      result:  "4 categories",
+      explain: "Logistics, Compliance tools, Software licenses, Contractors all over budget.",
+    },
+    { match: /under.*budget|negative.*variance|savings/i,
+      formula: "=COUNTIF(F2:F8,\"<0%\")",
+      result:  "3 categories",
+      explain: "Vendor spend, AI compute, Training all under budget.",
+    },
+    { match: /highest|max|worst/i,
+      formula: "=INDEX(A2:A8,MATCH(MAX(F2:F8),F2:F8,0))",
+      result:  "Logistics (+5.3%)",
+      explain: "Logistics is the most over-budget line.",
+    },
+    { match: /lowest|min|best.*saving/i,
+      formula: "=INDEX(A2:A8,MATCH(MIN(F2:F8),F2:F8,0))",
+      result:  "Training (-22.0%)",
+      explain: "Training has the largest underspend.",
+    },
+  ],
+  columnInsights: {
+    Category:     ["Categorize values", "7 categories detected — grouped by Ops / Software / People"],
+    "Q1 Budget":  ["Summarize column", "Q1 total budget: $402,000 · Average: $57,429"],
+    "Q1 Actual":  ["Summarize column", "Q1 total actual: $400,900 · Variance vs budget: -0.3%"],
+    "Q2 Budget":  ["Summarize column", "Q2 total budget: $427,500 · +6.3% vs Q1"],
+    "Q2 Actual":  ["Summarize column", "Q2 total actual: $433,200 · Variance vs budget: +1.3%"],
+    Variance:     ["Detect anomalies", "Training variance (-22%) is a 3σ outlier — investigate"],
+  },
+  nlQueries: [
+    { match: /over.*budget|positive/i,     highlightPredicate: v => v.startsWith("+"), message: "Highlighted 4 rows over budget." },
+    { match: /under.*budget|saving|negative/i, highlightPredicate: v => v.startsWith("-"), message: "Highlighted 3 rows under budget." },
+    { match: /logistics/i,                  highlightPredicate: (v, row) => row[0].toLowerCase().includes("logistics"), message: "Highlighted Logistics row." },
+    { match: /software|license/i,           highlightPredicate: (v, row) => /software|license/i.test(row[0]), message: "Highlighted Software-related rows." },
+  ],
+  cellExplanations: {
+    // Variance cell formula + explanation shown on click (column 5 = Variance).
+    variance: "=(Q2 Actual − Q2 Budget) / Q2 Budget · Expressed as a percentage. Negative = under budget, positive = over budget.",
   },
 };
 
@@ -515,6 +676,22 @@ export const templates = {
     ],
     optional: [],
     outputSections: ["Summary", "Motivation", "Design", "Alternatives", "Risks"],
+  },
+  "tpl-budget-sheet": {
+    id: "tpl-budget-sheet",
+    name: "Budget Analysis",
+    kind: "sheet",
+    description: "Quarterly budget tracker with AI formula bar, variance column, and anomaly detection.",
+    curatedBy: "Finance Guild",
+    metaPrompt: "You are building a budget analysis sheet. Flag any variance > 5% for review. Use the variance column for the main signal.",
+    required: [
+      { id: "period", label: "Period",   type: "select", options: ["FY25", "FY26", "FY27"] },
+      { id: "owner",  label: "Owner",    type: "select", options: ["Finance", "Ops", "Sales", "Product"] },
+    ],
+    optional: [
+      { id: "threshold", label: "Variance alert threshold", type: "text", placeholder: "e.g., 5%" },
+    ],
+    outputSections: ["Category", "Q1 Budget", "Q1 Actual", "Q2 Budget", "Q2 Actual", "Variance"],
   },
 };
 

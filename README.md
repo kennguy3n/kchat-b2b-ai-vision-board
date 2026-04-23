@@ -5,7 +5,13 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
 - **Mobile / shared:** reserved for future tasks.
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.2 UX audit pass).
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.3 AI Co-pilot layer).
+
+> **Two modes of AI.** The demo deliberately shows both:
+> - **AI Employee** — autonomous, queued, governed. "AI does it for you."
+> - **AI Co-pilot** — inline, real-time, human-driven. "AI helps you do it."
+>
+> Both are first-class in Doc, Slides, and Sheet surfaces.
 
 ---
 
@@ -31,7 +37,7 @@ npx --yes http-server -p 8000 -c-1
 
 There is nothing to install — all CSS and JS are in the repo and the demo data is pre-scripted in `desktop/js/demo-data.js`.
 
-## Click-through guide (17 screens + onboarding)
+## Click-through guide (18 screens + onboarding)
 
 The demo is a state machine. `desktop/js/app.js` controls which `<section data-screen="...">` is visible. You can click through the whole story in order:
 
@@ -45,13 +51,14 @@ The demo is a state machine. `desktop/js/app.js` controls which `<section data-s
 7. **Guided intake / brief builder (right panel)** — goal, audience chips, sources, template, tone, missing info, compute-mode privacy review.
 8. **AI processing (right panel)** — 4-step animation (Reading sources → Planning outline → Drafting sections → Ready for review). Auto-advances to output review.
 9. **AI output review (right panel)** — draft PRD with citations, per-section confidence, sources. Click *Edit in Workspace*.
-10. **Document artifact workspace (center)** — outline nav, editable sections, version history, *Publish* (confirmation modal).
-11. **Task KApp (right panel)** — list / Kanban toggle, AI-extracted badge, task detail.
-12. **Approval flow** — form → pending card → review → approved with immutable audit trail.
-13. **Forms KApp (right panel)** — AI-prefilled New Vendor Intake form.
-14. **Base / Sheet KApps (right panel)** — Vendor Register (Base) and Budget Tracker (Sheet).
-15. **AI Employee profile** — click *Kara Ops AI* in the sidebar for her profile + task queue.
-16. **Workspace settings (modal)** — click the gear in the sidebar footer. Tabs: General / Privacy & AI / Connectors / AI Employees / Templates.
+10. **Document artifact workspace (center)** — outline nav, editable sections, version history, *Publish* (confirmation modal). Also home to the **Document Co-pilot**: select any paragraph to surface the floating **Rewrite / Shorten / Expand / Tone / Translate** toolbar, press **Tab** on the ghost-autocomplete hint to accept a suggestion, or use the **"Ask AI about this document"** chat under the Compute card in the right aside.
+11. **Slide workspace (center)** — new *slide-workspace* screen. Left rail of slide thumbnails, large center canvas, right rail of **per-slide AI actions** (Simplify slide, Add chart placeholder, Generate speaker notes, Suggest layout). The header's **Design with AI** dropdown applies consistent theme / transitions / narrative reorder. Entered via the *Deck* action in the launcher or the *Design a deck* quick action on home.
+12. **Task KApp (right panel)** — list / Kanban toggle, AI-extracted badge, task detail.
+13. **Approval flow** — form → pending card → review → approved with immutable audit trail.
+14. **Forms KApp (right panel)** — AI-prefilled New Vendor Intake form.
+15. **Base / Sheet KApps (right panel)** — Vendor Register (Base) and Budget Tracker (Sheet). The Sheet now carries the **Sheet Co-pilot**: an **AI formula bar** at the top (try *"total variance"*, *"over budget"*, *"Logistics"*, *"highest"*), a **Visualize** button that renders an inline variance bar chart, **AI explain** popovers on any Variance cell, and a hover **AI icon on each column header** with Summarize / Detect anomalies / Categorize.
+16. **AI Employee profile** — click *Kara Ops AI* in the sidebar for her profile + task queue.
+17. **Workspace settings (modal)** — click the gear in the sidebar footer. Tabs: General / Privacy & AI / Connectors / AI Employees / Templates.
 
 ## Repository layout
 

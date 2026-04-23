@@ -9,6 +9,7 @@ import { renderTaskPanel, renderTaskDetail, renderForm, renderBase, renderSheet 
 import { openActionLauncher, renderBrief, renderProcessing, renderOutputReview, renderSummary, renderAIProcessingScreen, renderAIOutputReviewScreen } from "./ai-actions.js";
 import { renderAIEmployee } from "./ai-employees.js";
 import { renderArtifactWorkspace } from "./artifacts.js";
+import { renderSlideWorkspace } from "./slides.js";
 import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
 import { openSettings } from "./settings.js";
 import { renderTemplateIntake } from "./templates.js";
@@ -179,6 +180,11 @@ function renderTopbar(screenId) {
     title = a ? a.title : "Artifact";
     sub = "Document workspace";
   }
+  if (screenId === "slide-workspace") {
+    const a = D.artifactById(state.artifactId);
+    title = a ? a.title : "Slides";
+    sub = "Slide workspace · Co-pilot";
+  }
   if (screenId === "template-intake") {
     const t = D.templateById(state.templateId);
     title = t ? "Create: " + t.name : "Create from template";
@@ -275,6 +281,7 @@ function renderScreen(id) {
     case "thread-detail":     renderThread(state.threadId || "thread-vendor-tasks"); break;
     case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
     case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
+    case "slide-workspace":   renderSlideWorkspace(state.artifactId || "a-qbr-globex"); break;
     case "template-intake":   renderTemplateIntake({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-processing":     renderAIProcessingScreen({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-output-review":  renderAIOutputReviewScreen({ templateId: state.templateId, recipeId: state.recipeId, artifactId: state.artifactId }); break;
@@ -371,7 +378,10 @@ function renderWorkspaceHome() {
         <p>3 domains · 7 channels · AI Employees: ${D.aiEmployees.length} active. On-device AI is preferred for ${D.workspace.name}.</p>
       </div>
 
-      <div class="section-head"><h2>Quick actions</h2><span class="more" data-restart-tour title="Replay the product tour">Take the tour</span></div>
+      <div class="section-head">
+        <h2>AI Employee <span class="section-sub">AI does it for you</span></h2>
+        <span class="more" data-restart-tour title="Replay the product tour">Take the tour</span>
+      </div>
       <div class="quick-actions">
         <div class="qa-item" data-qa="inbox">
           <div class="qa-icon">${iconSvg("inbox", 18)}</div>
@@ -392,6 +402,27 @@ function renderWorkspaceHome() {
           <div class="qa-icon">${iconSvg("ai", 18)}</div>
           <div class="qa-label">Create with AI</div>
           <div class="qa-count">5 templates</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>AI Co-pilot <span class="section-sub">AI helps you do it — inline</span></h2>
+      </div>
+      <div class="quick-actions quick-actions-copilot">
+        <div class="qa-item qa-copilot" data-qa="copilot-doc">
+          <div class="qa-icon">${iconSvg("ai", 18)}</div>
+          <div class="qa-label">Write a document</div>
+          <div class="qa-count">Inline rewrite / tone / ghost</div>
+        </div>
+        <div class="qa-item qa-copilot" data-qa="copilot-slides">
+          <div class="qa-icon">${iconSvg("ai", 18)}</div>
+          <div class="qa-label">Design a deck</div>
+          <div class="qa-count">Per-slide AI actions</div>
+        </div>
+        <div class="qa-item qa-copilot" data-qa="copilot-sheet">
+          <div class="qa-icon">${iconSvg("ai", 18)}</div>
+          <div class="qa-label">Analyze a spreadsheet</div>
+          <div class="qa-count">NL formula bar + visualize</div>
         </div>
       </div>
 
@@ -482,6 +513,9 @@ function wireHomeScreen() {
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
       else if (kind === "create") openActionLauncher();
       else if (kind === "inbox") navigateTo("notifications");
+      else if (kind === "copilot-doc") navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
+      else if (kind === "copilot-slides") navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });
+      else if (kind === "copilot-sheet") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("sheet", { focusFormula: true }));
     });
   });
   const tourLink = document.querySelector("[data-restart-tour]");

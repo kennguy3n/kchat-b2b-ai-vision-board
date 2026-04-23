@@ -172,6 +172,41 @@ Grouped by capability area. Each row maps to a screen in the desktop click-throu
 | Compute-mode badge            | shell + every AI view   | `On-device AI` / `Confidential server` / `Frontier`.   |
 | Source pins on every output   | Screen 9, Screen 10     | Every section shows the exact sources used.            |
 
+### 5.7 AI Co-pilot Layer
+
+The **AI Employee** fabric (§5.3–§5.5) covers *autonomous, queued, governed*
+work — "AI does it for you". The **AI Co-pilot** layer is its inline
+counterpart — "AI helps you do it" — and it lives inside the three
+surfaces that knowledge workers spend all day in: Document, Slides, and
+Sheet. Co-pilot is always **human-driven** (no queue, no budget draw, no
+delegation), runs synchronously, and does not produce artifacts of its
+own — it edits what the human is already editing.
+
+| Surface  | Feature                             | Screen in demo              | Notes                                                                                  |
+|----------|-------------------------------------|-----------------------------|----------------------------------------------------------------------------------------|
+| Document | Selection toolbar                   | Screen 10 (center)          | Floating Rewrite / Shorten / Expand / Change tone / Translate over any selected text.  |
+| Document | Ghost autocomplete                  | Screen 10 (center)          | Faded completion at the end of each section; Tab accepts.                              |
+| Document | "Ask AI about this document" chat   | Screen 10 (right aside)     | Doc-level chat below Compute; pre-scripted prompts (e.g. "more authoritative tone").   |
+| Slides   | Slide workspace                     | Screen 11 (center)          | New `slide-workspace` screen: thumbnail rail / canvas / AI panel.                      |
+| Slides   | Per-slide AI actions                | Screen 11 (right panel)     | Simplify slide, Add chart placeholder, Generate speaker notes, Suggest layout.         |
+| Slides   | Design with AI                      | Screen 11 (slide header)    | Apply consistent theme / Add transitions / Reorder for narrative flow.                 |
+| Sheet    | AI formula bar                      | Screen 15 (Sheet, top)      | NL → `=SUM()` / `=AVERAGE()` suggestion with Insert action.                            |
+| Sheet    | Cell-level AI                       | Screen 15 (Sheet, cell)     | Click a Variance cell → popover explains how the value was computed.                   |
+| Sheet    | Column header AI actions            | Screen 15 (Sheet, header)   | Hover a column → Summarize / Detect anomalies / Categorize.                            |
+| Sheet    | Visualize                           | Screen 15 (Sheet, footer)   | Renders an inline CSS bar chart of the Variance column.                                |
+| Sheet    | NL query row highlights             | Screen 15 (Sheet, body)     | "Which categories are over budget?" → rows with positive variance are highlighted.     |
+| Global   | Co-pilot group in Action Launcher   | Screen 6 (modal)            | New tile group between "Suggested for you" and "All actions".                          |
+| Global   | Home quick-action row               | Screen 2                    | Second row labelled "AI Co-pilot" alongside the existing "AI Employee" row.            |
+
+**Governance.** Co-pilot respects the same compute-mode policy as AI
+Employees: on-device by default, confidential-server fallback on admin
+opt-in, frontier disabled unless explicitly unlocked. Because co-pilot is
+synchronous and scoped to a single artifact, it does **not** consume AI
+Employee budget and does **not** write to the Employee task queue.
+
+**Phasing.** Co-pilot ships alongside the AI Employee work in **Phase 2**
+— the same recipe + policy engine powers both. No new infra.
+
 ---
 
 ## 6. Use Case — End-to-End Demo Flow

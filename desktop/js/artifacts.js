@@ -2,7 +2,7 @@
 import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { openModal, closeModal } from "./modals.js";
-import { showToast } from "./transitions.js";
+import { showToast, fadeSwap } from "./transitions.js";
 
 // Pre-scripted section edits keyed by heading (demo-only)
 const sectionEditsByHeading = {
@@ -25,16 +25,30 @@ export function renderArtifactWorkspace(artifactId) {
     <div class="outline-item ${i === 0 ? "active" : ""}" data-scroll-to="sec-${i}">${s.heading}</div>
   `).join("") + `<div class="outline-add" data-outline-add>+ Add section</div>`;
 
-  const body = a.sections.map((s, i) => `
-    <section class="sec" id="sec-${i}" data-section-idx="${i}" data-heading="${s.heading.replace(/"/g, '&quot;')}" tabindex="0">
-      <div class="sec-head">
-        <h2>${s.heading}</h2>
-        <button class="sec-chat-btn" data-section-chat-open="${i}" title="Ask AI to edit this section">${iconSvg("ai", 12)} Edit with AI</button>
-      </div>
-      <p class="sec-body">${s.body.replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>')}</p>
-      <div class="sec-chat" id="sec-chat-${i}" hidden></div>
-    </section>
-  `).join("");
+  const body = a.sections.map((s, i) => {
+    const ghost = D.docGhostCompletions ? D.docGhostCompletions[s.heading] : null;
+    const ghostHTML = ghost
+      ? `<div class="ghost-autocomplete" data-ghost-section="${i}" tabindex="0">
+           <span class="ghost-text">${ghost}</span>
+           <span class="ghost-hint">(Tab to accept)</span>
+         </div>`
+      : "";
+    return `
+      <section class="sec" id="sec-${i}" data-section-idx="${i}" data-heading="${s.heading.replace(/"/g, '&quot;')}" tabindex="0">
+        <div class="sec-head">
+          <h2>${s.heading}</h2>
+          <button class="sec-chat-btn" data-section-chat-open="${i}" title="Ask AI to edit this section">${iconSvg("ai", 12)} Edit with AI</button>
+        </div>
+        <p class="sec-body" data-selectable>${s.body.replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>')}</p>
+        ${ghostHTML}
+        <div class="sec-chat" id="sec-chat-${i}" hidden></div>
+      </section>
+    `;
+  }).join("");
+
+  const deckCta = a.type === "deck"
+    ? `<button class="btn btn-ai btn-sm" id="art-open-slides">${iconSvg("ai", 12)} Open in Slide Workspace</button>`
+    : "";
 
   container.innerHTML = `
     <div class="channel-header">
@@ -45,7 +59,8 @@ export function renderArtifactWorkspace(artifactId) {
       </div>
       <span class="spacer"></span>
       <span class="tag">${a.status}</span>
-      <span class="badge-ai">${iconSvg("ai", 12)} On-device AI</span>
+      <span class="badge-ai co-pilot-badge">${iconSvg("ai", 12)} Co-pilot active</span>
+      ${deckCta}
       <button class="btn btn-secondary btn-sm" id="art-share">Share</button>
       <button class="btn btn-primary btn-sm" id="art-publish">Publish</button>
     </div>
@@ -55,7 +70,7 @@ export function renderArtifactWorkspace(artifactId) {
         <h4>Outline</h4>
         ${outline}
       </div>
-      <div class="doc-main">
+      <div class="doc-main" id="doc-main">
         <div class="doc-paper">
           <h1>${a.title}</h1>
           <div class="text-muted text-sm">${a.template} · ${a.version} · Last edited just now</div>
@@ -78,7 +93,25 @@ export function renderArtifactWorkspace(artifactId) {
         <div class="aside-item">${a.template}</div>
         <h4 class="mt-4">Compute</h4>
         <div class="aside-item ai-bg" style="background:var(--ai-50); color:var(--ai-strong)">On-device · 0 egress</div>
+        <h4 class="mt-4">Ask AI about this document</h4>
+        <div class="doc-chat">
+          <input type="text" id="doc-chat-input" placeholder="Ask AI about this document..." />
+          <button class="btn btn-ai btn-sm" id="doc-chat-send">${iconSvg("ai", 12)} Ask</button>
+          <div class="doc-chat-hints">
+            <span class="doc-chat-hint" data-doc-chat-hint="Make the tone more authoritative">Make tone more authoritative</span>
+            <span class="doc-chat-hint" data-doc-chat-hint="Make the whole document shorter">Shorten</span>
+            <span class="doc-chat-hint" data-doc-chat-hint="Flag risks in the requirements">Flag risks</span>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="ai-selection-toolbar" id="ai-selection-toolbar" hidden>
+      <button data-copilot-action="rewrite"   title="Rewrite selection">${iconSvg("ai", 12)} Rewrite</button>
+      <button data-copilot-action="shorten"   title="Shorten selection">${iconSvg("ai", 12)} Shorten</button>
+      <button data-copilot-action="expand"    title="Expand selection">${iconSvg("ai", 12)} Expand</button>
+      <button data-copilot-action="tone"      title="Change tone">${iconSvg("ai", 12)} Tone</button>
+      <button data-copilot-action="translate" title="Translate">${iconSvg("ai", 12)} Translate</button>
     </div>
   `;
 
@@ -119,6 +152,156 @@ export function renderArtifactWorkspace(artifactId) {
 
   document.getElementById("art-publish").addEventListener("click", () => openModal("publish-confirm"));
   document.getElementById("art-share").addEventListener("click", () => showToast("Share link copied."));
+
+  const openSlidesBtn = document.getElementById("art-open-slides");
+  if (openSlidesBtn) openSlidesBtn.addEventListener("click", () => {
+    window.app.navigateTo("slide-workspace", { artifactId: a.id });
+  });
+
+  wireSelectionToolbar(container);
+  wireGhostAutocomplete(container);
+  wireDocChat(container);
+}
+
+/* ---------------- Co-pilot: inline selection toolbar ---------------- */
+function wireSelectionToolbar(container) {
+  const toolbar = container.querySelector("#ai-selection-toolbar");
+  const main = container.querySelector("#doc-main");
+  if (!toolbar || !main) return;
+
+  let activeSection = null;
+
+  function hide() {
+    toolbar.hidden = true;
+    activeSection = null;
+  }
+
+  function showAt(rect, section) {
+    activeSection = section;
+    toolbar.hidden = false;
+    const mainRect = main.getBoundingClientRect();
+    const top = Math.max(8, rect.top - mainRect.top - 44);
+    const left = Math.max(8, rect.left - mainRect.left + (rect.width / 2) - (toolbar.offsetWidth / 2));
+    toolbar.style.top = `${top}px`;
+    toolbar.style.left = `${left}px`;
+  }
+
+  main.addEventListener("mouseup", () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) { hide(); return; }
+    const text = sel.toString().trim();
+    if (!text) { hide(); return; }
+    const anchor = sel.anchorNode;
+    const secBody = anchor && (anchor.nodeType === 3 ? anchor.parentElement : anchor).closest(".sec-body");
+    if (!secBody) { hide(); return; }
+    const section = secBody.closest(".sec");
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    showAt(rect, section);
+  });
+
+  main.addEventListener("scroll", hide);
+  document.addEventListener("mousedown", (e) => {
+    if (!toolbar.contains(e.target)) {
+      setTimeout(() => {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed) hide();
+      }, 0);
+    }
+  });
+
+  toolbar.querySelectorAll("button[data-copilot-action]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const action = btn.getAttribute("data-copilot-action");
+      if (!activeSection) return;
+      applyCopilotAction(activeSection, action);
+      hide();
+      const sel = window.getSelection();
+      if (sel) sel.removeAllRanges();
+    });
+  });
+}
+
+function applyCopilotAction(section, action) {
+  const bodyEl = section.querySelector(".sec-body");
+  if (!bodyEl) return;
+  const heading = section.getAttribute("data-heading") || "";
+  const variants = D.docCopilotSuggestions && D.docCopilotSuggestions[heading];
+  const replacement = variants && variants[action];
+  if (!replacement) {
+    showToast(`No pre-scripted ${action} for "${heading}" — demo fallback.`);
+    return;
+  }
+  bodyEl.classList.add("copilot-pulse");
+  fadeSwap(bodyEl, () => {
+    bodyEl.innerHTML = replacement.replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>');
+  });
+  setTimeout(() => bodyEl.classList.remove("copilot-pulse"), 800);
+  showToast(`${action.charAt(0).toUpperCase() + action.slice(1)} applied.`);
+}
+
+/* ---------------- Co-pilot: ghost autocomplete ---------------- */
+function wireGhostAutocomplete(container) {
+  container.querySelectorAll(".ghost-autocomplete").forEach(g => {
+    g.addEventListener("click", () => acceptGhost(g));
+    g.addEventListener("keydown", (e) => {
+      if (e.key === "Tab" || e.key === "Enter") {
+        e.preventDefault();
+        acceptGhost(g);
+      }
+    });
+  });
+  container.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const focusedSec = container.querySelector(".sec.focused");
+    if (!focusedSec) return;
+    const ghost = focusedSec.querySelector(".ghost-autocomplete:not(.accepted)");
+    if (!ghost) return;
+    e.preventDefault();
+    acceptGhost(ghost);
+  });
+}
+
+function acceptGhost(ghost) {
+  if (ghost.classList.contains("accepted")) return;
+  const text = ghost.querySelector(".ghost-text").textContent;
+  const sec = ghost.closest(".sec");
+  const bodyEl = sec && sec.querySelector(".sec-body");
+  if (!bodyEl) return;
+  fadeSwap(ghost, () => {
+    ghost.classList.add("accepted");
+    ghost.innerHTML = "";
+  });
+  setTimeout(() => {
+    bodyEl.innerHTML = bodyEl.innerHTML.replace(/\s*$/, "") + " " + text;
+    showToast("Ghost completion accepted.");
+  }, 160);
+}
+
+/* ---------------- Co-pilot: doc-level chat ---------------- */
+function wireDocChat(container) {
+  const input = container.querySelector("#doc-chat-input");
+  const send = container.querySelector("#doc-chat-send");
+  if (!input || !send) return;
+
+  function submit() {
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = "";
+    const match = (D.docCopilotChatResponses || []).find(r => r.match.test(q));
+    const response = match ? match.response : "Applied — review your draft for AI changes.";
+    showToast(response);
+  }
+
+  send.addEventListener("click", submit);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+  container.querySelectorAll("[data-doc-chat-hint]").forEach(hint => {
+    hint.addEventListener("click", () => {
+      input.value = hint.getAttribute("data-doc-chat-hint");
+      submit();
+    });
+  });
 }
 
 function openSectionChat(container, idx) {

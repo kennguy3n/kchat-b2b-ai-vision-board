@@ -13,16 +13,16 @@ const CHANNEL_SUGGESTIONS = {
   "c-vendor": [
     { id: "plan-tasks", label: "Extract Tasks", sub: "Pull action items out of this thread" },
     { id: "approve-new", label: "Create Approval", sub: "Prefill from the conversation" },
-    { id: "analyze-summary", label: "Summarize Thread", sub: "Key points with source pins" },
+    { id: "copilot-sheet", label: "Analyze Budget", sub: "Open budget sheet with AI formula bar" },
   ],
   "c-specs": [
     { id: "create-prd", label: "Draft PRD", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Standard product requirements doc" },
-    { id: "analyze-summary", label: "Summarize Thread", sub: "Catch up in seconds" },
+    { id: "copilot-doc", label: "Write with AI", sub: "Open editor with inline AI assist" },
     { id: "plan-tasks", label: "Extract Tasks", sub: "Turn discussion into assignments" },
   ],
   "c-deals": [
     { id: "create-qbr", label: "Create QBR", recipeId: "r-create-qbr", templateId: "tpl-qbr", sub: "Quarterly business review deck" },
-    { id: "create-proposal", label: "Draft Proposal", recipeId: "r-draft-proposal", templateId: "tpl-proposal", sub: "Customer-ready proposal" },
+    { id: "copilot-slides", label: "Design slides", sub: "Open slide workspace with per-slide AI" },
     { id: "analyze-summary", label: "Summarize", sub: "Pipeline + risk highlights" },
   ],
 };
@@ -34,6 +34,13 @@ const DEFAULT_SUGGESTIONS = [
 const RECENTLY_USED = [
   { id: "analyze-summary", label: "Summarize" },
   { id: "plan-tasks", label: "Extract Tasks" },
+  { id: "copilot-doc", label: "Write with AI" },
+];
+// Co-pilot tiles: inline, human-driven AI (distinct from autonomous AI Employee flows).
+const COPILOT_TILES = [
+  { id: "copilot-doc",    label: "Write with AI",       sub: "Inline editor with rewrite / shorten / tone" },
+  { id: "copilot-slides", label: "Design slides",       sub: "Per-slide AI actions + layout suggestions" },
+  { id: "copilot-sheet",  label: "Analyze a spreadsheet", sub: "NL formula bar + cell AI + visualize" },
 ];
 
 export function openActionLauncher() {
@@ -53,18 +60,34 @@ export function openActionLauncher() {
     <div class="action-chip" data-action="${a.id}" data-recipe="" data-template="">${a.label}</div>
   `).join("");
 
+  const copilotHTML = COPILOT_TILES.map(t => `
+    <div class="action-tile copilot-tile" data-action="${t.id}" data-recipe="" data-template="">
+      <div class="at-icon copilot-icon">${iconSvg("ai", 16)}</div>
+      <div class="at-label">${t.label}</div>
+      <div class="text-xs text-muted">${t.sub}</div>
+    </div>
+  `).join("");
+
   body.innerHTML = `
     <div class="launcher-top">
       <div class="launcher-search">
         ${iconSvg("search", 14)}
         <input placeholder="Search actions — e.g. 'draft PRD', 'summarize thread'"/>
       </div>
-      <span class="badge-ai">${iconSvg("ai", 12)} <span class="glossary-tip" data-tip="AI runs on your device. No chat data leaves your company.">On-device AI</span></span>
+      <div class="launcher-modes">
+        <span class="badge-ai"><span class="glossary-tip" data-tip="AI Employee: autonomous, queued, governed. Runs in the background.">${iconSvg("ai", 12)} AI Employee</span></span>
+        <span class="badge-ai co-pilot-badge"><span class="glossary-tip" data-tip="AI Co-pilot: inline, real-time, human-driven. You stay in the driver's seat.">${iconSvg("ai", 12)} AI Co-pilot</span></span>
+      </div>
     </div>
 
     <div class="action-group suggest-group">
-      <h4>Suggested for you</h4>
+      <h4>Suggested for you <span class="group-sub">AI Employee</span></h4>
       <div class="action-tiles suggest-tiles">${suggestHTML}</div>
+    </div>
+
+    <div class="action-group copilot-group">
+      <h4>Co-pilot <span class="group-sub">AI helps you do it — inline</span></h4>
+      <div class="action-tiles copilot-tiles">${copilotHTML}</div>
     </div>
 
     <div class="action-recent">
@@ -73,7 +96,7 @@ export function openActionLauncher() {
     </div>
 
     <div class="divider"></div>
-    <div class="action-groups-label">All actions</div>
+    <div class="action-groups-label">All actions <span class="group-sub">AI Employee</span></div>
     <div class="action-groups">
       ${D.actionGroups.map(g => `
         <div class="action-group">
@@ -102,6 +125,7 @@ function wireLauncherEvents() {
       closeModal("action-launcher");
       if (id === "analyze-summary") window.app.openRightView("summary");
       else if (id === "plan-tasks") window.app.openRightView("task-panel");
+      else if (id === "copilot-doc") window.app.navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
     });
   });
   document.querySelectorAll("#action-launcher-body .action-tile").forEach(tile => {
@@ -110,8 +134,22 @@ function wireLauncherEvents() {
       const recipe = tile.getAttribute("data-recipe");
       const template = tile.getAttribute("data-template");
       closeModal("action-launcher");
+      // Co-pilot routes — inline, human-driven AI surfaces.
+      if (id === "copilot-doc") {
+        window.app.navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
+        return;
+      }
+      if (id === "copilot-slides") {
+        window.app.navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });
+        return;
+      }
+      if (id === "copilot-sheet") {
+        window.app.openRightView("sheet", { focusFormula: true });
+        return;
+      }
       // Create actions (v2) → full-screen template intake (Screen 7)
       if (id && id.startsWith("create-")) {
+        // Deck recipe routes through the slide workspace after intake.
         window.app.navigateTo("template-intake", {
           templateId: template || "tpl-prd",
           recipeId: recipe || "r-draft-prd",
