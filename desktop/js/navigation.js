@@ -126,6 +126,9 @@ export function renderSidebar(state) {
         <div class="sb-item" data-nav="my-work">
           ${iconSvg("briefcase", 14)} My Work
         </div>
+        <div class="sb-item${state.screen === "template-gallery" ? " active" : ""}" data-nav="templates">
+          ${iconSvg("ai", 14)} Templates
+        </div>
       </div>
       ${sections.map(s => `
         <div class="sb-section${state.collapsed.has(s.id) ? " collapsed" : ""}" data-section="${s.id}">
@@ -169,6 +172,7 @@ function wireSidebarEvents() {
         case "inbox":    window.app.navigateTo("notifications"); break;
         case "connectors": window.app.navigateTo("connectors"); break;
         case "my-work":  window.app.navigateTo("workspace-home", { workTab: "tasks" }); break;
+        case "templates":window.app.navigateTo("template-gallery"); break;
         case "tasks":    window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("task-panel")); break;
         case "approvals":window.app.navigateTo("channel-chat", { channelId: "c-vendor" }, () => window.app.openRightView("approval-review", { approvalId: "ap-orbix" })); break;
         case "artifacts":window.app.navigateTo("channel-chat", { channelId: "c-specs" }, () => window.app.openRightView("output-review", { artifactId: "a-prd-vendor-portal" })); break;

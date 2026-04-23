@@ -12,6 +12,7 @@ import { renderArtifactWorkspace } from "./artifacts.js";
 import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
 import { openSettings } from "./settings.js";
 import { renderTemplateIntake } from "./templates.js";
+import { renderTemplateGallery } from "./template-gallery.js";
 import { renderKnowledge } from "./knowledge.js";
 import { renderConnectors } from "./connectors.js";
 import { renderNotifications } from "./notifications.js";
@@ -20,7 +21,7 @@ import { startOnboarding } from "./onboarding.js";
 
 /* ---------- State ---------- */
 const state = {
-  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
+  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-gallery | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
   domainId: null,
   channelId: null,
   threadId: null,
@@ -179,6 +180,10 @@ function renderTopbar(screenId) {
     title = a ? a.title : "Artifact";
     sub = "Document workspace";
   }
+  if (screenId === "template-gallery") {
+    title = "Templates";
+    sub = "Browse & create";
+  }
   if (screenId === "template-intake") {
     const t = D.templateById(state.templateId);
     title = t ? "Create: " + t.name : "Create from template";
@@ -275,6 +280,7 @@ function renderScreen(id) {
     case "thread-detail":     renderThread(state.threadId || "thread-vendor-tasks"); break;
     case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
     case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
+    case "template-gallery":  renderTemplateGallery(); break;
     case "template-intake":   renderTemplateIntake({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-processing":     renderAIProcessingScreen({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-output-review":  renderAIOutputReviewScreen({ templateId: state.templateId, recipeId: state.recipeId, artifactId: state.artifactId }); break;
@@ -480,7 +486,7 @@ function wireHomeScreen() {
       const kind = el.getAttribute("data-qa");
       if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
-      else if (kind === "create") openActionLauncher();
+      else if (kind === "create") navigateTo("template-gallery");
       else if (kind === "inbox") navigateTo("notifications");
     });
   });
