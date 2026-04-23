@@ -220,7 +220,9 @@ function wireCards() {
     card.addEventListener("click", () => {
       const id = card.getAttribute("data-template-id");
       if (!id) return;
-      window.app.navigateTo("template-intake", { templateId: id });
+      // recipeId:null clears any stale value from a prior Action Launcher flow
+      // so the intake screen's "Detected sources" reflects this template, not the last recipe.
+      window.app.navigateTo("template-intake", { templateId: id, recipeId: null });
     });
   });
 }

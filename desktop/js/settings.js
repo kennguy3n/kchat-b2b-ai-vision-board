@@ -162,7 +162,8 @@ function wireTemplatesTab() {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-template-edit");
       closeAllModals();
-      window.app.navigateTo("template-intake", { templateId: id });
+      // recipeId:null prevents stale recipe state from leaking into the intake screen.
+      window.app.navigateTo("template-intake", { templateId: id, recipeId: null });
     });
   });
   document.querySelectorAll("[data-template-duplicate]").forEach(btn => {

@@ -96,8 +96,11 @@ function navigateTo(screenId, params = {}, afterRender) {
   if (params.threadId)     state.threadId     = params.threadId;
   if (params.aiEmployeeId) state.aiEmployeeId = params.aiEmployeeId;
   if (params.artifactId)   state.artifactId   = params.artifactId;
-  if (params.templateId)   state.templateId   = params.templateId;
-  if (params.recipeId)     state.recipeId     = params.recipeId;
+  // templateId / recipeId use `in` so callers can explicitly pass null to
+  // clear stale state (e.g. gallery → intake shouldn't carry a prior recipeId
+  // left over from an Action Launcher flow).
+  if ("templateId" in params)   state.templateId   = params.templateId || null;
+  if ("recipeId" in params)     state.recipeId     = params.recipeId   || null;
 
   state.screen = screenId;
 
