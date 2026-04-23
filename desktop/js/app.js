@@ -397,7 +397,7 @@ function renderWorkspaceHome() {
         <div class="qa-item" data-qa="create">
           <div class="qa-icon">${iconSvg("ai", 18)}</div>
           <div class="qa-label">Create with AI</div>
-          <div class="qa-count">5 templates</div>
+          <div class="qa-count">${Object.keys(D.templates).length} templates</div>
         </div>
       </div>
 
