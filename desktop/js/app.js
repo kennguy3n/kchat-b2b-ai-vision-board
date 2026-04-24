@@ -260,8 +260,10 @@ window.addEventListener("popstate", (e) => {
   if (s.threadId)      state.threadId      = s.threadId;
   if (s.aiEmployeeId)  state.aiEmployeeId  = s.aiEmployeeId;
   if (s.artifactId)    state.artifactId    = s.artifactId;
-  if (s.templateId)    state.templateId    = s.templateId;
-  if (s.recipeId)      state.recipeId      = s.recipeId;
+  // Use `in` for templateId / recipeId so Back/Forward respects an explicit
+  // null clear (mirrors navigateTo's semantics).
+  if ("templateId" in s)  state.templateId  = s.templateId || null;
+  if ("recipeId" in s)    state.recipeId    = s.recipeId   || null;
   applyShellForScreen(s.screenId);
   showScreen(s.screenId);
   renderScreen(s.screenId);
