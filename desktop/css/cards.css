@@ -145,3 +145,97 @@
   animation: toastIn .2s ease-out;
 }
 @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px);} to { opacity: 1; transform: translate(-50%, 0);} }
+
+/* ---------------- Business-suite cards (HR / Procurement / Finance / CRM) ---------------- */
+.kcard-biz .kc-icon {
+  background: linear-gradient(135deg, var(--primary-50), var(--accent-50));
+  color: var(--primary-600);
+}
+.kcard-biz .bz-grid { display: flex; flex-direction: column; gap: 8px; }
+.kcard-biz .bz-row {
+  display: grid; grid-template-columns: 120px 1fr auto;
+  gap: 10px; align-items: center; font-size: 12.5px;
+}
+.kcard-biz .bz-row .bz-label { color: var(--text-muted); font-weight: 600; }
+.kcard-biz .bz-row .bz-values b { font-weight: 700; }
+.kcard-biz .bz-bar {
+  position: relative; height: 6px; border-radius: 999px;
+  background: var(--surface-2); overflow: hidden;
+}
+.kcard-biz .bz-bar-fill {
+  position: absolute; inset: 0 auto 0 0; height: 100%;
+  background: linear-gradient(90deg, var(--primary-500, #6366f1), var(--accent-500, #8b5cf6));
+  border-radius: 999px;
+}
+.kcard-biz .bz-bar-fill.warn {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+.kcard-biz .bz-lines { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.kcard-biz .bz-line {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 12.5px; padding: 4px 0;
+  border-top: 1px dashed var(--border);
+}
+.kcard-biz .bz-line:first-child { border-top: 0; }
+.kcard-biz .bz-line .num { font-variant-numeric: tabular-nums; font-weight: 600; }
+.kcard-biz .bz-line .num.warn { color: #b45309; }
+
+.kcard-biz .bz-total {
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  font-size: 13px;
+}
+.kcard-biz .bz-total .warn { color: #b45309; }
+
+.kcard-biz .bz-row-split {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+  padding: 6px 0;
+}
+.kcard-biz .bz-big { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Budget summary table-like rows */
+.kcard-biz .bz-bsum-head,
+.kcard-biz .bz-bsum-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 0.6fr;
+  gap: 8px; font-size: 12px; padding: 4px 0;
+  align-items: center;
+}
+.kcard-biz .bz-bsum-head {
+  color: var(--text-muted); font-weight: 600; text-transform: uppercase;
+  font-size: 10.5px; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.kcard-biz .bz-bsum-row { border-top: 1px dashed var(--border); }
+.kcard-biz .bz-bsum-row:first-of-type { border-top: 0; }
+.kcard-biz .bz-bsum-row.flagged { color: #b45309; font-weight: 600; }
+.kcard-biz .bz-bsum-row.flagged .bz-bsum-var::after { content: " ⚠"; }
+.kcard-biz .bz-bsum-bud,
+.kcard-biz .bz-bsum-act,
+.kcard-biz .bz-bsum-var { font-variant-numeric: tabular-nums; text-align: right; }
+.kcard-biz .bz-bsum-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Deal stage pip bar */
+.kcard-biz .bz-pip-row {
+  display: flex; gap: 0; align-items: center; flex-wrap: wrap;
+  background: var(--surface-2); border-radius: 999px; padding: 4px;
+}
+.kcard-biz .bz-pip {
+  flex: 1; text-align: center; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); padding: 4px 6px; border-radius: 999px;
+  min-width: 0; white-space: nowrap;
+}
+.kcard-biz .bz-pip.done {
+  background: var(--success-50); color: #066a4f;
+}
+.kcard-biz .bz-pip.current {
+  background: var(--primary-600, #4f46e5); color: white;
+}
+
+/* Additional status-pill colors used by biz cards */
+.status-pill.flagged    { background: var(--warning-50, #fef3c7); color: #8a5200; }
+.status-pill.confirmed  { background: var(--success-50); color: #066a4f; }
+.status-pill.sent       { background: var(--info-50,    #dbeafe); color: #075985; }
+.status-pill.within-policy { background: var(--success-50); color: #066a4f; }
+.status-pill.ready-to-post { background: var(--info-50,    #dbeafe); color: #075985; }
