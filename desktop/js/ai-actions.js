@@ -11,9 +11,13 @@ import { delay, showToast } from "./transitions.js";
 // actions surface without forcing them to scan every group.
 const CHANNEL_SUGGESTIONS = {
   "c-vendor": [
-    { id: "plan-tasks", label: "Extract Tasks", sub: "Pull action items out of this thread" },
-    { id: "approve-new", label: "Create Approval", sub: "Prefill from the conversation" },
-    { id: "copilot-sheet", label: "Analyze Budget", sub: "Open budget sheet with AI formula bar" },
+    // Cross-service AI: email summary + calendar scheduling + drive attach.
+    { id: "integration-summarize-email", label: "Summarize Orbix email", sub: "AI recap of latest remediation thread" },
+    { id: "integration-schedule-review", label: "Schedule vendor review",  sub: "AI finds a slot across attendees" },
+    { id: "integration-attach-risk",     label: "Attach risk matrix",      sub: "Pull Risk-Scoring-Matrix from Drive" },
+    { id: "plan-tasks",    label: "Extract Tasks",    sub: "Pull action items out of this thread" },
+    { id: "approve-new",   label: "Create Approval",  sub: "Prefill from the conversation" },
+    { id: "copilot-sheet", label: "Analyze Budget",   sub: "Open budget sheet with AI formula bar" },
   ],
   "c-specs": [
     { id: "create-prd", label: "Draft PRD", recipeId: "r-draft-prd", templateId: "tpl-prd", sub: "Standard product requirements doc" },
@@ -21,9 +25,11 @@ const CHANNEL_SUGGESTIONS = {
     { id: "plan-tasks", label: "Extract Tasks", sub: "Turn discussion into assignments" },
   ],
   "c-deals": [
-    { id: "create-qbr", label: "Create QBR", recipeId: "r-create-qbr", templateId: "tpl-qbr", sub: "Quarterly business review deck" },
-    { id: "copilot-slides", label: "Design slides", sub: "Open slide workspace with per-slide AI" },
-    { id: "analyze-summary", label: "Summarize", sub: "Pipeline + risk highlights" },
+    { id: "integration-qbr-from-crm",     label: "Prepare QBR from CRM",     sub: "AI pulls Globex pipeline data" },
+    { id: "integration-followup-globex",  label: "Follow-up email to Globex", sub: "AI-drafted email with context" },
+    { id: "create-qbr",       label: "Create QBR",    recipeId: "r-create-qbr", templateId: "tpl-qbr", sub: "Quarterly business review deck" },
+    { id: "copilot-slides",   label: "Design slides", sub: "Open slide workspace with per-slide AI" },
+    { id: "analyze-summary",  label: "Summarize",     sub: "Pipeline + risk highlights" },
   ],
 };
 const DEFAULT_SUGGESTIONS = [
@@ -202,6 +208,31 @@ function routeAction(id, opts = {}) {
   }
   if (id === "browse-templates") {
     window.app.navigateTo("template-gallery");
+    return;
+  }
+  // Integrated workspace (v0.5) — cross-service AI actions route to the
+  // matching right-panel view (or a toast when the action is demo-only).
+  if (id === "integration-summarize-email" || id === "create-email") {
+    window.app.openRightView("email");
+    return;
+  }
+  if (id === "integration-schedule-review" || id === "plan-meeting") {
+    window.app.openRightView("calendar");
+    showToast("AI scheduling — checking availability across attendees");
+    return;
+  }
+  if (id === "integration-attach-risk") {
+    window.app.openRightView("drive");
+    showToast("Attached Risk-Scoring-Matrix-v4.xlsx from channel drive");
+    return;
+  }
+  if (id === "integration-qbr-from-crm" || id === "analyze-deal") {
+    window.app.openRightView("business");
+    return;
+  }
+  if (id === "integration-followup-globex") {
+    window.app.openRightView("email");
+    showToast("AI drafted follow-up email — ready for your review");
     return;
   }
   if (id && id.startsWith("create-")) {

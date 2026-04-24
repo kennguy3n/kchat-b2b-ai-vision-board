@@ -17,6 +17,7 @@ import { renderTemplateGallery } from "./template-gallery.js";
 import { renderKnowledge } from "./knowledge.js";
 import { renderConnectors } from "./connectors.js";
 import { renderNotifications } from "./notifications.js";
+import { renderEmailPanel, renderCalendarPanel, renderDrivePanel, renderBusinessPanel } from "./integrations.js";
 import { showToast } from "./transitions.js";
 import { startOnboarding } from "./onboarding.js";
 
@@ -330,6 +331,10 @@ function openRightView(name, params = {}) {
       case "approval-form":   renderApprovalForm(id); break;
       case "approval-review": renderApprovalReview(id, params); break;
       case "summary":         renderSummary(id); break;
+      case "email":           renderEmailPanel(id, params); break;
+      case "calendar":        renderCalendarPanel(id, params); break;
+      case "drive":           renderDrivePanel(id, params); break;
+      case "business":        renderBusinessPanel(id, params); break;
     }
   }
   // wire close buttons once
@@ -466,6 +471,40 @@ function renderWorkspaceHome() {
         </div>
       </div>
 
+      <div class="section-head">
+        <h2>Connected workspace <span class="section-sub">Email, calendar, drive, and business — woven into chat</span></h2>
+      </div>
+      <div class="connected-workspace" aria-label="Connected workspace status">
+        <div class="cw-item" data-cw="email">
+          <div class="cw-icon">✉</div>
+          <div class="cw-meta">
+            <div class="cw-label">Email</div>
+            <div class="cw-sub">2 unread · vendor-management@</div>
+          </div>
+        </div>
+        <div class="cw-item" data-cw="calendar">
+          <div class="cw-icon">📅</div>
+          <div class="cw-meta">
+            <div class="cw-label">Calendar</div>
+            <div class="cw-sub">Next: Vendor Review Sync, 2pm</div>
+          </div>
+        </div>
+        <div class="cw-item" data-cw="drive">
+          <div class="cw-icon">📁</div>
+          <div class="cw-meta">
+            <div class="cw-label">Drive</div>
+            <div class="cw-sub">3 files updated today</div>
+          </div>
+        </div>
+        <div class="cw-item" data-cw="business">
+          <div class="cw-icon">💼</div>
+          <div class="cw-meta">
+            <div class="cw-label">Business</div>
+            <div class="cw-sub">1 deal at risk · 1 invoice on hold</div>
+          </div>
+        </div>
+      </div>
+
       <div class="section-head"><h2>Domains</h2><span class="more">Explore all</span></div>
       <div class="grid-3">
         ${tenantDomains.map(d => {
@@ -558,6 +597,15 @@ function wireHomeScreen() {
   // Intent cards open the Action Launcher scrolled to the chosen intent.
   document.querySelectorAll("#screen-workspace-home [data-intent]").forEach(el => {
     el.addEventListener("click", () => openActionLauncher({ intent: el.getAttribute("data-intent") }));
+  });
+  // Connected workspace row — each tile opens the most relevant channel
+  // and pops the matching right-panel view. Email/drive/business default
+  // to #vendor-management; calendar (cross-channel) also lands there.
+  document.querySelectorAll("#screen-workspace-home [data-cw]").forEach(el => {
+    el.addEventListener("click", () => {
+      const kind = el.getAttribute("data-cw");
+      navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView(kind));
+    });
   });
   const tourLink = document.querySelector("[data-restart-tour]");
   if (tourLink) tourLink.addEventListener("click", () => startOnboarding({ force: true }));

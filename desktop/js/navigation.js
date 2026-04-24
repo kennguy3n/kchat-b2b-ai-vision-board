@@ -38,8 +38,24 @@ function renderDomainSection(domain, state) {
     const hasUnread = unreadChannels.has(cid);
     const unreadClass = hasUnread ? " unread" : "";
     const unreadBadge = hasUnread ? `<span class="unread-dot" aria-hidden="true"></span>` : "";
-    return `<div class="sb-item${active}${unreadClass}" data-nav="channel" data-id="${cid}">
-      <span class="hash">#</span>${c.name}${unreadBadge}
+    // Subtle integration indicator row: only render when the channel has
+    // linked email / calendar / drive data so it reads as metadata rather
+    // than another navigation target.
+    const emailCount = D.emailsByChannel(cid).length;
+    const calCount   = D.calendarForChannel(cid).length;
+    const driveCount = D.driveForChannel(cid)?.files?.length || 0;
+    const indicators = [];
+    if (emailCount) indicators.push(`✉ ${emailCount}`);
+    if (calCount)   indicators.push(`📅 ${calCount}`);
+    if (driveCount) indicators.push(`📁 ${driveCount}`);
+    const indicatorRow = indicators.length
+      ? `<div class="sidebar-channel-indicators">${indicators.join(" · ")}</div>`
+      : "";
+    return `<div class="sb-channel-wrap">
+      <div class="sb-item${active}${unreadClass}" data-nav="channel" data-id="${cid}">
+        <span class="hash">#</span>${c.name}${unreadBadge}
+      </div>
+      ${indicatorRow}
     </div>`;
   }).join("");
   const collapsed = state.collapsed.has(domain.id) ? " collapsed" : "";
