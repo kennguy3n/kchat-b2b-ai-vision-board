@@ -370,6 +370,7 @@ function wireFormulaBar(view, s, copilot, varianceIdx) {
     const q = input.value.trim();
     if (!q) return;
     clearHighlights(view);
+    result.hidden = true;
 
     const formula = (copilot.formulaSuggestions || []).find(f => f.match.test(q));
     if (formula) {
@@ -469,13 +470,20 @@ function wireColumnAI(view, s, copilot, signal) {
       if (!insight) return;
       const [primary, detail] = insight;
 
+      // Skip hardcoded items whose label matches the dynamic primary action so
+      // columns like Variance (primary="Detect anomalies") or Category
+      // (primary="Categorize values") don't render duplicate menu rows.
+      const extras = [
+        { action: "anomaly",    label: "Detect anomalies" },
+        { action: "categorize", label: "Categorize values" },
+      ].filter(x => x.label !== primary);
+
       const rect = btn.getBoundingClientRect();
       const bodyRect = view.getBoundingClientRect();
       menu.innerHTML = `
         <div class="cam-head">${iconSvg("ai", 12)} Column · <b>${name}</b></div>
         <div class="cam-item" data-cam-action="primary">${primary}</div>
-        <div class="cam-item" data-cam-action="anomaly">Detect anomalies</div>
-        <div class="cam-item" data-cam-action="categorize">Categorize values</div>
+        ${extras.map(x => `<div class="cam-item" data-cam-action="${x.action}">${x.label}</div>`).join("")}
       `;
       menu.style.top = `${rect.bottom - bodyRect.top + 4}px`;
       menu.style.left = `${Math.max(8, rect.left - bodyRect.left - 40)}px`;
