@@ -2,6 +2,7 @@
 import * as D from "./demo-data.js";
 import { renderCard } from "./cards.js";
 import { iconSvg } from "./icons.js";
+import { showToast } from "./transitions.js";
 
 function avatarHTML(user, size = "md") {
   const color = user.color || "#6b7280";
@@ -11,6 +12,20 @@ function avatarHTML(user, size = "md") {
 function renderMessage(m, isContinuation = false) {
   const sender = D.userById(m.senderId);
   if (!sender) return "";
+  // System messages (e.g. inbound email notices, calendar reminders) render
+  // as subtle grey full-width rows rather than the avatar+name chat layout.
+  if (m.isSystem || sender.isSystem) {
+    const card = renderCard(m.card);
+    return `
+      <div class="message system-message" data-msg-id="${m.id}">
+        <div class="sys-row">
+          <span class="sys-text">${m.text || ""}</span>
+          <span class="sys-ts">${m.ts}</span>
+        </div>
+        ${card}
+      </div>
+    `;
+  }
   const aiClass = m.isAI ? " ai" : "";
   const aiPill = m.isAI ? `<span class="pill-ai">${sender.role || "AI"}</span>` : "";
 
@@ -38,6 +53,12 @@ function renderMessage(m, isContinuation = false) {
   `).join("");
 
   const card = renderCard(m.card) + (m.cardType === "ai-suggest" ? renderCard({ type: "ai-suggest" }) : "");
+  // Subtle drive-file reference rendered as a small inline pill under the
+  // message body — used when an AI mentions a file it saved to the channel
+  // drive without forcing the full file card layout.
+  const driveRef = m.driveRef
+    ? `<button class="drive-ref-pill" data-msg-action="open-drive" data-file-id="${m.driveRef.fileId}" title="Open in channel files">${iconSvg("attach", 12)}<span>${m.driveRef.name}</span></button>`
+    : "";
 
   const leftCol = isContinuation
     ? `<div class="avatar-spacer" aria-hidden="true"></div>`
@@ -58,6 +79,7 @@ function renderMessage(m, isContinuation = false) {
       <div class="col">
         ${headBlock}
         <div class="body">${body}${hoverTs}</div>
+        ${driveRef}
         ${attachments ? `<div class="attachments">${attachments}</div>` : ""}
         ${card}
       </div>
@@ -86,6 +108,36 @@ export function renderChannel(channelId) {
   // Domain/knowledge references are retained for right-panel wiring below.
   void domain;
 
+  // Channel context bar — a slim row of integration indicators below the
+  // channel header. Only renders indicators that have data for the current
+  // channel so it reads as metadata, not navigation.
+  const emails   = D.emailsByChannel(channelId);
+  const cal      = D.calendarForChannel(channelId);
+  const drive    = D.driveForChannel(channelId);
+  const biz      = D.businessRecordsForChannel(channelId);
+  const dealsCnt = biz.deals.length;
+  const invCnt   = biz.invoices.length;
+  const ctxItems = [];
+  if (emails.length) {
+    ctxItems.push(`<button class="ctx-indicator" data-ctx="email" title="View email threads">✉ ${emails.length} email thread${emails.length > 1 ? "s" : ""}</button>`);
+  }
+  if (cal.length) {
+    const next = cal[0];
+    ctxItems.push(`<button class="ctx-indicator" data-ctx="calendar" title="View calendar">📅 Next: ${next.title}, ${next.time}</button>`);
+  }
+  if (drive?.files?.length) {
+    ctxItems.push(`<button class="ctx-indicator" data-ctx="drive" title="View channel files">📁 ${drive.files.length} files</button>`);
+  }
+  if (dealsCnt || invCnt) {
+    const bits = [];
+    if (dealsCnt) bits.push(`${dealsCnt} deal${dealsCnt > 1 ? "s" : ""}`);
+    if (invCnt)   bits.push(`${invCnt} invoice${invCnt > 1 ? "s" : ""}`);
+    ctxItems.push(`<button class="ctx-indicator" data-ctx="business" title="View business records">💼 ${bits.join(" · ")}</button>`);
+  }
+  const ctxBar = ctxItems.length
+    ? `<div class="channel-context-bar" aria-label="Channel connected services">${ctxItems.join("")}</div>`
+    : "";
+
   container.innerHTML = `
     <div class="channel-header">
       <div>
@@ -99,6 +151,7 @@ export function renderChannel(channelId) {
         ${D.users.slice(0,4).map(u => avatarHTML(u, "sm")).join("")}
       </div>
     </div>
+    ${ctxBar}
     <div class="messages" id="messages-list">
       <div class="divider-day">Today</div>
       ${msgs}
@@ -110,6 +163,8 @@ export function renderChannel(channelId) {
     <div class="compose">
       <div class="compose-box">
         <button class="btn-compose" title="Attach file">${iconSvg("attach", 18)}</button>
+        <button class="btn-compose" id="compose-drive" title="Attach from Drive">📁</button>
+        <button class="btn-compose" id="compose-cal" title="Share availability">📅</button>
         <textarea placeholder="Write a message..." rows="1"></textarea>
         <button class="btn-compose" title="Emoji">😊</button>
         <button class="btn-compose btn-ai-sparkle" id="compose-ai" title="AI Actions">${iconSvg("ai", 18)}</button>
@@ -164,7 +219,48 @@ function wireChannelEvents() {
       } else if (action === "open-approval") {
         const id = el.getAttribute("data-approval-id");
         window.app.openRightView("approval-review", { approvalId: id });
+      } else if (action === "open-email") {
+        const id = el.getAttribute("data-email-id");
+        window.app.openRightView("email", { emailId: id });
+      } else if (action === "reply-email") {
+        showToast("Reply drafted in chat — AI pre-filled context");
+      } else if (action === "open-deal") {
+        window.app.openRightView("business");
+      } else if (action === "open-event") {
+        window.app.openRightView("calendar");
       }
+    });
+  });
+
+  // Also allow clicking the card body (not just buttons) to open panels.
+  document.querySelectorAll(".kcard-email").forEach(c => {
+    c.addEventListener("click", () => {
+      const id = c.getAttribute("data-card-ref");
+      window.app.openRightView("email", { emailId: id });
+    });
+  });
+  document.querySelectorAll(".kcard-deal").forEach(c => {
+    c.addEventListener("click", () => window.app.openRightView("business"));
+  });
+  document.querySelectorAll(".kcard-calendar").forEach(c => {
+    c.addEventListener("click", () => window.app.openRightView("calendar"));
+  });
+
+  // Channel context bar — slim clickable indicators open the matching
+  // right-panel view for the current channel.
+  document.querySelectorAll(".channel-context-bar [data-ctx]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const view = btn.getAttribute("data-ctx");
+      window.app.openRightView(view);
+    });
+  });
+
+  // Subtle inline drive pill on AI messages opens the drive panel.
+  document.querySelectorAll(".drive-ref-pill").forEach(pill => {
+    pill.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.app.openRightView("drive");
     });
   });
 
@@ -175,6 +271,10 @@ function wireChannelEvents() {
 
   const ai = document.getElementById("compose-ai");
   if (ai) ai.addEventListener("click", () => window.app.openActionLauncher());
+  const drive = document.getElementById("compose-drive");
+  if (drive) drive.addEventListener("click", () => window.app.openRightView("drive"));
+  const cal = document.getElementById("compose-cal");
+  if (cal) cal.addEventListener("click", () => showToast("Availability block inserted"));
   const send = document.getElementById("compose-send");
   if (send) send.addEventListener("click", () => {
     const ta = document.querySelector(".compose textarea");

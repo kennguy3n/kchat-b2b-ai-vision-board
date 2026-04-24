@@ -393,6 +393,271 @@
   display: flex; gap: 8px; justify-content: flex-end;
 }
 
+/* ---------- Integrated workspace (v0.5) ---------------------------------
+   Subtle, messaging-first surfaces for email / calendar / drive / business.
+   All styles reuse existing design tokens (no new accent colors) so the
+   integration layer reads as metadata within chat, not a separate product. */
+
+/* Channel context bar — slim row below the channel header. */
+.channel-context-bar {
+  display: flex; gap: 16px;
+  padding: 6px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.ctx-indicator {
+  background: transparent;
+  border: 0;
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.ctx-indicator:hover { background: var(--surface-2); color: var(--text); }
+
+/* System messages (email-received notices, calendar reminders). */
+.message.system-message {
+  grid-template-columns: 1fr !important;
+  display: flex; flex-direction: column;
+  padding: 6px 24px;
+  background: var(--surface-2);
+  border-left: 3px solid var(--border-strong);
+  margin: 4px 0;
+  border-radius: 6px;
+}
+.message.system-message .sys-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.message.system-message .sys-text { flex: 1; }
+.message.system-message .sys-ts { font-size: var(--fs-xs); color: var(--text-soft); }
+
+/* Connected workspace row on Home — ambient cards, less prominent than
+   the Core Intents row above it. */
+.connected-workspace {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+@media (max-width: 1100px) { .connected-workspace { grid-template-columns: repeat(2, 1fr); } }
+.cw-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.cw-item:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.cw-item .cw-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--surface-2);
+  display: grid; place-items: center;
+  font-size: 14px;
+}
+.cw-item .cw-label { font-weight: 600; font-size: 13px; color: var(--text); }
+.cw-item .cw-sub   { font-size: 11.5px; color: var(--text-muted); }
+
+/* Tiny channel indicators in sidebar (email/calendar/drive counts). */
+.sb-channel-wrap { display: flex; flex-direction: column; }
+.sidebar-channel-indicators {
+  padding: 0 8px 4px 28px;
+  font-size: 10.5px;
+  color: var(--sb-text-mut);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+/* Privacy / encryption badge — shared across email / drive / panels. */
+.privacy-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--info-50);
+  color: #075985;
+  white-space: nowrap;
+}
+.privacy-badge svg { opacity: 0.8; }
+
+/* Right-panel: email list */
+.rp-email { padding: 0; }
+.rp-email .email-row {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.rp-email .email-row:hover { background: var(--surface-2); }
+.rp-email .em-row-head {
+  display: flex; align-items: center; gap: 10px;
+}
+.rp-email .em-row-head .unread-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: var(--info);
+}
+.rp-email .em-row-head .read-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: var(--border-strong);
+}
+.rp-email .em-meta { flex: 1; min-width: 0; }
+.rp-email .em-from { font-size: 12px; color: var(--text-muted); }
+.rp-email .em-subject { font-weight: 600; font-size: 13.5px; color: var(--text); }
+.rp-email .em-attach { color: var(--text-soft); }
+.rp-email .em-ts { white-space: nowrap; }
+.rp-email .em-expand { display: none; padding: 10px 0 0; }
+.rp-email .email-row.expanded .em-expand { display: block; }
+.rp-email .em-snippet { font-size: 12.5px; color: var(--text); margin-bottom: 8px; }
+.rp-email .em-ai-summary {
+  display: flex; gap: 6px; align-items: flex-start;
+  padding: 8px 10px;
+  background: var(--ai-50);
+  color: var(--ai-strong);
+  border-radius: 8px;
+  font-size: 12.5px;
+  margin-bottom: 8px;
+}
+.rp-email .em-files { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.rp-email .em-file {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.rp-email .em-actions { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.rp-email .em-privacy { display: flex; justify-content: flex-end; }
+
+/* Right-panel: calendar list */
+.rp-calendar { padding: 0; }
+.rp-calendar .cal-event {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.rp-calendar .cal-event:hover { background: var(--surface-2); }
+.rp-calendar .cal-time { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.rp-calendar .cal-title { font-size: 13.5px; font-weight: 600; display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.rp-calendar .cal-ai { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 4px; align-items: center; }
+.rp-calendar .cal-ai svg { flex-shrink: 0; }
+.rp-calendar .status-pill.meeting  { background: var(--primary-50); color: var(--primary-600); }
+.rp-calendar .status-pill.deadline { background: var(--warning-50); color: #8a5200; }
+
+/* Right-panel: drive list */
+.rp-drive { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.rp-drive .drive-file {
+  display: grid;
+  grid-template-columns: 36px 1fr 22px;
+  gap: 10px; align-items: center;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.rp-drive .drive-file:hover { border-color: var(--primary); }
+.rp-drive .df-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--primary-50); color: var(--primary-600);
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 10.5px;
+}
+.rp-drive .df-name { font-weight: 600; font-size: 13px; color: var(--text); }
+.rp-drive .df-sub  { font-size: 11.5px; color: var(--text-muted); }
+.rp-drive .drive-upload {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: var(--surface-2);
+}
+.rp-drive .drive-upload:hover { border-color: var(--primary); color: var(--text); }
+
+/* Right-panel: business records (deals / invoices / alerts) */
+.rp-business { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.rp-business .biz-section { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.rp-business .biz-section summary {
+  padding: 8px 12px;
+  display: flex; justify-content: space-between;
+  font-weight: 600; font-size: 13px;
+  cursor: pointer; list-style: none;
+}
+.rp-business .biz-section summary::-webkit-details-marker { display: none; }
+.rp-business .biz-list {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 0 10px 10px;
+}
+.rp-business .biz-record {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.rp-business .biz-record .br-head,
+.rp-business .biz-record .br-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.rp-business .biz-record .br-title { font-weight: 600; font-size: 13px; }
+.rp-business .biz-record .br-sub   { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.rp-business .biz-record .br-ai    { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
+.rp-business .biz-deal    { border-left: 3px solid var(--success); }
+.rp-business .biz-invoice { border-left: 3px solid var(--primary); }
+.rp-business .biz-alert   { border-left: 3px solid var(--warning); }
+
+/* Shared health dot for deal cards + business records. */
+.health-dot {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-muted);
+}
+.health-dot::before {
+  content: ""; width: 8px; height: 8px; border-radius: 999px; background: currentColor;
+}
+.health-on-track { color: var(--success); }
+.health-at-risk  { color: var(--warning); }
+.health-blocked  { color: var(--danger); }
+
+/* Status pills (reused for invoices / alerts) */
+.status-pill.on-hold   { background: var(--warning-50); color: #8a5200; }
+.status-pill.paid      { background: var(--success-50); color: #066a4f; }
+.status-pill.warning   { background: var(--warning-50); color: #8a5200; }
+.status-pill.negotiation { background: var(--warning-50); color: #8a5200; }
+.status-pill.verbal    { background: var(--primary-50);  color: var(--primary-600); }
+.status-pill.proposal  { background: var(--info-50);     color: #075985; }
+
+/* Drive-ref pill used on AI messages that reference a file. */
+.drive-ref-pill {
+  margin-top: 6px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.drive-ref-pill:hover { border-color: var(--primary); color: var(--primary-600); }
+
+/* Compose box — widen the grid so the new Drive/Calendar buttons fit next
+   to the existing attach/emoji/AI/send buttons. */
+.compose .compose-box { grid-template-columns: auto auto auto 1fr auto auto auto; }
+
 /* Typing / loading */
 .loading-bar {
   height: 3px; background: linear-gradient(90deg, transparent, var(--primary), transparent);

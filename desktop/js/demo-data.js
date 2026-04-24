@@ -15,6 +15,9 @@ export const users = [
   { id: "u-sofia", name: "Sofia Reyes",  role: "Compliance",      initials: "SR", color: "#f59e0b" },
   { id: "u-tom",   name: "Tom Becker",   role: "Sales Director",  initials: "TB", color: "#0ea5e9" },
   { id: "u-ana",   name: "Ana Wu",       role: "Product Manager", initials: "AW", color: "#a855f7" },
+  // `u-system` is used for system-generated chat notices (e.g. "Email received
+  // from …"). Rendered as a subtle grey message without an AI pill.
+  { id: "u-system", name: "KChat", role: "System", initials: "·", color: "#8a93a6", isSystem: true },
 ];
 
 export const currentUserId = "u-ken";
@@ -185,6 +188,11 @@ export const messages = {
     { id: "m-v-8", senderId: "u-dan",  ts: "09:31", text: "Logistics angle: Orbix is blocking two shipments. Needs an approval to unblock payment hold.", card: { type: "approval", refId: "ap-orbix" } },
     { id: "m-v-9", senderId: "u-ken",  ts: "09:35", text: "Approved path — let's get a summary and formal approval filed." },
     { id: "m-v-10", senderId: "u-sofia", ts: "09:40", text: "Filed. Pending your review.", card: { type: "approval", refId: "ap-orbix" } },
+    // Subtle integration surfaces — email, AI summary, and a calendar
+    // reminder — all appear as inline chat cards, not separate screens.
+    { id: "m-v-11", senderId: "u-system", ts: "09:45", isSystem: true, text: "✉ Email received from contracts@orbix.io", card: { type: "email", refId: "email-orbix-remediation" } },
+    { id: "m-v-12", senderId: "ai-kara", isAI: true, ts: "09:46", text: "Orbix sent updated remediation terms. AI summary: new penalty clause added; requires legal review before counter-signing. The PDF is in your channel drive.", driveRef: { fileId: "df-2", name: "Orbix-Remediation-Plan-v3.pdf" } },
+    { id: "m-v-13", senderId: "u-system", ts: "13:30", isSystem: true, text: "📅 Upcoming in this channel", card: { type: "calendar-reminder", eventId: "cal-1" } },
   ],
   "c-logistics": [
     { id: "m-l-1", senderId: "u-dan",  ts: "08:55", text: "Carrier capacity is tight this week — NSK has a 3-day backlog." },
@@ -200,6 +208,8 @@ export const messages = {
   "c-deals": [
     { id: "m-d-1", senderId: "u-tom",  ts: "11:20", text: "QBR draft attached.", card: { type: "artifact", refId: "a-qbr-globex" } },
     { id: "m-d-2", senderId: "ai-mika", isAI: true, ts: "11:21", text: "I pulled the last 4 quarters of activity and flagged 2 risks. Citations attached." },
+    { id: "m-d-3", senderId: "u-system", ts: "11:30", isSystem: true, text: "✉ Email received from sarah.chen@globex.com", card: { type: "email", refId: "email-globex-qbr-confirm" } },
+    { id: "m-d-4", senderId: "ai-mika", isAI: true, ts: "11:32", text: "Globex confirmed Thursday QBR — CFO attending. I updated the deal card.", card: { type: "deal", refId: "crm-globex" } },
   ],
   "c-roadmap": [
     { id: "m-r-1", senderId: "u-ana", ts: "13:05", text: "Q3 themes forming up: vendor portal v2, approval unification, analytics." },
@@ -627,6 +637,9 @@ export const coreIntents = [
       { id: "create-sop",      label: "SOP",       mode: "auto",   recipeId: "r-draft-prd",      templateId: "tpl-sop",      sub: "Standard operating procedure",     icon: "S" },
       { id: "create-proposal", label: "Proposal",  mode: "auto",   recipeId: "r-draft-proposal", templateId: "tpl-proposal", sub: "Customer-ready proposal",          icon: "P" },
       { id: "collect-form",    label: "Form",      mode: "auto",   sub: "Collect structured input",                 icon: "F" },
+      // Integrated-workspace (v0.5) — compose an email from the channel
+      // context; the surface stays in chat and AI summarizes the thread.
+      { id: "create-email",    label: "Email",     mode: "inline", sub: "Compose from channel context",             icon: "✉" },
     ],
   },
   {
@@ -640,6 +653,7 @@ export const coreIntents = [
       { id: "analyze-compare", label: "Compare",   mode: "auto",   sub: "Side-by-side highlights",                   icon: "⇄" },
       { id: "analyze-report",  label: "Report",    mode: "auto",   sub: "Structured rollup",                         icon: "R" },
       { id: "copilot-sheet-analyze", label: "Spreadsheet AI", mode: "inline", sub: "Cell-level explain + NL formula", icon: "Σ" },
+      { id: "analyze-deal",    label: "Deal Review", mode: "auto",  sub: "CRM health + risk summary",                 icon: "💼" },
     ],
   },
   {
@@ -653,6 +667,7 @@ export const coreIntents = [
       { id: "plan-agenda",  label: "Agenda",       mode: "auto", sub: "Structured meeting plan",    icon: "A" },
       { id: "track-risk",   label: "Risk Register",mode: "auto", sub: "Flag + score risks",         icon: "!" },
       { id: "track-budget", label: "Budget",       mode: "auto", sub: "Track plan vs actual",       icon: "$" },
+      { id: "plan-meeting", label: "Meeting",      mode: "auto", sub: "AI-scheduled with availability", icon: "📅" },
     ],
   },
   {
@@ -1041,6 +1056,12 @@ export const notifications = [
   { id: "n-6", kind: "budget",   title: "Mika Sales AI hit 98% of monthly budget",     preview: "Cooling down until Friday 09:00 or admin override",   aiEmployeeId: "ai-mika", ts: "4h ago",    unread: false, actorId: "ai-mika" },
   { id: "n-7", kind: "mention",  title: "Ana mentioned you in #specs",                 preview: "@ken priority on risk scoring — surfaces in ops",     channelId: "c-specs",    ts: "yesterday", unread: false, actorId: "u-ana" },
   { id: "n-8", kind: "approval", title: "Approval approved: Paperstack renewal",       preview: "You approved the Paperstack annual renewal",          approvalId: "ap-software-license", ts: "Mon", unread: false, actorId: "u-ken" },
+  // v0.5 — integrated workspace inbox items (email + calendar). Email
+  // notifications open the channel with the email right-panel focused on
+  // the corresponding thread; calendar items open the calendar panel.
+  { id: "n-email-1", kind: "email",    title: "Email from contracts@orbix.io",      preview: "RE: SLA Remediation — Updated Terms",           emailId: "email-orbix-remediation", channelId: "c-vendor", ts: "09:45",   unread: true,  actorId: "u-system", priority: "action" },
+  { id: "n-email-2", kind: "email",    title: "Email from renewals@nimbuslogix.com", preview: "NimbusLogix — Q2 Renewal Proposal",            emailId: "email-nimbuslogix-renewal", channelId: "c-vendor", ts: "Yesterday", unread: false, actorId: "u-system", priority: "update" },
+  { id: "n-cal-1",   kind: "calendar", title: "Vendor Review Sync in 30 min",        preview: "Today, 2:00 PM · 3 attendees",                  eventId: "cal-1",   channelId: "c-vendor", ts: "1:30 PM", unread: true,  actorId: "u-system", priority: "action" },
 ];
 
 /* ---------------- Settings ---------------- */
@@ -1076,6 +1097,116 @@ export const settings = {
   ],
 };
 
+/* ---------------- Integrated workspace — email (KMail) ---------------- *
+ * Emails are NOT a top-level feature — they surface as inline chat cards
+ * and a right-panel sidebar, scoped to the channel they belong to.
+ * `privacyMode` mirrors KMail's three modes: Standard Private, Confidential
+ * Send, Zero-Access Vault. */
+export const emailThreads = {
+  "email-orbix-remediation": {
+    id: "email-orbix-remediation",
+    channelId: "c-vendor",
+    from: "contracts@orbix.io",
+    to: "vendor-management@acmecorp.com",
+    subject: "RE: SLA Remediation — Updated Terms",
+    snippet: "Please find attached the updated remediation plan addressing the SLA breaches...",
+    receivedAt: "09:45",
+    hasAttachment: true,
+    attachments: [{ name: "Orbix-Remediation-Plan-v3.pdf", size: "2.1 MB" }],
+    isRead: false,
+    privacyMode: "Standard Private",
+    aiSummary: "Orbix has submitted updated remediation terms addressing all 3 SLA breaches. New penalty clause added. Requires legal review before counter-signing.",
+  },
+  "email-nimbuslogix-renewal": {
+    id: "email-nimbuslogix-renewal",
+    channelId: "c-vendor",
+    from: "renewals@nimbuslogix.com",
+    to: "vendor-management@acmecorp.com",
+    subject: "NimbusLogix — Q2 Renewal Proposal",
+    snippet: "Attached is our renewal proposal for the upcoming term...",
+    receivedAt: "Yesterday",
+    hasAttachment: true,
+    attachments: [{ name: "NimbusLogix-Renewal-Q2.pdf", size: "890 KB" }],
+    isRead: true,
+    privacyMode: "Standard Private",
+    aiSummary: "NimbusLogix proposes a 3-year renewal at 8% increase. Includes new SLA tiers. Compare against current terms before Thursday.",
+  },
+  "email-globex-qbr-confirm": {
+    id: "email-globex-qbr-confirm",
+    channelId: "c-deals",
+    from: "sarah.chen@globex.com",
+    to: "tom.becker@acmecorp.com",
+    subject: "QBR Confirmed — Thursday 2pm",
+    snippet: "Confirmed for Thursday. Our CFO will join for the pricing discussion...",
+    receivedAt: "11:30",
+    hasAttachment: false,
+    isRead: false,
+    privacyMode: "Standard Private",
+    aiSummary: "Globex confirmed QBR for Thursday 2pm. CFO attending — expect pricing negotiation. Prepare EU exposure data.",
+  },
+};
+
+/* ---------------- Integrated workspace — calendar ---------------- *
+ * Calendar events are channel-scoped. `type: "meeting"` vs `"deadline"`
+ * drives the pill colour; `aiNote` is rendered as a subtle italic line
+ * under each event. */
+export const calendarEvents = [
+  { id: "cal-1", title: "Vendor Review Sync",           time: "Today, 2:00 PM", duration: "30 min", attendees: ["u-ken", "u-mira", "u-sofia"], channelId: "c-vendor",     type: "meeting",  aiNote: "3 vendors due for renewal — bring risk scores" },
+  { id: "cal-2", title: "Globex QBR",                   time: "Thu, 2:00 PM",   duration: "1 hr",   attendees: ["u-tom", "u-ken"],              channelId: "c-deals",      type: "meeting",  aiNote: "CFO attending — prepare EU pricing exposure data" },
+  { id: "cal-3", title: "SOC2 Evidence Deadline",       time: "Mon",            duration: "All day",attendees: ["u-sofia"],                      channelId: "c-compliance", type: "deadline", aiNote: "Collection window opens — 12 items outstanding" },
+  { id: "cal-4", title: "Orbix Payment Hold — Decision Due", time: "Tomorrow",   duration: "All day",attendees: ["u-ken"],                        channelId: "c-vendor",     type: "deadline", aiNote: "Approval pending your review — $42,500" },
+  { id: "cal-5", title: "Sprint Planning",              time: "Wed, 10:00 AM",  duration: "1 hr",   attendees: ["u-ana", "u-ken"],               channelId: "c-roadmap",    type: "meeting",  aiNote: "Vendor Portal v2 PRD ready for estimation" },
+];
+
+/* ---------------- Integrated workspace — drive (ZK Drive) ---------------- *
+ * Each channel maps 1:1 to a ZK Drive folder. Files flagged with
+ * `fromEmail: true` were auto-saved from email attachments; files flagged
+ * with `aiGenerated: true` were produced by an AI Employee. */
+export const driveFiles = {
+  "c-vendor": {
+    folderId: "folder-vendor-mgmt",
+    folderName: "#vendor-management",
+    files: [
+      { id: "df-1", name: "vendor-contracts-q2.zip",       size: "12.4 MB", modified: "Today, 09:12", modifiedBy: "u-mira",  type: "archive",     privacyMode: "Managed Encrypted" },
+      { id: "df-2", name: "Orbix-Remediation-Plan-v3.pdf",  size: "2.1 MB",  modified: "Today, 09:45", modifiedBy: null,      type: "pdf",         privacyMode: "Managed Encrypted", fromEmail: true },
+      { id: "df-3", name: "Risk-Scoring-Matrix-v4.xlsx",    size: "340 KB",  modified: "Apr 15",        modifiedBy: "u-sofia", type: "spreadsheet", privacyMode: "Managed Encrypted" },
+      { id: "df-4", name: "Vendor-Renewal-Checklist-Q2.pdf",size: "180 KB",  modified: "Apr 12",        modifiedBy: "ai-kara", type: "pdf",         privacyMode: "Managed Encrypted", aiGenerated: true },
+      { id: "df-5", name: "NimbusLogix-Renewal-Q2.pdf",     size: "890 KB",  modified: "Yesterday",     modifiedBy: null,      type: "pdf",         privacyMode: "Managed Encrypted", fromEmail: true },
+    ],
+    storageUsed: "48.2 MB",
+    encryptionMode: "Managed Encrypted",
+  },
+  "c-deals": {
+    folderId: "folder-deals",
+    folderName: "#deals",
+    files: [
+      { id: "df-6", name: "Globex-QBR-Q2-Draft.pptx", size: "4.2 MB", modified: "Today", modifiedBy: "ai-mika", type: "presentation", privacyMode: "Managed Encrypted", aiGenerated: true },
+      { id: "df-7", name: "CRM-Export-Q2.csv",         size: "1.1 MB", modified: "Mon",   modifiedBy: "u-tom",   type: "spreadsheet",  privacyMode: "Managed Encrypted" },
+    ],
+    storageUsed: "12.8 MB",
+    encryptionMode: "Managed Encrypted",
+  },
+};
+
+/* ---------------- Integrated workspace — business records (Kapp) ----------
+ * Business records (CRM deals, invoices, alerts) are tagged to channels
+ * so the context bar and right-panel can surface just the records that
+ * matter for the conversation at hand. */
+export const businessRecords = {
+  crm: [
+    { id: "crm-orbix",  type: "deal", name: "Orbix — Renewal FY26",     stage: "Negotiation", value: "$42,500",  owner: "u-mira",  channelId: "c-vendor", health: "at-risk", aiInsight: "Payment hold blocking — resolve approval first" },
+    { id: "crm-globex", type: "deal", name: "Globex — Expansion Q3",    stage: "Verbal",      value: "$210,000", owner: "u-tom",   channelId: "c-deals",  health: "on-track", aiInsight: "QBR Thursday — CFO confirmed, prepare pricing" },
+    { id: "crm-nimbus", type: "deal", name: "NimbusLogix — Renewal Q2", stage: "Proposal",    value: "$120,000", owner: "u-sofia", channelId: "c-vendor", health: "on-track", aiInsight: "Renewal proposal received — 8% increase, review terms" },
+  ],
+  invoices: [
+    { id: "inv-1", vendor: "Orbix",      amount: "$42,500", status: "on-hold", due: "Apr 30", channelId: "c-vendor", aiInsight: "Blocked by pending approval ap-orbix" },
+    { id: "inv-2", vendor: "Paperstack", amount: "$18,000", status: "paid",    due: "Apr 15", channelId: "c-vendor" },
+  ],
+  inventory: [
+    { id: "stock-1", alert: "FleetOne carrier capacity at 15%", severity: "warning", channelId: "c-logistics", aiInsight: "Divert priority SKUs to alternate carrier" },
+  ],
+};
+
 /* ---------------- Utility lookup helpers ---------------- */
 export function userById(id) {
   return users.find(u => u.id === id) || aiEmployees.find(a => a.id === id) || null;
@@ -1091,3 +1222,31 @@ export function threadById(id)    { return threads[id] || null; }
 export function templateById(id)  { return templates[id] || null; }
 export function knowledgeForChannel(channelId) { return knowledge[channelId] || null; }
 export function unreadNotificationCount()      { return notifications.filter(n => n.unread).length; }
+
+/* ---- Integrated workspace helpers (v0.5) ---- */
+export function emailById(id)                { return emailThreads[id] || null; }
+export function calendarEventById(id)        { return calendarEvents.find(e => e.id === id) || null; }
+export function emailsByChannel(channelId) {
+  return Object.values(emailThreads).filter(e => e.channelId === channelId);
+}
+export function calendarForChannel(channelId) {
+  return calendarEvents.filter(e => e.channelId === channelId);
+}
+export function driveForChannel(channelId)   { return driveFiles[channelId] || null; }
+export function businessRecordsForChannel(channelId) {
+  return {
+    deals:     businessRecords.crm.filter(r => r.channelId === channelId),
+    invoices:  businessRecords.invoices.filter(r => r.channelId === channelId),
+    alerts:    businessRecords.inventory.filter(r => r.channelId === channelId),
+  };
+}
+export function dealById(id) {
+  return businessRecords.crm.find(d => d.id === id) || null;
+}
+/* Combined inbox count: unread chat notifications already drives the
+   sidebar badge; email notifications are in the same `notifications`
+   list so `unreadNotificationCount()` picks them up automatically. This
+   helper exists for places that want just the "action required" tally. */
+export function actionRequiredCount() {
+  return notifications.filter(n => n.unread && (n.kind === "approval" || n.kind === "mention" || n.kind === "email" || n.kind === "calendar")).length;
+}

@@ -8,20 +8,26 @@ const FILTERS = [
   { id: "all",       label: "All" },
   { id: "mention",   label: "Mentions" },
   { id: "approval",  label: "Approvals" },
+  { id: "email",     label: "Email" },
+  { id: "calendar",  label: "Calendar" },
   { id: "ai",        label: "AI" },
   { id: "thread",    label: "Threads" },
   { id: "budget",    label: "Budget" },
 ];
 
 function kindLabel(k) {
-  return ({ mention: "@", approval: "AP", ai: "AI", thread: "TH", budget: "$" })[k] || "•";
+  return ({ mention: "@", approval: "AP", ai: "AI", thread: "TH", budget: "$", email: "✉", calendar: "📅" })[k] || "•";
 }
 
 // "Action required" items get a colored left-border so the queue visually
-// separates do-now items from passive updates. Other items still fall into
-// "Updates" underneath and render without the priority accent.
+// separates do-now items from passive updates. Email + calendar
+// notifications with `priority: "action"` join approvals/mentions in the
+// action-required rail so integrated items are treated as first-class.
 function isActionRequired(n) {
-  return n.unread && (n.kind === "approval" || n.kind === "mention");
+  if (!n.unread) return false;
+  if (n.kind === "approval" || n.kind === "mention") return true;
+  if ((n.kind === "email" || n.kind === "calendar") && n.priority === "action") return true;
+  return false;
 }
 
 function renderNotif(n) {
@@ -67,6 +73,18 @@ function handleNotifClick(n) {
   }
   if (n.kind === "budget" && n.aiEmployeeId) {
     window.app.navigateTo("ai-employee", { aiEmployeeId: n.aiEmployeeId });
+    return;
+  }
+  if (n.kind === "email" && n.channelId) {
+    window.app.navigateTo("channel-chat", { channelId: n.channelId }, () => {
+      window.app.openRightView("email", { emailId: n.emailId });
+    });
+    return;
+  }
+  if (n.kind === "calendar" && n.channelId) {
+    window.app.navigateTo("channel-chat", { channelId: n.channelId }, () => {
+      window.app.openRightView("calendar", { eventId: n.eventId });
+    });
     return;
   }
 }
