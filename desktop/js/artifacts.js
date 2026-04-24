@@ -4,6 +4,11 @@ import { iconSvg } from "./icons.js";
 import { openModal, closeModal } from "./modals.js";
 import { showToast, fadeSwap } from "./transitions.js";
 
+// Scopes the document-level mousedown listener added by wireSelectionToolbar
+// so re-renders of the artifact workspace do not leak handlers against
+// detached DOM.
+let docAbort = null;
+
 // Pre-scripted section edits keyed by heading (demo-only)
 const sectionEditsByHeading = {
   "Overview":            { after: "Vendor Portal v2 centralizes onboarding, risk scoring, and document lifecycle for all strategic vendors. Scope prioritizes real-time risk scoring surfaced to ops owners and self-serve document uploads with expiration tracking. [1][2]" },
@@ -158,13 +163,18 @@ export function renderArtifactWorkspace(artifactId) {
     window.app.navigateTo("slide-workspace", { artifactId: a.id });
   });
 
-  wireSelectionToolbar(container);
+  // Tear down document-level listeners from the previous render so they do
+  // not accumulate across artifact switches / panel re-opens.
+  if (docAbort) docAbort.abort();
+  docAbort = new AbortController();
+
+  wireSelectionToolbar(container, docAbort.signal);
   wireGhostAutocomplete(container);
   wireDocChat(container);
 }
 
 /* ---------------- Co-pilot: inline selection toolbar ---------------- */
-function wireSelectionToolbar(container) {
+function wireSelectionToolbar(container, signal) {
   const toolbar = container.querySelector("#ai-selection-toolbar");
   const main = container.querySelector("#doc-main");
   if (!toolbar || !main) return;
@@ -208,7 +218,7 @@ function wireSelectionToolbar(container) {
         if (!sel || sel.isCollapsed) hide();
       }, 0);
     }
-  });
+  }, { signal });
 
   toolbar.querySelectorAll("button[data-copilot-action]").forEach(btn => {
     btn.addEventListener("click", (e) => {

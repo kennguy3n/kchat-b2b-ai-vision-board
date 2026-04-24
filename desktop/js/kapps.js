@@ -3,6 +3,11 @@ import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { showToast } from "./transitions.js";
 
+// Scopes document-level listeners added by the Sheet co-pilot (cell popover
+// + column menu outside-click dismissers) so re-renders of renderSheet do not
+// leak handlers against detached DOM.
+let sheetAbort = null;
+
 // Shared empty-state primitive. Returned as HTML so callers can inline it
 // into their rp-body when a collection is empty.
 export function renderEmptyState({ icon = "?", title, description, ctaLabel, ctaId }) {
@@ -338,9 +343,16 @@ export function renderSheet(containerId, params = {}) {
   const viz = document.getElementById("sheet-visualize");
   if (viz) viz.addEventListener("click", () => toggleSheetChart(view, s, varianceIdx));
   wireExpandButtons();
+
+  // Tear down document-level listeners from the previous renderSheet so the
+  // cell popover + column menu outside-click handlers do not accumulate.
+  if (sheetAbort) sheetAbort.abort();
+  sheetAbort = new AbortController();
+  const sheetSignal = sheetAbort.signal;
+
   wireFormulaBar(view, s, copilot, varianceIdx);
-  wireVarianceCells(view, copilot);
-  wireColumnAI(view, s, copilot);
+  wireVarianceCells(view, copilot, sheetSignal);
+  wireColumnAI(view, s, copilot, sheetSignal);
 
   if (params.focusFormula) {
     setTimeout(() => document.getElementById("ai-formula-input")?.focus(), 50);
@@ -411,7 +423,7 @@ function clearHighlights(view) {
 }
 
 /* ---------------- Sheet co-pilot: cell-level AI explain ---------------- */
-function wireVarianceCells(view, copilot) {
+function wireVarianceCells(view, copilot, signal) {
   const popover = view.querySelector("#cell-popover");
   if (!popover) return;
   const explain = copilot.cellExplanations && copilot.cellExplanations.variance;
@@ -440,11 +452,11 @@ function wireVarianceCells(view, copilot) {
     if (popover && !popover.hidden && !popover.contains(e.target) && !e.target.closest("[data-variance-cell]")) {
       popover.hidden = true;
     }
-  });
+  }, { signal });
 }
 
 /* ---------------- Sheet co-pilot: column header AI menu ---------------- */
-function wireColumnAI(view, s, copilot) {
+function wireColumnAI(view, s, copilot, signal) {
   const menu = view.querySelector("#col-ai-menu");
   if (!menu) return;
 
@@ -484,7 +496,7 @@ function wireColumnAI(view, s, copilot) {
     if (!menu.hidden && !menu.contains(e.target) && !e.target.closest(".col-ai-btn")) {
       menu.hidden = true;
     }
-  });
+  }, { signal });
 }
 
 /* ---------------- Sheet co-pilot: inline bar chart ---------------- */
