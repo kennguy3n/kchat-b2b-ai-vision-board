@@ -188,9 +188,14 @@ function wireSelectionToolbar(container, signal) {
   function showAt(rect, section) {
     activeSection = section;
     toolbar.hidden = false;
+    // The toolbar is position:absolute inside #doc-main, so offsets are
+    // relative to the container's content origin. getBoundingClientRect()
+    // is viewport-relative — subtracting mainRect cancels the container
+    // position but not its scroll, so we have to add it back explicitly
+    // or the toolbar drifts up by scrollTop once the doc is scrolled.
     const mainRect = main.getBoundingClientRect();
-    const top = Math.max(8, rect.top - mainRect.top - 44);
-    const left = Math.max(8, rect.left - mainRect.left + (rect.width / 2) - (toolbar.offsetWidth / 2));
+    const top = Math.max(8, rect.top - mainRect.top + main.scrollTop - 44);
+    const left = Math.max(8, rect.left - mainRect.left + main.scrollLeft + (rect.width / 2) - (toolbar.offsetWidth / 2));
     toolbar.style.top = `${top}px`;
     toolbar.style.left = `${left}px`;
   }
