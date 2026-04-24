@@ -6,6 +6,83 @@ and which SME segments benefit most from the changes.
 
 ---
 
+## Integrated Workspace — Email, Calendar, Drive, Business (v0.5)
+
+**Goal:** Subtly blend email (KMail), calendar, document management (ZK
+Drive), and business apps (Kapp) into the messaging-first experience —
+not as standalone features but as contextual, AI-enabled surfaces that
+appear where work happens. Every surface stays scoped to the current
+channel so the thread remains the unit of work.
+
+### Changes
+
+- [x] **Email-in-chat cards with AI summaries** — new `emailCard`
+      renderer in `cards.js`; inbound emails appear as inline chat
+      cards with `aiSummary`, privacy badge, attachment count, and a
+      "Reply from chat" affordance that drafts in the same channel.
+- [x] **Calendar right-panel with AI scheduling suggestions** —
+      `renderCalendarPanel` in new `js/integrations.js` shows a
+      channel-scoped week view; each event carries an AI note, and
+      the "+ Schedule" CTA simulates an AI-availability check.
+- [x] **ZK Drive file panel scoped to channel folders** —
+      `renderDrivePanel` lists `driveFiles[channelId]` with type icon,
+      modified-by avatar, "AI generated" / "From email" badges, and a
+      "ZK Object Fabric" encrypted-upload affordance at the bottom.
+- [x] **Business record cards (CRM deals, invoices, alerts)** —
+      `dealCard` inline in chat plus a channel-scoped `renderBusinessPanel`
+      grouping Deals / Invoices / Alerts (collapsible) with health dots
+      and AI insights.
+- [x] **Channel context bar showing connected services** — slim row
+      under the channel header in `chat.js` rendering only the
+      indicators that have data: "✉ N threads", "📅 Next: …", "📁 N
+      files", "💼 N deals". Each indicator routes to the matching
+      right panel.
+- [x] **Unified inbox merging email, calendar, chat, approvals** —
+      `notifications.js` now renders `email`/`calendar` kinds with
+      distinct icon labels and routes clicks back into the originating
+      channel + right panel; email/calendar items with
+      `priority: "action"` join the "Action required" rail.
+- [x] **Enhanced Action Launcher with cross-service AI actions** —
+      `CHANNEL_SUGGESTIONS` in `ai-actions.js` grew context-aware
+      tiles per channel ("Summarize Orbix email", "Schedule vendor
+      review", "Attach risk matrix from Drive", "Prepare QBR from
+      CRM", "Follow-up email to Globex"). New Core Intent actions
+      (`create-email`, `plan-meeting`, `analyze-deal`) are wired
+      through the same `routeAction` dispatcher.
+- [x] **Compose bar with Drive attach and calendar availability** —
+      two new subtle buttons in `chat.js` compose box: 📁 opens
+      `rp-drive`, 📅 toasts an inserted availability block.
+- [x] **Home screen "Connected workspace" ambient status row** —
+      `renderWorkspaceHome()` adds a muted 4-card row (Email,
+      Calendar, Drive, Business) between "Your workspace" and
+      "Domains"; each tile deep-links into #vendor-management plus
+      the matching right panel.
+- [x] **Sidebar channel indicators for email / calendar / files** —
+      `navigation.js` renders a tiny ✉ / 📅 / 📁 count row below
+      channel names, only when the channel has linked data, so it
+      reads as metadata rather than another nav destination.
+
+### Design constraints held
+
+- No new top-level navigation. Email/Drive/Business never appear as
+  tabs — everything surfaces through existing card, right-panel,
+  compose, launcher, and notification patterns.
+- AI is the connective tissue: every integration point has an AI
+  angle (email summaries, scheduling, drive recommendations, deal
+  insights, CRM-driven QBR).
+- Privacy-first: every email card, drive file, and drive panel shows
+  the privacy / encryption mode via the shared `.privacy-badge`
+  style.
+- Subtle, not loud: integration chrome uses `var(--text-muted)`,
+  `var(--fs-xs)`, and existing color tokens — no new accent colors.
+- Channel-scoped: email threads, calendar events, drive folders, and
+  CRM records are all keyed to `channelId`, reinforcing the
+  thread-as-unit-of-work principle.
+- No framework changes: new `integrations.js` follows the same ES
+  module pattern as `kapps.js` / `artifacts.js`.
+
+---
+
 ## Core Intents taxonomy + multi-tenant rail (v0.4)
 
 **Goal:** flatten the growing surface area of AI actions into a single
