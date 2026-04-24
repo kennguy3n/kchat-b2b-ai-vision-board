@@ -311,7 +311,7 @@ function openRightView(name, params = {}) {
       case "task-detail":     renderTaskDetail(id, params); break;
       case "form":            renderForm(id); break;
       case "base":            renderBase(id); break;
-      case "sheet":           renderSheet(id); break;
+      case "sheet":           renderSheet(id, params); break;
       case "approval-form":   renderApprovalForm(id); break;
       case "approval-review": renderApprovalReview(id, params); break;
       case "summary":         renderSummary(id); break;

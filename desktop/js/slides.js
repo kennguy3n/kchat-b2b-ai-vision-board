@@ -178,7 +178,11 @@ export function renderSlideWorkspace(artifactId) {
         e.stopPropagation();
         designMenu.hidden = !designMenu.hidden;
       });
-      document.addEventListener("click", () => { designMenu.hidden = true; }, { once: true });
+      document.addEventListener("click", (e) => {
+        if (!designMenu.hidden && !designMenu.contains(e.target) && !e.target.closest("#design-ai-btn")) {
+          designMenu.hidden = true;
+        }
+      });
       designMenu.querySelectorAll(".dam-item").forEach(item => {
         item.addEventListener("click", () => {
           const kind = item.getAttribute("data-design");
