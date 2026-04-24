@@ -5,6 +5,13 @@ import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { showToast, fadeSwap } from "./transitions.js";
 
+// Scopes the document-level listeners registered inside wireEvents (design-AI
+// dismiss handler) so they do not leak across renderSlideWorkspace calls.
+// Must be module-scoped: each renderSlideWorkspace call gets a fresh closure,
+// so a function-local AbortController would orphan the previous controller
+// and the old document listener would stay alive forever.
+let slideAbort = null;
+
 // Pre-scripted per-slide edits used by the co-pilot right panel actions.
 const SLIDE_SIMPLIFIED = {
   "Executive Summary": [
@@ -59,7 +66,6 @@ export function renderSlideWorkspace(artifactId) {
       }));
 
   const state = { activeIdx: 0 };
-  let wireAbort = null;
 
   function thumbHTML(s, i) {
     return `
@@ -164,10 +170,11 @@ export function renderSlideWorkspace(artifactId) {
 
   function wireEvents() {
     // Tear down any document-level listeners from the previous render so they
-    // do not accumulate each time a thumbnail click re-runs wireEvents().
-    if (wireAbort) wireAbort.abort();
-    wireAbort = new AbortController();
-    const { signal } = wireAbort;
+    // do not accumulate each time a thumbnail click re-runs wireEvents() or
+    // the user navigates away from and back into the slide workspace.
+    if (slideAbort) slideAbort.abort();
+    slideAbort = new AbortController();
+    const { signal } = slideAbort;
 
     container.querySelector("[data-slide-back]").addEventListener("click", () => {
       window.app.navigateTo("channel-chat", { channelId: window.app.state.channelId || "c-deals" });

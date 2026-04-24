@@ -82,6 +82,13 @@ export function renderArtifactWorkspace(artifactId) {
           <div class="divider"></div>
           ${body}
         </div>
+        <div class="ai-selection-toolbar" id="ai-selection-toolbar" hidden>
+          <button data-copilot-action="rewrite"   title="Rewrite selection">${iconSvg("ai", 12)} Rewrite</button>
+          <button data-copilot-action="shorten"   title="Shorten selection">${iconSvg("ai", 12)} Shorten</button>
+          <button data-copilot-action="expand"    title="Expand selection">${iconSvg("ai", 12)} Expand</button>
+          <button data-copilot-action="tone"      title="Change tone">${iconSvg("ai", 12)} Tone</button>
+          <button data-copilot-action="translate" title="Translate">${iconSvg("ai", 12)} Translate</button>
+        </div>
       </div>
       <div class="doc-aside">
         <h4>Version history</h4>
@@ -109,14 +116,6 @@ export function renderArtifactWorkspace(artifactId) {
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="ai-selection-toolbar" id="ai-selection-toolbar" hidden>
-      <button data-copilot-action="rewrite"   title="Rewrite selection">${iconSvg("ai", 12)} Rewrite</button>
-      <button data-copilot-action="shorten"   title="Shorten selection">${iconSvg("ai", 12)} Shorten</button>
-      <button data-copilot-action="expand"    title="Expand selection">${iconSvg("ai", 12)} Expand</button>
-      <button data-copilot-action="tone"      title="Change tone">${iconSvg("ai", 12)} Tone</button>
-      <button data-copilot-action="translate" title="Translate">${iconSvg("ai", 12)} Translate</button>
     </div>
   `;
 
