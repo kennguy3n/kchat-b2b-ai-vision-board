@@ -262,6 +262,11 @@ function wireGhostAutocomplete(container) {
     g.addEventListener("keydown", (e) => {
       if (e.key === "Tab" || e.key === "Enter") {
         e.preventDefault();
+        // Stop the container-level Tab fallback from firing acceptGhost a
+        // second time via bubbling — the `.accepted` guard is only set
+        // inside an async fadeSwap callback, so both sync invocations
+        // would otherwise append the ghost text twice.
+        e.stopPropagation();
         acceptGhost(g);
       }
     });
