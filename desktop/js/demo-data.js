@@ -301,7 +301,7 @@ export const messages = {
   /* Flow 3 — Budget + PR/PO close-out */
   "c-finance": [
     { id: "m-fin-1", senderId: "u-ken",   ts: "11:00", text: "Finn, pull the Q2 budget status for Operations." },
-    { id: "m-fin-2", senderId: "ai-finn", isAI: true, ts: "11:01", text: "Here's the Q2 Ops budget summary. 2 lines flagged over 5% threshold.", card: { type: "budget-summary", refId: "bs-q2-ops" } },
+    { id: "m-fin-2", senderId: "ai-finn", isAI: true, ts: "11:01", text: "Here's the Q2 Ops budget summary. 1 line flagged over 5% threshold.", card: { type: "budget-summary", refId: "bs-q2-ops" } },
     { id: "m-fin-3", senderId: "u-ken",   ts: "11:03", text: "The Logistics line is 5.3% over — what's driving it?" },
     { id: "m-fin-4", senderId: "ai-finn", isAI: true, ts: "11:04", text: "Logistics overspend driven by 2 factors: (1) FleetOne emergency carrier diversion +$4,200, (2) NSK backlog surcharge +$2,500. Both traced to the carrier capacity issue in #logistics on Apr 8.", card: { type: "ai-insight", refId: "ins-logistics-over" } },
     { id: "m-fin-5", senderId: "u-dan",   ts: "11:20", text: "TechDirect invoice just arrived for the laptop PO — $6,750.", attachments: [{ name: "INV-TD-8842.pdf", size: "340 KB" }] },
@@ -622,7 +622,7 @@ export const budgetSummaries = {
       { name: "IT Equipment",      budget:  30000, actual:  11800, variancePct: -60.7, flag: null  },
       { name: "Software licenses", budget:  35000, actual:  35900, variancePct:  2.6, flag: null   },
       { name: "Contractors",       budget:  50000, actual:  52400, variancePct:  4.8, flag: null   },
-      { name: "Training",          budget:  10000, actual:  15700, variancePct: 57.0, flag: "over" },
+      { name: "Training",          budget:  10000, actual:   7800, variancePct: -22.0, flag: null  },
     ],
   },
 };
