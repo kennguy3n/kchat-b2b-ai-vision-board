@@ -6,6 +6,67 @@ and which SME segments benefit most from the changes.
 
 ---
 
+## Core Intents taxonomy + multi-tenant rail (v0.4)
+
+**Goal:** flatten the growing surface area of AI actions into a single
+**intent-first** taxonomy (Create / Analyze / Plan / Approve) so users
+don't have to know whether they want an "AI Employee" or an "AI Co-pilot"
+to find what they need; and align the shell with KChat's
+multi-community pattern (far-left tenant rail → sidebar → main).
+
+### Changes
+
+- [x] **1. Core Intents data model** — new `coreIntents` export in
+      `desktop/js/demo-data.js` with four buckets (Create / Analyze /
+      Plan / Approve). Each action carries a `mode` hint (`auto` = AI
+      Employee queue, `inline` = AI Co-pilot edit-in-place) and a short
+      `sub` caption. `actionGroups` is kept as a legacy alias derived
+      from `coreIntents`.
+- [x] **2. Home — Core Intents row** — `renderWorkspaceHome()` replaces
+      the separate "AI Employee" + "AI Co-pilot" strips with a single
+      4-card Core Intents row (gradient cards with peek of top tiles).
+      A secondary "Your workspace" row keeps fast access to Inbox /
+      Tasks / Approvals / Templates with live counts.
+- [x] **3. Action Launcher — intent-first layout** — `openActionLauncher()`
+      now renders the four intents as collapsible groups with a pill
+      filter bar ("All · Create · Analyze · Plan · Approve"). Tiles
+      carry an **Auto** / **Inline** mode badge. The old
+      "AI Employee" / "AI Co-pilot" sub-labels are gone; the taglines
+      up top explain the distinction once: "Pick what you want to do —
+      AI decides whether an Employee runs it or a Co-pilot assists
+      inline." Intent cards on Home open the launcher pre-scrolled to
+      that intent via a new `{ intent }` param.
+- [x] **4. Routing consolidation** — `wireLauncherEvents` now delegates
+      to a single `routeAction(id, opts)` function so every entry point
+      (launcher tile, recent chip, home intent card, channel
+      suggestion) lands on the same surface for a given action id.
+      Added routing for `create-schedule` (toast placeholder) and the
+      inline `copilot-sheet-analyze` alias.
+- [x] **5. CSS** — new `.intent-cards` / `.intent-card` styles in
+      `components.css`; `.intent-tabs` / `.intent-tab` pill filter;
+      `.mode-badge.mode-auto` / `.mode-badge.mode-inline` in `ai.css`.
+      Removed the obsolete `.launcher-modes`, `.copilot-group`,
+      `.copilot-tile`, and `.quick-actions-copilot` rules.
+- [x] **6. Multi-tenant rail (earlier in v0.4)** — new far-left
+      `tenant-rail.css` + `renderTenantRail()` in `navigation.js`; each
+      tenant has domains / channels / AI employees filtered via
+      `state.tenantId`. Topbar shows the active tenant name.
+- [x] **7. Docs** — PROPOSAL §5.7 reframed as *Core Intents — the
+      user-facing taxonomy*, with §5.7.1 keeping the inline co-pilot
+      detail. README banner + click-through guide updated for the
+      intent row and launcher filter bar.
+
+### What's next
+
+- Surface Core Intents in the sidebar `+ New` menu (quick intent
+  selector before the launcher opens).
+- Pipe channel-aware "suggested" tiles onto the matching intent tab
+  by default so the user lands on the most relevant verb.
+- Per-tenant theming of the intent cards (community accent color
+  bleeds into the Home gradient).
+
+---
+
 ## AI Co-pilot Layer (v0.3)
 
 **Goal:** balance the existing autonomous *AI Employee* chrome with an

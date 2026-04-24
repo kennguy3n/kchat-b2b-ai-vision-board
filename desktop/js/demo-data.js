@@ -604,43 +604,77 @@ export const recipes = [
   { id: "r-create-qbr",     display: "Create QBR",       group: "Create",  intake: ["Customer", "Quarter"],           sources: ["deal thread", "CRM export"] },
 ];
 
-export const actionGroups = [
-  { group: "Create", actions: [
-    { id: "create-doc",      label: "Doc",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "D" },
-    { id: "create-deck",     label: "Deck",     recipeId: "r-create-qbr",     templateId: "tpl-qbr",      icon: "K" },
-    { id: "create-proposal", label: "Proposal", recipeId: "r-draft-proposal", templateId: "tpl-proposal", icon: "P" },
-    { id: "create-sop",      label: "SOP",      recipeId: "r-draft-prd",      templateId: "tpl-sop",      icon: "S" },
-    { id: "create-prd",      label: "PRD",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "R" },
-  ]},
-  { group: "Track", actions: [
-    { id: "track-sheet",   label: "Sheet",         icon: "≡" },
-    { id: "track-base",    label: "Base Table",    icon: "B" },
-    { id: "track-budget",  label: "Budget",        icon: "$" },
-    { id: "track-risk",    label: "Risk Register", icon: "!" },
-  ]},
-  { group: "Plan", actions: [
-    { id: "plan-tasks",   label: "Tasks",        icon: "✓" },
-    { id: "plan-agenda",  label: "Agenda",       icon: "A" },
-    { id: "plan-project", label: "Project Plan", icon: "P" },
-  ]},
-  { group: "Approve", actions: [
-    { id: "approve-purchase",  label: "Purchase",  icon: "$" },
-    { id: "approve-exception", label: "Exception", icon: "!" },
-    { id: "approve-policy",    label: "Policy",    icon: "§" },
-    { id: "approve-budget",    label: "Budget",    icon: "B" },
-  ]},
-  { group: "Collect", actions: [
-    { id: "collect-form",     label: "Form",     icon: "F" },
-    { id: "collect-intake",   label: "Intake",   icon: "I" },
-    { id: "collect-feedback", label: "Feedback", icon: "✎" },
-  ]},
-  { group: "Analyze", actions: [
-    { id: "analyze-summary", label: "Summarize", recipeId: "r-summarize",     icon: "Σ" },
-    { id: "analyze-compare", label: "Compare",                                icon: "⇄" },
-    { id: "analyze-extract", label: "Extract",   recipeId: "r-extract-tasks", icon: "E" },
-    { id: "analyze-report",  label: "Report",                                 icon: "R" },
-  ]},
+/* ---------------- Core Intents (v3) ----------------
+   Unified intent taxonomy — users pick what they want to *do* (Create,
+   Analyze, Plan, Approve) and the surface decides whether an AI Employee
+   (autonomous) or AI Co-pilot (inline) flow fits. `mode` on each action
+   is a hint the launcher renders as a subtle badge ("Auto" / "Inline"),
+   not a separate top-level section, so the taxonomy scales as skills,
+   templates, and connectors grow. */
+export const coreIntents = [
+  {
+    id: "create",
+    label: "Create",
+    sub: "Docs, slides, sheets, schedules",
+    icon: "plus",
+    actions: [
+      { id: "copilot-doc",     label: "Document",  mode: "inline", sub: "Write with inline AI co-pilot",            icon: "D" },
+      { id: "copilot-slides",  label: "Slides",    mode: "inline", sub: "Per-slide AI + layout suggestions",        icon: "K" },
+      { id: "copilot-sheet",   label: "Sheet",     mode: "inline", sub: "NL formula bar + cell AI + visualize",     icon: "≡" },
+      { id: "create-schedule", label: "Schedule",  mode: "auto",   sub: "AI-drafted agenda + invite",               icon: "📅" },
+      { id: "create-prd",      label: "PRD",       mode: "auto",   recipeId: "r-draft-prd",      templateId: "tpl-prd",      sub: "Structured product requirements", icon: "R" },
+      { id: "create-qbr",      label: "QBR Deck",  mode: "auto",   recipeId: "r-create-qbr",     templateId: "tpl-qbr",      sub: "Quarterly business review",        icon: "Q" },
+      { id: "create-sop",      label: "SOP",       mode: "auto",   recipeId: "r-draft-prd",      templateId: "tpl-sop",      sub: "Standard operating procedure",     icon: "S" },
+      { id: "create-proposal", label: "Proposal",  mode: "auto",   recipeId: "r-draft-proposal", templateId: "tpl-proposal", sub: "Customer-ready proposal",          icon: "P" },
+      { id: "collect-form",    label: "Form",      mode: "auto",   sub: "Collect structured input",                 icon: "F" },
+    ],
+  },
+  {
+    id: "analyze",
+    label: "Analyze",
+    sub: "Summarize, compare, extract, visualize",
+    icon: "filter",
+    actions: [
+      { id: "analyze-summary", label: "Summarize", mode: "auto",   recipeId: "r-summarize",     sub: "Key points with sources", icon: "Σ" },
+      { id: "analyze-extract", label: "Extract",   mode: "auto",   recipeId: "r-extract-tasks", sub: "Pull data out of threads", icon: "E" },
+      { id: "analyze-compare", label: "Compare",   mode: "auto",   sub: "Side-by-side highlights",                   icon: "⇄" },
+      { id: "analyze-report",  label: "Report",    mode: "auto",   sub: "Structured rollup",                         icon: "R" },
+      { id: "copilot-sheet-analyze", label: "Spreadsheet AI", mode: "inline", sub: "Cell-level explain + NL formula", icon: "Σ" },
+    ],
+  },
+  {
+    id: "plan",
+    label: "Plan",
+    sub: "Tasks, projects, agendas, trackers",
+    icon: "tasks",
+    actions: [
+      { id: "plan-tasks",   label: "Tasks",        mode: "auto", sub: "Extract action items",       icon: "✓" },
+      { id: "plan-project", label: "Project Plan", mode: "auto", sub: "Milestones + owners",        icon: "P" },
+      { id: "plan-agenda",  label: "Agenda",       mode: "auto", sub: "Structured meeting plan",    icon: "A" },
+      { id: "track-risk",   label: "Risk Register",mode: "auto", sub: "Flag + score risks",         icon: "!" },
+      { id: "track-budget", label: "Budget",       mode: "auto", sub: "Track plan vs actual",       icon: "$" },
+    ],
+  },
+  {
+    id: "approve",
+    label: "Approve",
+    sub: "Purchase, exception, policy, budget",
+    icon: "approve",
+    actions: [
+      { id: "approve-purchase",  label: "Purchase",  mode: "auto", sub: "Route PO for sign-off",         icon: "$" },
+      { id: "approve-exception", label: "Exception", mode: "auto", sub: "Policy exception request",      icon: "!" },
+      { id: "approve-policy",    label: "Policy",    mode: "auto", sub: "Policy change",                 icon: "§" },
+      { id: "approve-budget",    label: "Budget",    mode: "auto", sub: "Budget approval",               icon: "B" },
+    ],
+  },
 ];
+
+/* Legacy alias so older callers that imported `actionGroups` keep working
+   — the launcher and home screen now prefer `coreIntents`. */
+export const actionGroups = coreIntents.map(i => ({
+  group: i.label,
+  actions: i.actions.map(a => ({ ...a })),
+}));
 
 /* ---------------- Templates (v2: curated with hidden meta-prompts + visual metadata) ---------------- */
 export const templates = {

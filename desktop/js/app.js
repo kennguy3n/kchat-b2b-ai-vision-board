@@ -40,7 +40,7 @@ window.app = {
   openRightView,
   closeRightView,
   expandRightView,
-  openActionLauncher: () => openActionLauncher(),
+  openActionLauncher: (params = {}) => openActionLauncher(params),
   openSettings: () => openSettings(),
   toggleSection,
   selectTenant,
@@ -423,8 +423,25 @@ function renderWorkspaceHome() {
       </div>
 
       <div class="section-head">
-        <h2>AI Employee <span class="section-sub">AI does it for you</span></h2>
+        <h2>Core Intents <span class="section-sub">Pick what you want to do — AI decides auto vs. inline</span></h2>
         <span class="more" data-restart-tour title="Replay the product tour">Take the tour</span>
+      </div>
+      <div class="intent-cards">
+        ${D.coreIntents.map(i => {
+          const peek = i.actions.slice(0, 3).map(a => a.label).join(" · ");
+          return `
+            <div class="intent-card" data-intent="${i.id}">
+              <div class="intent-icon">${iconSvg(i.icon, 22)}</div>
+              <div class="intent-name">${i.label}</div>
+              <div class="intent-sub">${i.sub}</div>
+              <div class="intent-peek">${peek}${i.actions.length > 3 ? ` · +${i.actions.length - 3}` : ""}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="section-head">
+        <h2>Your workspace</h2>
       </div>
       <div class="quick-actions">
         <div class="qa-item" data-qa="inbox">
@@ -442,31 +459,10 @@ function renderWorkspaceHome() {
           <div class="qa-label">Approvals</div>
           <div class="qa-count">${pendingApprovals} pending</div>
         </div>
-        <div class="qa-item" data-qa="create">
+        <div class="qa-item" data-qa="templates">
           <div class="qa-icon">${iconSvg("ai", 18)}</div>
-          <div class="qa-label">Create with AI</div>
-          <div class="qa-count">${Object.keys(D.templates).length} templates</div>
-        </div>
-      </div>
-
-      <div class="section-head">
-        <h2>AI Co-pilot <span class="section-sub">AI helps you do it — inline</span></h2>
-      </div>
-      <div class="quick-actions quick-actions-copilot">
-        <div class="qa-item qa-copilot" data-qa="copilot-doc">
-          <div class="qa-icon">${iconSvg("ai", 18)}</div>
-          <div class="qa-label">Write a document</div>
-          <div class="qa-count">Inline rewrite / tone / ghost</div>
-        </div>
-        <div class="qa-item qa-copilot" data-qa="copilot-slides">
-          <div class="qa-icon">${iconSvg("ai", 18)}</div>
-          <div class="qa-label">Design a deck</div>
-          <div class="qa-count">Per-slide AI actions</div>
-        </div>
-        <div class="qa-item qa-copilot" data-qa="copilot-sheet">
-          <div class="qa-icon">${iconSvg("ai", 18)}</div>
-          <div class="qa-label">Analyze a spreadsheet</div>
-          <div class="qa-count">NL formula bar + visualize</div>
+          <div class="qa-label">Templates</div>
+          <div class="qa-count">${Object.keys(D.templates).length} starting points</div>
         </div>
       </div>
 
@@ -555,12 +551,13 @@ function wireHomeScreen() {
       const kind = el.getAttribute("data-qa");
       if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
-      else if (kind === "create") navigateTo("template-gallery");
+      else if (kind === "templates") navigateTo("template-gallery");
       else if (kind === "inbox") navigateTo("notifications");
-      else if (kind === "copilot-doc") navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
-      else if (kind === "copilot-slides") navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });
-      else if (kind === "copilot-sheet") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("sheet", { focusFormula: true }));
     });
+  });
+  // Intent cards open the Action Launcher scrolled to the chosen intent.
+  document.querySelectorAll("#screen-workspace-home [data-intent]").forEach(el => {
+    el.addEventListener("click", () => openActionLauncher({ intent: el.getAttribute("data-intent") }));
   });
   const tourLink = document.querySelector("[data-restart-tour]");
   if (tourLink) tourLink.addEventListener("click", () => startOnboarding({ force: true }));

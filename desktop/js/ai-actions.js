@@ -36,16 +36,18 @@ const RECENTLY_USED = [
   { id: "plan-tasks", label: "Extract Tasks" },
   { id: "copilot-doc", label: "Write with AI" },
 ];
-// Co-pilot tiles: inline, human-driven AI (distinct from autonomous AI Employee flows).
-const COPILOT_TILES = [
-  { id: "copilot-doc",    label: "Write with AI",       sub: "Inline editor with rewrite / shorten / tone" },
-  { id: "copilot-slides", label: "Design slides",       sub: "Per-slide AI actions + layout suggestions" },
-  { id: "copilot-sheet",  label: "Analyze a spreadsheet", sub: "NL formula bar + cell AI + visualize" },
-];
+// Mode → small badge rendered on a launcher tile. Keeps the Employee vs.
+// Co-pilot distinction available at a glance without making it the top-level
+// organizing principle (intents are).
+const MODE_BADGES = {
+  auto:   { label: "Auto",   tip: "AI Employee: autonomous, queued, governed." },
+  inline: { label: "Inline", tip: "AI Co-pilot: inline, real-time — you drive." },
+};
 
-export function openActionLauncher() {
+export function openActionLauncher(params = {}) {
   const body = document.getElementById("action-launcher-body");
   const channelId = window.app?.state?.channelId || null;
+  const focusIntent = params.intent || null;
   const suggestions = CHANNEL_SUGGESTIONS[channelId] || DEFAULT_SUGGESTIONS;
 
   const suggestHTML = suggestions.map(a => `
@@ -60,11 +62,36 @@ export function openActionLauncher() {
     <div class="action-chip" data-action="${a.id}" data-recipe="" data-template="">${a.label}</div>
   `).join("");
 
-  const copilotHTML = COPILOT_TILES.map(t => `
-    <div class="action-tile copilot-tile" data-action="${t.id}" data-recipe="" data-template="">
-      <div class="at-icon copilot-icon">${iconSvg("ai", 16)}</div>
-      <div class="at-label">${t.label}</div>
-      <div class="text-xs text-muted">${t.sub}</div>
+  const tileHTML = (a, intentLabel) => {
+    const badge = a.mode && MODE_BADGES[a.mode]
+      ? `<span class="mode-badge mode-${a.mode}" title="${MODE_BADGES[a.mode].tip}">${MODE_BADGES[a.mode].label}</span>`
+      : "";
+    return `
+      <div class="action-tile" data-action="${a.id}" data-recipe="${a.recipeId || ""}" data-template="${a.templateId || ""}">
+        <div class="at-icon">${a.icon || a.label[0]}</div>
+        <div class="at-label">${a.label}${badge}</div>
+        <div class="text-xs text-muted">${a.sub || intentLabel}</div>
+      </div>
+    `;
+  };
+
+  const intentTabsHTML = D.coreIntents.map(i =>
+    `<button class="intent-tab${focusIntent === i.id ? " active" : ""}" type="button" data-intent-tab="${i.id}">${iconSvg(i.icon, 12)} ${i.label}</button>`,
+  ).join("");
+
+  const intentGroupsHTML = D.coreIntents.map(i => `
+    <div class="action-group intent-group${focusIntent && focusIntent !== i.id ? " dim" : ""}" data-intent="${i.id}">
+      <h4>${iconSvg(i.icon, 14)} ${i.label} <span class="group-sub">${i.sub}</span></h4>
+      <div class="action-tiles">
+        ${i.actions.map(a => tileHTML(a, i.label)).join("")}
+        ${i.id === "create" ? `
+          <div class="action-tile browse-all" data-action="browse-templates">
+            <div class="at-icon">⊞</div>
+            <div class="at-label">Browse all templates</div>
+            <div class="text-xs text-muted">Gallery view</div>
+          </div>
+        ` : ""}
+      </div>
     </div>
   `).join("");
 
@@ -72,22 +99,16 @@ export function openActionLauncher() {
     <div class="launcher-top">
       <div class="launcher-search">
         ${iconSvg("search", 14)}
-        <input placeholder="Search actions — e.g. 'draft PRD', 'summarize thread'"/>
+        <input placeholder="What do you need to create, analyze, plan, or approve?"/>
       </div>
-      <div class="launcher-modes">
-        <span class="badge-ai"><span class="glossary-tip" data-tip="AI Employee: autonomous, queued, governed. Runs in the background.">${iconSvg("ai", 12)} AI Employee</span></span>
-        <span class="badge-ai co-pilot-badge"><span class="glossary-tip" data-tip="AI Co-pilot: inline, real-time, human-driven. You stay in the driver's seat.">${iconSvg("ai", 12)} AI Co-pilot</span></span>
+      <div class="launcher-tagline text-xs text-muted">
+        Pick what you want to do — AI decides whether an Employee runs it or a Co-pilot assists inline.
       </div>
     </div>
 
     <div class="action-group suggest-group">
-      <h4>Suggested for you</h4>
+      <h4>Recommended in this channel</h4>
       <div class="action-tiles suggest-tiles">${suggestHTML}</div>
-    </div>
-
-    <div class="action-group copilot-group">
-      <h4>Co-pilot <span class="group-sub">AI helps you do it — inline</span></h4>
-      <div class="action-tiles copilot-tiles">${copilotHTML}</div>
     </div>
 
     <div class="action-recent">
@@ -96,43 +117,50 @@ export function openActionLauncher() {
     </div>
 
     <div class="divider"></div>
-    <div class="action-groups-label">All actions <span class="group-sub">AI Employee</span></div>
+    <div class="action-groups-label">
+      Core intents
+      <div class="intent-tabs">
+        <button class="intent-tab${focusIntent ? "" : " active"}" type="button" data-intent-tab="all">All</button>
+        ${intentTabsHTML}
+      </div>
+    </div>
     <div class="action-groups">
-      ${D.actionGroups.map(g => `
-        <div class="action-group">
-          <h4>${g.group}</h4>
-          <div class="action-tiles">
-            ${g.actions.map(a => `
-              <div class="action-tile" data-action="${a.id}" data-recipe="${a.recipeId || ""}" data-template="${a.templateId || ""}">
-                <div class="at-icon">${a.label[0]}</div>
-                <div class="at-label">${a.label}</div>
-                <div class="text-xs text-muted">${g.group}</div>
-              </div>
-            `).join("")}
-            ${g.group === "Create" ? `
-              <div class="action-tile browse-all" data-action="browse-templates">
-                <div class="at-icon">⊞</div>
-                <div class="at-label">Browse all templates</div>
-                <div class="text-xs text-muted">Gallery view</div>
-              </div>
-            ` : ""}
-          </div>
-        </div>
-      `).join("")}
+      ${intentGroupsHTML}
     </div>
   `;
   openModal("action-launcher");
   wireLauncherEvents();
+  if (focusIntent) {
+    const target = body.querySelector(`.intent-group[data-intent="${focusIntent}"]`);
+    if (target) target.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
 }
 
 function wireLauncherEvents() {
+  // Intent tab filter — hides non-matching intent groups without rerendering.
+  document.querySelectorAll("#action-launcher-body [data-intent-tab]").forEach(tab => {
+    tab.addEventListener("click", () => {
+      const target = tab.getAttribute("data-intent-tab");
+      document.querySelectorAll("#action-launcher-body .intent-tab").forEach(t =>
+        t.classList.toggle("active", t === tab),
+      );
+      document.querySelectorAll("#action-launcher-body .intent-group").forEach(g => {
+        const intent = g.getAttribute("data-intent");
+        g.classList.toggle("dim", target !== "all" && intent !== target);
+      });
+      if (target !== "all") {
+        const focus = document.querySelector(
+          `#action-launcher-body .intent-group[data-intent="${target}"]`,
+        );
+        if (focus) focus.scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    });
+  });
   document.querySelectorAll("#action-launcher-body .action-chip").forEach(chip => {
     chip.addEventListener("click", () => {
       const id = chip.getAttribute("data-action");
       closeModal("action-launcher");
-      if (id === "analyze-summary") window.app.openRightView("summary");
-      else if (id === "plan-tasks") window.app.openRightView("task-panel");
-      else if (id === "copilot-doc") window.app.navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
+      routeAction(id);
     });
   });
   document.querySelectorAll("#action-launcher-body .action-tile").forEach(tile => {
@@ -141,56 +169,63 @@ function wireLauncherEvents() {
       const recipe = tile.getAttribute("data-recipe");
       const template = tile.getAttribute("data-template");
       closeModal("action-launcher");
-      // Co-pilot routes — inline, human-driven AI surfaces.
-      if (id === "copilot-doc") {
-        window.app.navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
-        return;
-      }
-      if (id === "copilot-slides") {
-        window.app.navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });
-        return;
-      }
-      if (id === "copilot-sheet") {
-        const channelId = window.app.state.channelId || "c-vendor";
-        window.app.navigateTo(
-          "channel-chat",
-          { channelId },
-          () => window.app.openRightView("sheet", { focusFormula: true }),
-        );
-        return;
-      }
-      // Gallery entry point → Canva/MiniMax-style template browser.
-      if (id === "browse-templates") {
-        window.app.navigateTo("template-gallery");
-        return;
-      }
-      // Create actions (v2) → full-screen template intake (Screen 7)
-      if (id && id.startsWith("create-")) {
-        // Deck recipe routes through the slide workspace after intake.
-        window.app.navigateTo("template-intake", {
-          templateId: template || "tpl-prd",
-          recipeId: recipe || "r-draft-prd",
-        });
-        return;
-      }
-      // Route remaining actions to the matching right-panel view
-      if (id === "collect-form" || id === "collect-intake" || id === "collect-feedback") {
-        window.app.openRightView("form");
-      } else if (id === "track-base" || id === "track-risk") {
-        window.app.openRightView("base");
-      } else if (id === "track-sheet" || id === "track-budget") {
-        window.app.openRightView("sheet");
-      } else if (id === "plan-tasks") {
-        window.app.openRightView("task-panel");
-      } else if (id && id.startsWith("approve-")) {
-        window.app.openRightView("approval-form");
-      } else if (id === "analyze-summary") {
-        window.app.openRightView("summary");
-      } else {
-        window.app.openRightView("brief", { recipeId: recipe || "r-draft-prd" });
-      }
+      routeAction(id, { recipe, template });
     });
   });
+}
+
+// Single intent → screen router so every entry point (launcher, chips, home
+// intent cards, channel suggestions) lands on the same surface per action id.
+function routeAction(id, opts = {}) {
+  const recipe = opts.recipe || "";
+  const template = opts.template || "";
+  if (id === "copilot-doc") {
+    window.app.navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
+    return;
+  }
+  if (id === "copilot-slides") {
+    window.app.navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });
+    return;
+  }
+  if (id === "copilot-sheet" || id === "copilot-sheet-analyze") {
+    const channelId = window.app.state.channelId || "c-vendor";
+    window.app.navigateTo(
+      "channel-chat",
+      { channelId },
+      () => window.app.openRightView("sheet", { focusFormula: true }),
+    );
+    return;
+  }
+  if (id === "create-schedule") {
+    showToast("Schedule co-pilot coming soon — drafted agenda + invites.");
+    return;
+  }
+  if (id === "browse-templates") {
+    window.app.navigateTo("template-gallery");
+    return;
+  }
+  if (id && id.startsWith("create-")) {
+    window.app.navigateTo("template-intake", {
+      templateId: template || "tpl-prd",
+      recipeId: recipe || "r-draft-prd",
+    });
+    return;
+  }
+  if (id === "collect-form" || id === "collect-intake" || id === "collect-feedback") {
+    window.app.openRightView("form");
+  } else if (id === "track-base" || id === "track-risk") {
+    window.app.openRightView("base");
+  } else if (id === "track-sheet" || id === "track-budget") {
+    window.app.openRightView("sheet");
+  } else if (id === "plan-tasks") {
+    window.app.openRightView("task-panel");
+  } else if (id && id.startsWith("approve-")) {
+    window.app.openRightView("approval-form");
+  } else if (id === "analyze-summary") {
+    window.app.openRightView("summary");
+  } else {
+    window.app.openRightView("brief", { recipeId: recipe || "r-draft-prd" });
+  }
 }
 
 /* ---------------- Brief builder (right panel) ---------------- */

@@ -573,32 +573,44 @@
 .sheet-chart .scb-val.pos { color: var(--danger); }
 .sheet-chart .scb-val.neg { color: var(--success); }
 
-/* Action launcher: Co-pilot group + mode badges */
-.launcher-modes { display: flex; gap: 6px; }
+/* Action launcher: intent groups + mode badges
+   The launcher is organized by Core Intent (Create / Analyze / Plan /
+   Approve). The Employee vs. Co-pilot distinction is demoted to a subtle
+   badge on each tile so users don't have to know which "kind" of AI they
+   want before picking an action. */
 .action-group .group-sub {
   font-size: 10px; font-weight: 600;
   padding: 1px 6px; border-radius: 999px;
   color: var(--text-muted); background: var(--surface-2);
   vertical-align: middle; margin-left: 6px;
 }
-.copilot-group h4 .group-sub { background: var(--copilot-50); color: var(--copilot-strong); }
-.copilot-tile { border-color: var(--copilot-200) !important; }
-.copilot-tile:hover { background: var(--copilot-50); }
-.copilot-tile .copilot-icon { background: var(--copilot-50); color: var(--copilot-strong); }
-
-/* Home quick-actions: AI Co-pilot row */
 .section-head .section-sub {
   font-size: 11px; font-weight: 500;
   color: var(--text-muted);
   margin-left: 8px;
   vertical-align: middle;
 }
-.quick-actions-copilot .qa-copilot {
-  border-color: var(--copilot-200);
-  background: linear-gradient(135deg, #fff 0%, var(--copilot-50) 100%);
+.launcher-tagline {
+  margin: -6px 0 10px;
+  padding: 0 2px;
 }
-.quick-actions-copilot .qa-copilot .qa-icon { background: var(--copilot-50); color: var(--copilot-strong); }
-.quick-actions-copilot .qa-copilot:hover { border-color: var(--copilot-accent); }
+.intent-group { transition: opacity var(--dur-med, 200ms) var(--ease, ease); }
+.intent-group.dim { opacity: 0.25; pointer-events: none; }
+.intent-group h4 { display: inline-flex; align-items: center; gap: 6px; }
+.intent-group h4 svg { opacity: 0.65; }
+
+.mode-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+  border: 1px solid transparent;
+}
+.mode-badge.mode-auto   { background: var(--ai-50);       color: var(--ai-strong);       border-color: var(--ai-200); }
+.mode-badge.mode-inline { background: var(--copilot-50);  color: var(--copilot-strong);  border-color: var(--copilot-200); }
 
 /* Slide workspace */
 .slide-wrap {

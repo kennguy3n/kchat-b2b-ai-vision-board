@@ -5,13 +5,19 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
 - **Mobile / shared:** reserved for future tasks.
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.3 AI Co-pilot layer).
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.4 Core Intents taxonomy + multi-tenant rail).
 
-> **Two modes of AI.** The demo deliberately shows both:
-> - **AI Employee** — autonomous, queued, governed. "AI does it for you."
-> - **AI Co-pilot** — inline, real-time, human-driven. "AI helps you do it."
+> **Core Intents.** Every AI action is organized under four verbs so
+> users don't have to know which *kind* of AI they want before picking a
+> task:
+> - **Create** — Document · Slides · Sheet · Schedule · PRD · QBR · SOP · Proposal · Form
+> - **Analyze** — Summarize · Extract · Compare · Report · Spreadsheet AI
+> - **Plan** — Tasks · Project Plan · Agenda · Risk Register · Budget
+> - **Approve** — Purchase · Exception · Policy · Budget
 >
-> Both are first-class in Doc, Slides, and Sheet surfaces.
+> Each tile carries a small mode badge — **Auto** (AI Employee runs it
+> in the queue) or **Inline** (AI Co-pilot assists you in the editor).
+> Both modes are first-class in Doc, Slides, and Sheet surfaces.
 
 ---
 
@@ -43,11 +49,11 @@ The demo is a state machine. `desktop/js/app.js` controls which `<section data-s
 
 1. **Login / workspace select** — click *Continue*.
 1a. **Guided onboarding tour (first visit only)** — a 5-step overlay walks through sidebar domains, channels, AI Employees, the compose bar, and the right panel. Completion is stored in `localStorage` under `kchat.onboarded`; clear local storage to see it again.
-2. **Workspace home** — hero, **Role-based Quick Actions** (approvals / tasks / draft / inbox), then domain cards, recent channels, pinned items.
+2. **Workspace home** — hero, then the **Core Intents** row (Create / Analyze / Plan / Approve — each card opens the Action Launcher scrolled to that intent), then a "Your workspace" row (Inbox / My Tasks / Approvals / Templates with live counts), then domain cards, recent channels, pinned items.
 3. **Domain view** — channel list for the domain. Click `#vendor-management`.
 4. **Channel chat** — 3-column layout. Hover a message for action icons. Click `+` in the compose bar for the Action Launcher.
 5. **Thread detail** — click *Open Thread* on any message; use the thread action bar (Extract Tasks / Summarize / Draft Doc / Create Approval).
-6. **Action Launcher (modal)** — grouped actions (Create / Track / Plan / Approve / Collect / Analyze). Pick *Create → PRD*.
+6. **Action Launcher (modal)** — intent-organized actions (Create / Analyze / Plan / Approve) with a pill filter bar and a per-tile **Auto / Inline** mode badge. Pick *Create → PRD*.
 7. **Guided intake / brief builder (right panel)** — goal, audience chips, sources, template, tone, missing info, compute-mode privacy review.
 8. **AI processing (right panel)** — 4-step animation (Reading sources → Planning outline → Drafting sections → Ready for review). Auto-advances to output review.
 9. **AI output review (right panel)** — draft PRD with citations, per-section confidence, sources. Click *Edit in Workspace*.
