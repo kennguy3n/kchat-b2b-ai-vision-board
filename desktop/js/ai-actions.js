@@ -81,7 +81,7 @@ export function openActionLauncher() {
     </div>
 
     <div class="action-group suggest-group">
-      <h4>Suggested for you <span class="group-sub">AI Employee</span></h4>
+      <h4>Suggested for you</h4>
       <div class="action-tiles suggest-tiles">${suggestHTML}</div>
     </div>
 
@@ -144,7 +144,12 @@ function wireLauncherEvents() {
         return;
       }
       if (id === "copilot-sheet") {
-        window.app.openRightView("sheet", { focusFormula: true });
+        const channelId = window.app.state.channelId || "c-vendor";
+        window.app.navigateTo(
+          "channel-chat",
+          { channelId },
+          () => window.app.openRightView("sheet", { focusFormula: true }),
+        );
         return;
       }
       // Create actions (v2) → full-screen template intake (Screen 7)

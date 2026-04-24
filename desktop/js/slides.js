@@ -59,6 +59,7 @@ export function renderSlideWorkspace(artifactId) {
       }));
 
   const state = { activeIdx: 0 };
+  let wireAbort = null;
 
   function thumbHTML(s, i) {
     return `
@@ -162,6 +163,12 @@ export function renderSlideWorkspace(artifactId) {
   }
 
   function wireEvents() {
+    // Tear down any document-level listeners from the previous render so they
+    // do not accumulate each time a thumbnail click re-runs wireEvents().
+    if (wireAbort) wireAbort.abort();
+    wireAbort = new AbortController();
+    const { signal } = wireAbort;
+
     container.querySelector("[data-slide-back]").addEventListener("click", () => {
       window.app.navigateTo("channel-chat", { channelId: window.app.state.channelId || "c-deals" });
     });
@@ -182,7 +189,7 @@ export function renderSlideWorkspace(artifactId) {
         if (!designMenu.hidden && !designMenu.contains(e.target) && !e.target.closest("#design-ai-btn")) {
           designMenu.hidden = true;
         }
-      });
+      }, { signal });
       designMenu.querySelectorAll(".dam-item").forEach(item => {
         item.addEventListener("click", () => {
           const kind = item.getAttribute("data-design");
