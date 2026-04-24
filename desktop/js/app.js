@@ -13,6 +13,7 @@ import { renderSlideWorkspace } from "./slides.js";
 import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
 import { openSettings } from "./settings.js";
 import { renderTemplateIntake } from "./templates.js";
+import { renderTemplateGallery } from "./template-gallery.js";
 import { renderKnowledge } from "./knowledge.js";
 import { renderConnectors } from "./connectors.js";
 import { renderNotifications } from "./notifications.js";
@@ -21,7 +22,7 @@ import { startOnboarding } from "./onboarding.js";
 
 /* ---------- State ---------- */
 const state = {
-  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
+  screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-gallery | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
   domainId: null,
   channelId: null,
   threadId: null,
@@ -96,8 +97,11 @@ function navigateTo(screenId, params = {}, afterRender) {
   if (params.threadId)     state.threadId     = params.threadId;
   if (params.aiEmployeeId) state.aiEmployeeId = params.aiEmployeeId;
   if (params.artifactId)   state.artifactId   = params.artifactId;
-  if (params.templateId)   state.templateId   = params.templateId;
-  if (params.recipeId)     state.recipeId     = params.recipeId;
+  // templateId / recipeId use `in` so callers can explicitly pass null to
+  // clear stale state (e.g. gallery → intake shouldn't carry a prior recipeId
+  // left over from an Action Launcher flow).
+  if ("templateId" in params)   state.templateId   = params.templateId || null;
+  if ("recipeId" in params)     state.recipeId     = params.recipeId   || null;
 
   state.screen = screenId;
 
@@ -185,6 +189,10 @@ function renderTopbar(screenId) {
     title = a ? a.title : "Slides";
     sub = "Slide workspace · Co-pilot";
   }
+  if (screenId === "template-gallery") {
+    title = "Templates";
+    sub = "Browse & create";
+  }
   if (screenId === "template-intake") {
     const t = D.templateById(state.templateId);
     title = t ? "Create: " + t.name : "Create from template";
@@ -258,8 +266,10 @@ window.addEventListener("popstate", (e) => {
   if (s.threadId)      state.threadId      = s.threadId;
   if (s.aiEmployeeId)  state.aiEmployeeId  = s.aiEmployeeId;
   if (s.artifactId)    state.artifactId    = s.artifactId;
-  if (s.templateId)    state.templateId    = s.templateId;
-  if (s.recipeId)      state.recipeId      = s.recipeId;
+  // Use `in` for templateId / recipeId so Back/Forward respects an explicit
+  // null clear (mirrors navigateTo's semantics).
+  if ("templateId" in s)  state.templateId  = s.templateId || null;
+  if ("recipeId" in s)    state.recipeId    = s.recipeId   || null;
   applyShellForScreen(s.screenId);
   showScreen(s.screenId);
   renderScreen(s.screenId);
@@ -282,6 +292,7 @@ function renderScreen(id) {
     case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
     case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
     case "slide-workspace":   renderSlideWorkspace(state.artifactId || "a-qbr-globex"); break;
+    case "template-gallery":  renderTemplateGallery(); break;
     case "template-intake":   renderTemplateIntake({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-processing":     renderAIProcessingScreen({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-output-review":  renderAIOutputReviewScreen({ templateId: state.templateId, recipeId: state.recipeId, artifactId: state.artifactId }); break;
@@ -401,7 +412,7 @@ function renderWorkspaceHome() {
         <div class="qa-item" data-qa="create">
           <div class="qa-icon">${iconSvg("ai", 18)}</div>
           <div class="qa-label">Create with AI</div>
-          <div class="qa-count">5 templates</div>
+          <div class="qa-count">${Object.keys(D.templates).length} templates</div>
         </div>
       </div>
 
@@ -511,7 +522,7 @@ function wireHomeScreen() {
       const kind = el.getAttribute("data-qa");
       if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
-      else if (kind === "create") openActionLauncher();
+      else if (kind === "create") navigateTo("template-gallery");
       else if (kind === "inbox") navigateTo("notifications");
       else if (kind === "copilot-doc") navigateTo("artifact-workspace", { artifactId: "a-prd-vendor-portal" });
       else if (kind === "copilot-slides") navigateTo("slide-workspace", { artifactId: "a-qbr-globex" });

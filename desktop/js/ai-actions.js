@@ -109,6 +109,13 @@ export function openActionLauncher() {
                 <div class="text-xs text-muted">${g.group}</div>
               </div>
             `).join("")}
+            ${g.group === "Create" ? `
+              <div class="action-tile browse-all" data-action="browse-templates">
+                <div class="at-icon">⊞</div>
+                <div class="at-label">Browse all templates</div>
+                <div class="text-xs text-muted">Gallery view</div>
+              </div>
+            ` : ""}
           </div>
         </div>
       `).join("")}
@@ -150,6 +157,11 @@ function wireLauncherEvents() {
           { channelId },
           () => window.app.openRightView("sheet", { focusFormula: true }),
         );
+        return;
+      }
+      // Gallery entry point → Canva/MiniMax-style template browser.
+      if (id === "browse-templates") {
+        window.app.navigateTo("template-gallery");
         return;
       }
       // Create actions (v2) → full-screen template intake (Screen 7)

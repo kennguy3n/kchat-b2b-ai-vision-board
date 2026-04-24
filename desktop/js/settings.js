@@ -1,6 +1,6 @@
 // Settings modal (workspace admin panel)
 import * as D from "./demo-data.js";
-import { openModal, closeModal } from "./modals.js";
+import { openModal, closeModal, closeAllModals } from "./modals.js";
 import { iconSvg } from "./icons.js";
 import { showToast } from "./transitions.js";
 
@@ -40,7 +40,7 @@ function renderTab(id) {
   if (id === "privacy")    { el.innerHTML = privacyTab();    wireToggles(); }
   if (id === "connectors") el.innerHTML = connectorsTab();
   if (id === "ai")         { el.innerHTML = aiTab();         wireToggles(); }
-  if (id === "templates")  el.innerHTML = templatesTab();
+  if (id === "templates")  { el.innerHTML = templatesTab(); wireTemplatesTab(); }
 }
 
 function generalTab() {
@@ -114,15 +114,63 @@ function aiTab() {
 }
 
 function templatesTab() {
-  return D.settings.templates.map(t => `
-    <div class="setting-row">
-      <div>
-        <div class="label">${t.name}</div>
-        <div class="sub">Template · ${t.kind}</div>
+  const cards = D.settings.templates.map(t => {
+    // Look up the full template record for visual metadata (color, kind icon).
+    const full = D.templateById(t.id) || {};
+    const color = full.color || "linear-gradient(135deg,#6366f1,#8b5cf6)";
+    const kind = (t.kind || full.kind || "doc");
+    const icon = kind === "deck" ? "▰" : kind === "sheet" ? "▦" : kind === "form" ? "▤" : (t.name || "?").charAt(0).toUpperCase();
+    return `
+      <div class="tg-settings-card">
+        <div class="tg-settings-preview" style="background:${color}">
+          <span class="tg-kind-pill">${kind}</span>
+          <span class="tg-card-icon" aria-hidden="true">${icon}</span>
+        </div>
+        <div class="tg-settings-body">
+          <div class="tg-settings-name">${t.name}</div>
+          <div class="tg-settings-kind">Template · ${kind}</div>
+          <div class="tg-settings-actions">
+            <button class="btn btn-secondary btn-sm" data-template-edit="${t.id}">Edit</button>
+            <button class="btn btn-ghost btn-sm" data-template-duplicate="${t.id}">Duplicate</button>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-secondary btn-sm">Edit</button>
+    `;
+  }).join("");
+
+  return `
+    <div class="tg-settings-head">
+      <div>
+        <div class="label">Templates</div>
+        <div class="sub">${D.settings.templates.length} templates available · curated by your teams</div>
+      </div>
+      <button class="btn btn-primary btn-sm" id="tg-settings-browse">${iconSvg("ai", 12)} Browse gallery</button>
     </div>
-  `).join("");
+    <div class="tg-settings-grid">${cards}</div>
+  `;
+}
+
+function wireTemplatesTab() {
+  const browse = document.getElementById("tg-settings-browse");
+  if (browse) {
+    browse.addEventListener("click", () => {
+      closeAllModals();
+      window.app.navigateTo("template-gallery");
+    });
+  }
+  document.querySelectorAll("[data-template-edit]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-template-edit");
+      closeAllModals();
+      // recipeId:null prevents stale recipe state from leaking into the intake screen.
+      window.app.navigateTo("template-intake", { templateId: id, recipeId: null });
+    });
+  });
+  document.querySelectorAll("[data-template-duplicate]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      showToast("Template duplicated (demo only).", 1400);
+    });
+  });
 }
 
 function wireToggles() {
