@@ -102,27 +102,74 @@ export const aiEmployees = [
   },
 ];
 
+/* ---------------- Tenants / Communities ---------------- */
+// The far-left rail on the sidebar maps 1:1 to tenants — each icon is a
+// separate community / workspace the current user belongs to. Picking a
+// tenant filters the rest of the sidebar (domains, channels, DMs, AI
+// employees) to just that tenant's surface.
+export const tenants = [
+  {
+    id: "t-acme",
+    name: "Acme Corp",
+    initials: "AC",
+    color: "#6366f1",
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    description: "KChat Business · 248 members",
+    domainIds: ["d-ops", "d-sales", "d-product"],
+    dmIds: ["dm-mira", "dm-tom", "dm-ana"],
+    aiEmployeeIds: ["ai-kara", "ai-mika", "ai-nina"],
+    primary: true,
+  },
+  {
+    id: "t-globex",
+    name: "Globex Partners",
+    initials: "GX",
+    color: "#10b981",
+    gradient: "linear-gradient(135deg, #10b981, #0ea5e9)",
+    description: "Partner network · 42 members",
+    domainIds: ["d-gx"],
+    dmIds: [],
+    aiEmployeeIds: [],
+  },
+  {
+    id: "t-labs",
+    name: "Acme Labs",
+    initials: "AL",
+    color: "#f59e0b",
+    gradient: "linear-gradient(135deg, #f59e0b, #ef4444)",
+    description: "R&D subsidiary · 18 members",
+    domainIds: ["d-labs"],
+    dmIds: [],
+    aiEmployeeIds: [],
+  },
+];
+
 /* ---------------- Domains / Channels / DMs ---------------- */
 export const domains = [
-  { id: "d-ops",     name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
-  { id: "d-sales",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
-  { id: "d-product", name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
+  { id: "d-ops",     tenantId: "t-acme",   name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
+  { id: "d-sales",   tenantId: "t-acme",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
+  { id: "d-product", tenantId: "t-acme",   name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
+  { id: "d-gx",      tenantId: "t-globex", name: "Account",    icon: "sales",   channels: ["c-gx-general", "c-gx-qbrs"],                knowledge: { policies: 0, templates: 1, summary: "Joint account workspace"           } },
+  { id: "d-labs",    tenantId: "t-labs",   name: "Research",   icon: "product", channels: ["c-labs-general"],                           knowledge: { policies: 0, templates: 0, summary: "R&D lab"                          } },
 ];
 
 export const channels = {
-  "c-vendor":     { id: "c-vendor",     domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk", members: 14, knowledgeRebuilt: "12m ago", knowledgeEntityCount: 18 },
-  "c-logistics":  { id: "c-logistics",  domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",   members:  9, knowledgeRebuilt: "1h ago",  knowledgeEntityCount: 11 },
-  "c-compliance": { id: "c-compliance", domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",             members:  6, knowledgeRebuilt: "3h ago",  knowledgeEntityCount:  7 },
-  "c-pipeline":   { id: "c-pipeline",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",       members: 11, knowledgeRebuilt: "23m ago", knowledgeEntityCount: 14 },
-  "c-deals":      { id: "c-deals",      domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",               members:  7, knowledgeRebuilt: "45m ago", knowledgeEntityCount: 22 },
-  "c-roadmap":    { id: "c-roadmap",    domainId: "d-product", name: "roadmap",            description: "Quarterly planning",               members: 10, knowledgeRebuilt: "2h ago",  knowledgeEntityCount:  9 },
-  "c-specs":      { id: "c-specs",      domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",          members: 12, knowledgeRebuilt: "15m ago", knowledgeEntityCount: 26 },
+  "c-vendor":      { id: "c-vendor",      tenantId: "t-acme",   domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk", members: 14, knowledgeRebuilt: "12m ago", knowledgeEntityCount: 18 },
+  "c-logistics":   { id: "c-logistics",   tenantId: "t-acme",   domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",   members:  9, knowledgeRebuilt: "1h ago",  knowledgeEntityCount: 11 },
+  "c-compliance":  { id: "c-compliance",  tenantId: "t-acme",   domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",             members:  6, knowledgeRebuilt: "3h ago",  knowledgeEntityCount:  7 },
+  "c-pipeline":    { id: "c-pipeline",    tenantId: "t-acme",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",       members: 11, knowledgeRebuilt: "23m ago", knowledgeEntityCount: 14 },
+  "c-deals":       { id: "c-deals",       tenantId: "t-acme",   domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",               members:  7, knowledgeRebuilt: "45m ago", knowledgeEntityCount: 22 },
+  "c-roadmap":     { id: "c-roadmap",     tenantId: "t-acme",   domainId: "d-product", name: "roadmap",            description: "Quarterly planning",               members: 10, knowledgeRebuilt: "2h ago",  knowledgeEntityCount:  9 },
+  "c-specs":       { id: "c-specs",       tenantId: "t-acme",   domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",          members: 12, knowledgeRebuilt: "15m ago", knowledgeEntityCount: 26 },
+  "c-gx-general":  { id: "c-gx-general",  tenantId: "t-globex", domainId: "d-gx",      name: "general",            description: "Joint working channel",            members: 12, knowledgeRebuilt: "1d ago",  knowledgeEntityCount:  4 },
+  "c-gx-qbrs":     { id: "c-gx-qbrs",     tenantId: "t-globex", domainId: "d-gx",      name: "qbrs",               description: "Quarterly business reviews",       members:  8, knowledgeRebuilt: "2d ago",  knowledgeEntityCount:  6 },
+  "c-labs-general":{ id: "c-labs-general",tenantId: "t-labs",   domainId: "d-labs",    name: "general",            description: "Lab announcements",                members: 18, knowledgeRebuilt: "1w ago", knowledgeEntityCount:  2 },
 };
 
 export const directMessages = [
-  { id: "dm-mira", withUserId: "u-mira", unread: 2 },
-  { id: "dm-tom",  withUserId: "u-tom",  unread: 0 },
-  { id: "dm-ana",  withUserId: "u-ana",  unread: 1 },
+  { id: "dm-mira", tenantId: "t-acme", withUserId: "u-mira", unread: 2 },
+  { id: "dm-tom",  tenantId: "t-acme", withUserId: "u-tom",  unread: 0 },
+  { id: "dm-ana",  tenantId: "t-acme", withUserId: "u-ana",  unread: 1 },
 ];
 
 /* ---------------- Messages ---------------- */
@@ -285,6 +332,48 @@ export const artifacts = {
       { heading: "Risks",             body: "Implementation delay on analytics module; pricing exposure in EU.", confidence: "review" },
       { heading: "Next quarter",      body: "Accelerate analytics rollout; expand to LATAM pilot.", confidence: "high" },
     ],
+    slides: [
+      {
+        heading: "Executive Summary",
+        layout: "title-bullets",
+        bullets: [
+          "Globex expanded 18% YoY, led by logistics SKUs",
+          "Two risks flagged for Q3 mitigation",
+          "Renewal on track; analytics module delayed 2 weeks",
+        ],
+        speakerNotes: "Open with the headline number. Globex is a reference account; lean on the YoY growth story. Acknowledge risks early so leadership knows we have a plan.",
+      },
+      {
+        heading: "Wins",
+        layout: "title-bullets",
+        bullets: [
+          "Master agreement renewed through FY27",
+          "Added 2 new regions (LATAM, APAC)",
+          "Reference customer converted from deal thread",
+        ],
+        speakerNotes: "Celebrate the master agreement renewal. Mention the reference customer by name and tie back to the deal thread the AI pulled from.",
+      },
+      {
+        heading: "Risks",
+        layout: "title-bullets",
+        bullets: [
+          "Analytics module implementation delayed 2 weeks",
+          "EU pricing exposure from currency shift (~$180k)",
+          "Executive sponsor change on FleetOne account",
+        ],
+        speakerNotes: "Be direct about the analytics delay. We have a mitigation plan — do not sugarcoat. EU pricing exposure is the real risk to flag.",
+      },
+      {
+        heading: "Next Quarter",
+        layout: "title-bullets",
+        bullets: [
+          "Accelerate analytics rollout (target: end of Q3)",
+          "Expand to LATAM pilot with 3 new accounts",
+          "Dedicated CSM motion for at-risk accounts",
+        ],
+        speakerNotes: "End on the forward plan. Analytics acceleration is the key commitment. LATAM pilot is stretch — set expectations.",
+      },
+    ],
   },
   "a-prd-vendor-portal": {
     id: "a-prd-vendor-portal",
@@ -387,6 +476,125 @@ export const aiOutputs = {
   },
 };
 
+/* ---------------- AI Co-pilot data (inline, human-driven) ---------------- */
+
+// Document co-pilot: pre-scripted rewrite / shorten / expand / tone / translate
+// variants keyed by section heading. The inline floating toolbar swaps selected
+// text with one of these based on the button clicked.
+export const docCopilotSuggestions = {
+  Overview: {
+    rewrite: "Vendor Portal v2 rebuilds onboarding from the ground up, introduces a compliance-grade document vault, and surfaces live risk scores to every vendor admin.",
+    shorten: "Vendor Portal v2 modernizes onboarding, adds a doc vault, and exposes live risk scores.",
+    expand:  "Vendor Portal v2 modernizes the onboarding experience end-to-end, introduces a document vault with expiration tracking and audit trail, and exposes live risk scores to vendor admins alongside the compliance team, replacing today's fragmented email + drive workflow.",
+    tone:    "Vendor Portal v2 represents a decisive step forward: a modern onboarding system, a first-class document vault, and live risk scoring surfaced directly to every vendor admin.",
+    translate: "Vendor Portal v2 moderniza la experiencia de incorporación, introduce una bóveda de documentos y expone puntuaciones de riesgo en vivo a los administradores de proveedores.",
+  },
+  "Problem Statement": {
+    rewrite: "Vendors today onboard through ad-hoc email threads and shared drives, producing manual work and inconsistent evidence.",
+    shorten: "Today's onboarding is manual email + drives, with inconsistent evidence.",
+    expand:  "Today vendors onboard via email threads and shared drives, creating significant manual follow-up (9 hours/vendor on average), inconsistent compliance evidence, and no single source of truth for contract status or risk posture.",
+    tone:    "The current onboarding flow is unsustainable: manual, inconsistent, and actively blocking our ability to scale.",
+    translate: "Hoy los proveedores se incorporan por correo electrónico y unidades compartidas, lo que genera trabajo manual y evidencia inconsistente.",
+  },
+  Requirements: {
+    rewrite: "Scope covers: self-serve onboarding, a document vault with expiration tracking, real-time risk scoring, OIDC SSO, and an admin audit trail.",
+    shorten: "Self-serve onboarding, doc vault, live risk scoring, SSO, audit trail.",
+    expand:  "Self-serve onboarding with progressive disclosure, document vault with expiration tracking and renewal reminders, real-time risk scoring with tier thresholds, SSO via OIDC (Okta, Azure AD, Google), SCIM provisioning, and an immutable admin audit trail exportable to SOC2 evidence packs.",
+    tone:    "Requirements are non-negotiable: self-serve onboarding, compliant document vault, real-time risk scoring, enterprise SSO, and a complete audit trail.",
+    translate: "Incorporación autoservicio, bóveda de documentos, puntuación de riesgo en tiempo real, SSO vía OIDC y registro de auditoría de administrador.",
+  },
+  "Success Metrics": {
+    rewrite: "Target metrics: 60% reduction in onboarding time, evidence completeness above 95%, and admin NPS above 40.",
+    shorten: "Onboarding −60%, evidence ≥95%, admin NPS ≥40.",
+    expand:  "Onboarding time reduced 60% from a 9-hour baseline; evidence completeness > 95% measured at quarterly compliance review; admin NPS > 40; time-to-first-shipment reduced 30%; SOC2 evidence export < 15 minutes.",
+    tone:    "We will ship this when onboarding drops 60%, evidence clears 95%, and admin NPS exceeds 40. No earlier.",
+    translate: "Tiempo de incorporación reducido 60%; integridad de evidencia > 95%; NPS de administrador > 40.",
+  },
+  "Open Questions": {
+    rewrite: "Unresolved: which SSO providers to support in v2, data residency tier, and scoring model ownership.",
+    shorten: "Open: SSO list, residency, scoring owner.",
+    expand:  "Open questions: which SSO providers (Okta, Azure AD, Google, Ping?) ship in v2; tenant-level data residency (US/EU/APAC) commitment; scoring model ownership (Ops vs Risk team) and escalation path for disputed scores.",
+    tone:    "These must be resolved before spec freeze: SSO provider list, data residency commitment, and scoring model ownership.",
+    translate: "Abiertas: lista de proveedores SSO, residencia de datos por inquilino y propiedad del modelo de puntuación.",
+  },
+  "Executive summary": {
+    rewrite: "Q2 delivered 18% YoY growth at Globex, concentrated in logistics SKUs, with two risks flagged for Q3 mitigation.",
+    shorten: "Globex grew 18% YoY in Q2; two Q3 risks flagged.",
+    expand:  "Q2 delivered 18% YoY growth at Globex, concentrated in logistics SKUs, with the master agreement renewed through FY27 and two risks (analytics delay, EU FX exposure) flagged for Q3 mitigation.",
+    tone:    "Q2 was decisive for Globex: 18% YoY growth, renewal locked, and a clear plan for the two risks we are calling out.",
+    translate: "Globex creció 18% interanual en el segundo trimestre; se marcaron dos riesgos para mitigación en el tercer trimestre.",
+  },
+};
+
+// Doc-level chat: pre-scripted Q&A for the "Ask AI about this document" input
+// in the right aside.
+export const docCopilotChatResponses = [
+  { match: /authoritative|tone.*authoritative|more.*formal/i, response: "Tone updated across 3 sections.", effect: "toast" },
+  { match: /shorter|tighten|condense/i,                       response: "Document shortened by 22%. Review changes.", effect: "toast" },
+  { match: /translate|spanish|español/i,                      response: "Translated 5 sections to Spanish. Draft v2 saved.", effect: "toast" },
+  { match: /metric|quantif/i,                                 response: "Added 4 quantitative anchors across Metrics + Overview.", effect: "toast" },
+  { match: /risk|flag/i,                                      response: "Flagged 2 under-supported claims in Requirements.", effect: "toast" },
+];
+
+// Ghost autocomplete suggestions keyed by section heading (doc co-pilot).
+export const docGhostCompletions = {
+  Overview:          "Primary users are vendor admins and Acme's compliance team.",
+  "Problem Statement": "Ops spends an estimated 9 hours per vendor on manual follow-up.",
+  Requirements:      "SCIM provisioning and immutable audit export are required for SOC2.",
+  "Success Metrics": "Time-to-first-shipment reduced 30% is a stretch goal.",
+  "Open Questions":  "Confirm scoring model ownership split between Ops and Risk.",
+  "Executive summary": "Renewal locked through FY27; two risks queued for Q3 mitigation.",
+};
+
+// Sheet co-pilot: formula suggestions, column insights, NL query → highlight.
+export const sheetCopilotData = {
+  formulaSuggestions: [
+    { match: /total.*variance|overall.*variance|net.*variance/i,
+      formula: "=SUM(F2:F8)/COUNT(F2:F8)",
+      result:  "-2.1%",
+      explain: "Average variance across all 7 categories.",
+    },
+    { match: /over.*budget|positive.*variance|exceeds/i,
+      formula: "=COUNTIF(F2:F8,\">0%\")",
+      result:  "4 categories",
+      explain: "Logistics, Compliance tools, Software licenses, Contractors all over budget.",
+    },
+    { match: /under.*budget|negative.*variance|savings/i,
+      formula: "=COUNTIF(F2:F8,\"<0%\")",
+      result:  "3 categories",
+      explain: "Vendor spend, AI compute, Training all under budget.",
+    },
+    { match: /highest|max|worst/i,
+      formula: "=INDEX(A2:A8,MATCH(MAX(F2:F8),F2:F8,0))",
+      result:  "Logistics (+5.3%)",
+      explain: "Logistics is the most over-budget line.",
+    },
+    { match: /lowest|min|best.*saving/i,
+      formula: "=INDEX(A2:A8,MATCH(MIN(F2:F8),F2:F8,0))",
+      result:  "Training (-22.0%)",
+      explain: "Training has the largest underspend.",
+    },
+  ],
+  columnInsights: {
+    Category:     ["Categorize values", "7 categories detected — grouped by Ops / Software / People"],
+    "Q1 Budget":  ["Summarize column", "Q1 total budget: $402,000 · Average: $57,429"],
+    "Q1 Actual":  ["Summarize column", "Q1 total actual: $400,900 · Variance vs budget: -0.3%"],
+    "Q2 Budget":  ["Summarize column", "Q2 total budget: $427,500 · +6.3% vs Q1"],
+    "Q2 Actual":  ["Summarize column", "Q2 total actual: $433,200 · Variance vs budget: +1.3%"],
+    Variance:     ["Detect anomalies", "Training variance (-22%) is a 3σ outlier — investigate"],
+  },
+  nlQueries: [
+    { match: /over.*budget|positive/i,     highlightPredicate: v => v.startsWith("+"), message: "Highlighted 4 rows over budget." },
+    { match: /under.*budget|saving|negative/i, highlightPredicate: v => v.startsWith("-"), message: "Highlighted 3 rows under budget." },
+    { match: /logistics/i,                  highlightPredicate: (v, row) => row[0].toLowerCase().includes("logistics"), message: "Highlighted Logistics row." },
+    { match: /software|license/i,           highlightPredicate: (v, row) => /software|license/i.test(row[0]), message: "Highlighted Software-related rows." },
+  ],
+  cellExplanations: {
+    // Variance cell formula + explanation shown on click (column 5 = Variance).
+    variance: "=(Q2 Actual − Q2 Budget) / Q2 Budget · Expressed as a percentage. Negative = under budget, positive = over budget.",
+  },
+};
+
 /* ---------------- Recipes + Action Launcher groups ---------------- */
 export const recipes = [
   { id: "r-summarize",      display: "Summarize thread", group: "Analyze", intake: ["Audience", "Length"],            sources: ["current thread"] },
@@ -396,43 +604,77 @@ export const recipes = [
   { id: "r-create-qbr",     display: "Create QBR",       group: "Create",  intake: ["Customer", "Quarter"],           sources: ["deal thread", "CRM export"] },
 ];
 
-export const actionGroups = [
-  { group: "Create", actions: [
-    { id: "create-doc",      label: "Doc",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "D" },
-    { id: "create-deck",     label: "Deck",     recipeId: "r-create-qbr",     templateId: "tpl-qbr",      icon: "K" },
-    { id: "create-proposal", label: "Proposal", recipeId: "r-draft-proposal", templateId: "tpl-proposal", icon: "P" },
-    { id: "create-sop",      label: "SOP",      recipeId: "r-draft-prd",      templateId: "tpl-sop",      icon: "S" },
-    { id: "create-prd",      label: "PRD",      recipeId: "r-draft-prd",      templateId: "tpl-prd",      icon: "R" },
-  ]},
-  { group: "Track", actions: [
-    { id: "track-sheet",   label: "Sheet",         icon: "≡" },
-    { id: "track-base",    label: "Base Table",    icon: "B" },
-    { id: "track-budget",  label: "Budget",        icon: "$" },
-    { id: "track-risk",    label: "Risk Register", icon: "!" },
-  ]},
-  { group: "Plan", actions: [
-    { id: "plan-tasks",   label: "Tasks",        icon: "✓" },
-    { id: "plan-agenda",  label: "Agenda",       icon: "A" },
-    { id: "plan-project", label: "Project Plan", icon: "P" },
-  ]},
-  { group: "Approve", actions: [
-    { id: "approve-purchase",  label: "Purchase",  icon: "$" },
-    { id: "approve-exception", label: "Exception", icon: "!" },
-    { id: "approve-policy",    label: "Policy",    icon: "§" },
-    { id: "approve-budget",    label: "Budget",    icon: "B" },
-  ]},
-  { group: "Collect", actions: [
-    { id: "collect-form",     label: "Form",     icon: "F" },
-    { id: "collect-intake",   label: "Intake",   icon: "I" },
-    { id: "collect-feedback", label: "Feedback", icon: "✎" },
-  ]},
-  { group: "Analyze", actions: [
-    { id: "analyze-summary", label: "Summarize", recipeId: "r-summarize",     icon: "Σ" },
-    { id: "analyze-compare", label: "Compare",                                icon: "⇄" },
-    { id: "analyze-extract", label: "Extract",   recipeId: "r-extract-tasks", icon: "E" },
-    { id: "analyze-report",  label: "Report",                                 icon: "R" },
-  ]},
+/* ---------------- Core Intents (v3) ----------------
+   Unified intent taxonomy — users pick what they want to *do* (Create,
+   Analyze, Plan, Approve) and the surface decides whether an AI Employee
+   (autonomous) or AI Co-pilot (inline) flow fits. `mode` on each action
+   is a hint the launcher renders as a subtle badge ("Auto" / "Inline"),
+   not a separate top-level section, so the taxonomy scales as skills,
+   templates, and connectors grow. */
+export const coreIntents = [
+  {
+    id: "create",
+    label: "Create",
+    sub: "Docs, slides, sheets, schedules",
+    icon: "plus",
+    actions: [
+      { id: "copilot-doc",     label: "Document",  mode: "inline", sub: "Write with inline AI co-pilot",            icon: "D" },
+      { id: "copilot-slides",  label: "Slides",    mode: "inline", sub: "Per-slide AI + layout suggestions",        icon: "K" },
+      { id: "copilot-sheet",   label: "Sheet",     mode: "inline", sub: "NL formula bar + cell AI + visualize",     icon: "≡" },
+      { id: "create-schedule", label: "Schedule",  mode: "auto",   sub: "AI-drafted agenda + invite",               icon: "📅" },
+      { id: "create-prd",      label: "PRD",       mode: "auto",   recipeId: "r-draft-prd",      templateId: "tpl-prd",      sub: "Structured product requirements", icon: "R" },
+      { id: "create-qbr",      label: "QBR Deck",  mode: "auto",   recipeId: "r-create-qbr",     templateId: "tpl-qbr",      sub: "Quarterly business review",        icon: "Q" },
+      { id: "create-sop",      label: "SOP",       mode: "auto",   recipeId: "r-draft-prd",      templateId: "tpl-sop",      sub: "Standard operating procedure",     icon: "S" },
+      { id: "create-proposal", label: "Proposal",  mode: "auto",   recipeId: "r-draft-proposal", templateId: "tpl-proposal", sub: "Customer-ready proposal",          icon: "P" },
+      { id: "collect-form",    label: "Form",      mode: "auto",   sub: "Collect structured input",                 icon: "F" },
+    ],
+  },
+  {
+    id: "analyze",
+    label: "Analyze",
+    sub: "Summarize, compare, extract, visualize",
+    icon: "filter",
+    actions: [
+      { id: "analyze-summary", label: "Summarize", mode: "auto",   recipeId: "r-summarize",     sub: "Key points with sources", icon: "Σ" },
+      { id: "analyze-extract", label: "Extract",   mode: "auto",   recipeId: "r-extract-tasks", sub: "Pull data out of threads", icon: "E" },
+      { id: "analyze-compare", label: "Compare",   mode: "auto",   sub: "Side-by-side highlights",                   icon: "⇄" },
+      { id: "analyze-report",  label: "Report",    mode: "auto",   sub: "Structured rollup",                         icon: "R" },
+      { id: "copilot-sheet-analyze", label: "Spreadsheet AI", mode: "inline", sub: "Cell-level explain + NL formula", icon: "Σ" },
+    ],
+  },
+  {
+    id: "plan",
+    label: "Plan",
+    sub: "Tasks, projects, agendas, trackers",
+    icon: "tasks",
+    actions: [
+      { id: "plan-tasks",   label: "Tasks",        mode: "auto", sub: "Extract action items",       icon: "✓" },
+      { id: "plan-project", label: "Project Plan", mode: "auto", sub: "Milestones + owners",        icon: "P" },
+      { id: "plan-agenda",  label: "Agenda",       mode: "auto", sub: "Structured meeting plan",    icon: "A" },
+      { id: "track-risk",   label: "Risk Register",mode: "auto", sub: "Flag + score risks",         icon: "!" },
+      { id: "track-budget", label: "Budget",       mode: "auto", sub: "Track plan vs actual",       icon: "$" },
+    ],
+  },
+  {
+    id: "approve",
+    label: "Approve",
+    sub: "Purchase, exception, policy, budget",
+    icon: "approve",
+    actions: [
+      { id: "approve-purchase",  label: "Purchase",  mode: "auto", sub: "Route PO for sign-off",         icon: "$" },
+      { id: "approve-exception", label: "Exception", mode: "auto", sub: "Policy exception request",      icon: "!" },
+      { id: "approve-policy",    label: "Policy",    mode: "auto", sub: "Policy change",                 icon: "§" },
+      { id: "approve-budget",    label: "Budget",    mode: "auto", sub: "Budget approval",               icon: "B" },
+    ],
+  },
 ];
+
+/* Legacy alias so older callers that imported `actionGroups` keep working
+   — the launcher and home screen now prefer `coreIntents`. */
+export const actionGroups = coreIntents.map(i => ({
+  group: i.label,
+  actions: i.actions.map(a => ({ ...a })),
+}));
 
 /* ---------------- Templates (v2: curated with hidden meta-prompts + visual metadata) ---------------- */
 export const templates = {
@@ -840,6 +1082,8 @@ export function userById(id) {
 }
 export function channelById(id)   { return channels[id] || null; }
 export function domainById(id)    { return domains.find(d => d.id === id) || null; }
+export function tenantById(id)    { return tenants.find(t => t.id === id) || null; }
+export function primaryTenantId() { return (tenants.find(t => t.primary) || tenants[0]).id; }
 export function aiById(id)        { return aiEmployees.find(a => a.id === id) || null; }
 export function artifactById(id)  { return artifacts[id] || null; }
 export function approvalById(id)  { return approvals[id] || null; }

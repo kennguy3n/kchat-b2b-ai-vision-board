@@ -268,6 +268,46 @@
 .onb-tooltip .onb-step { font-size: 11.5px; color: var(--text-soft); }
 .onb-tooltip .onb-foot .spacer { flex: 1; }
 
+/* Core Intents row on workspace home — 4 big cards (Create / Analyze /
+   Plan / Approve), each opens the action launcher scrolled to that intent. */
+.intent-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+@media (max-width: 1100px) { .intent-cards { grid-template-columns: repeat(2, 1fr); } }
+.intent-card {
+  position: relative;
+  padding: 16px 16px 14px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--primary-50) 140%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px;
+  transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.intent-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+.intent-card .intent-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary-600);
+  display: grid; place-items: center;
+  margin-bottom: 4px;
+}
+.intent-card .intent-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.intent-card .intent-sub  { font-size: 12px; color: var(--text-muted); }
+.intent-card .intent-peek {
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-size: 11px; color: var(--text-soft);
+}
+
 /* Action launcher — suggested + recently used */
 .action-groups-label {
   font-size: 11px;
@@ -276,7 +316,30 @@
   color: var(--text-soft);
   font-weight: 700;
   margin: 8px 2px 6px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
 }
+.intent-tabs {
+  display: inline-flex; gap: 4px;
+  text-transform: none; letter-spacing: 0;
+}
+.intent-tab {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.intent-tab:hover { color: var(--text); border-color: var(--primary-100, var(--border)); }
+.intent-tab.active {
+  background: var(--primary-50);
+  color: var(--primary-600);
+  border-color: var(--primary);
+}
+.intent-tab svg { opacity: 0.7; }
 .suggest-group h4 { color: var(--primary-600); }
 .suggest-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .action-tile.suggest {

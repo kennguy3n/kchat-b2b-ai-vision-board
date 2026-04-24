@@ -233,6 +233,7 @@
 .doc-outline .outline-item.active { background: var(--primary-50); color: var(--primary-600); font-weight: 600; }
 
 .doc-main {
+  position: relative;
   overflow-y: auto;
   padding: 24px 48px;
   background: var(--bg);

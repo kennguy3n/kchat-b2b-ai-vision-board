@@ -6,6 +6,144 @@ and which SME segments benefit most from the changes.
 
 ---
 
+## Core Intents taxonomy + multi-tenant rail (v0.4)
+
+**Goal:** flatten the growing surface area of AI actions into a single
+**intent-first** taxonomy (Create / Analyze / Plan / Approve) so users
+don't have to know whether they want an "AI Employee" or an "AI Co-pilot"
+to find what they need; and align the shell with KChat's
+multi-community pattern (far-left tenant rail → sidebar → main).
+
+### Changes
+
+- [x] **1. Core Intents data model** — new `coreIntents` export in
+      `desktop/js/demo-data.js` with four buckets (Create / Analyze /
+      Plan / Approve). Each action carries a `mode` hint (`auto` = AI
+      Employee queue, `inline` = AI Co-pilot edit-in-place) and a short
+      `sub` caption. `actionGroups` is kept as a legacy alias derived
+      from `coreIntents`.
+- [x] **2. Home — Core Intents row** — `renderWorkspaceHome()` replaces
+      the separate "AI Employee" + "AI Co-pilot" strips with a single
+      4-card Core Intents row (gradient cards with peek of top tiles).
+      A secondary "Your workspace" row keeps fast access to Inbox /
+      Tasks / Approvals / Templates with live counts.
+- [x] **3. Action Launcher — intent-first layout** — `openActionLauncher()`
+      now renders the four intents as collapsible groups with a pill
+      filter bar ("All · Create · Analyze · Plan · Approve"). Tiles
+      carry an **Auto** / **Inline** mode badge. The old
+      "AI Employee" / "AI Co-pilot" sub-labels are gone; the taglines
+      up top explain the distinction once: "Pick what you want to do —
+      AI decides whether an Employee runs it or a Co-pilot assists
+      inline." Intent cards on Home open the launcher pre-scrolled to
+      that intent via a new `{ intent }` param.
+- [x] **4. Routing consolidation** — `wireLauncherEvents` now delegates
+      to a single `routeAction(id, opts)` function so every entry point
+      (launcher tile, recent chip, home intent card, channel
+      suggestion) lands on the same surface for a given action id.
+      Added routing for `create-schedule` (toast placeholder) and the
+      inline `copilot-sheet-analyze` alias.
+- [x] **5. CSS** — new `.intent-cards` / `.intent-card` styles in
+      `components.css`; `.intent-tabs` / `.intent-tab` pill filter;
+      `.mode-badge.mode-auto` / `.mode-badge.mode-inline` in `ai.css`.
+      Removed the obsolete `.launcher-modes`, `.copilot-group`,
+      `.copilot-tile`, and `.quick-actions-copilot` rules.
+- [x] **6. Multi-tenant rail (earlier in v0.4)** — new far-left
+      `tenant-rail.css` + `renderTenantRail()` in `navigation.js`; each
+      tenant has domains / channels / AI employees filtered via
+      `state.tenantId`. Topbar shows the active tenant name.
+- [x] **7. Docs** — PROPOSAL §5.7 reframed as *Core Intents — the
+      user-facing taxonomy*, with §5.7.1 keeping the inline co-pilot
+      detail. README banner + click-through guide updated for the
+      intent row and launcher filter bar.
+
+### What's next
+
+- Surface Core Intents in the sidebar `+ New` menu (quick intent
+  selector before the launcher opens).
+- Pipe channel-aware "suggested" tiles onto the matching intent tab
+  by default so the user lands on the most relevant verb.
+- Per-tenant theming of the intent cards (community accent color
+  bleeds into the Home gradient).
+
+---
+
+## AI Co-pilot Layer (v0.3)
+
+**Goal:** balance the existing autonomous *AI Employee* chrome with an
+inline, human-driven *AI Co-pilot* layer on the three work surfaces that
+knowledge workers actually live inside — **Document, Slides, Sheet** —
+while keeping the demo pure static HTML/CSS/JS.
+
+> **AI Employee = "AI does it for you"** (autonomous, queued, governed)
+> **AI Co-pilot = "AI helps you do it"** (inline, real-time, human-driven)
+>
+> Both are now first-class in the vision board.
+
+### Changes
+
+- [x] **1. Document Co-pilot** — enhanced `desktop/js/artifacts.js`:
+      floating **selection toolbar** (Rewrite / Shorten / Expand / Change
+      tone / Translate) that swaps the selected text with a pre-scripted
+      alternative + pulse animation; **ghost autocomplete** block at the
+      end of each section with Tab-to-accept; **"Ask AI about this
+      document"** chat placed below the Compute card in the right aside,
+      with pre-scripted prompts.
+      *Surfaces:* PRDs, SOPs, any artifact workspace.
+- [x] **2. Slides Co-pilot** — new `desktop/js/slides.js` +
+      `slide-workspace` screen in `desktop/index.html`. Three-column
+      editor (thumbnail rail / canvas / AI panel). Per-slide AI actions
+      (Simplify slide, Add chart placeholder, Generate speaker notes,
+      Suggest layout); a **Design with AI** dropdown in the header
+      (consistent theme, transitions, narrative reorder). The QBR
+      artifact now carries a `slides[]` array in `demo-data.js`.
+      *Surfaces:* QBR / EBR decks, customer reviews.
+- [x] **3. Sheet Co-pilot** — enhanced `renderSheet()` in
+      `desktop/js/kapps.js`: **AI formula bar** above the table with
+      NL-to-formula suggestions + insert action; **cell-level AI** popover
+      on any Variance cell explaining the computation; hover **AI icon
+      per column header** → Summarize / Detect anomalies / Categorize
+      menu; **Visualize** button renders an inline CSS bar chart; NL
+      queries highlight matching rows (e.g. "over budget" → rows with
+      positive variance).
+      *Surfaces:* Budget tracker, any tabular KApp.
+- [x] **4. Rebalanced Action Launcher** — `desktop/js/ai-actions.js` now
+      surfaces a dedicated **Co-pilot** group between "Suggested for you"
+      and "All actions" with three tiles (Write with AI / Design slides /
+      Analyze a spreadsheet). Channel suggestions include one co-pilot
+      option alongside the recipe option. Top mode badges + glossary
+      tooltips make the Employee/Co-pilot distinction explicit. Launcher
+      routes co-pilot tiles to the correct target screen.
+- [x] **5. Home quick-actions row** — `renderWorkspaceHome()` now shows
+      two rows: the existing "AI Employee" cards (approvals / tasks /
+      draft / inbox) and a new "AI Co-pilot" row (Write a document /
+      Design a deck / Analyze a spreadsheet). The rows carry sub-labels
+      so the distinction is visible at a glance.
+- [x] **6. Demo data** — `desktop/js/demo-data.js` gained `slides[]` on
+      `a-qbr-globex`, plus new `docCopilotSuggestions` (rewrite / shorten
+      / expand per section heading) and `sheetCopilotData`
+      (formulaSuggestions, columnInsights, nlQueries). Added a
+      `Budget Analysis` template of kind `sheet`.
+- [x] **7. CSS** — `desktop/css/ai.css` gained a co-pilot accent palette
+      and styles for the selection toolbar, ghost autocomplete, doc
+      chat, AI formula bar, cell popover, column AI menu, NL row
+      highlights, inline bar chart, co-pilot tiles in the launcher, and
+      the full slide-workspace layout.
+- [x] **8. Documentation** — README click-through guide expanded to
+      describe the new Document / Slides / Sheet co-pilot behaviours and
+      the new `slide-workspace` screen. PROPOSAL gained section **5.7
+      AI Co-pilot Layer** alongside the AI Employee fabric.
+
+### What's next
+
+- Wire a real brief → draft handoff so a Brief in the launcher can
+  land the user directly in Document / Slide co-pilot with the draft
+  pre-populated.
+- Voice-driven cell edits in the Sheet co-pilot (mic button next to the
+  formula bar).
+- Mobile click-through in `mobile/` with co-pilot-first ergonomics.
+
+---
+
 ## UX Audit & SME Suitability Pass (v0.2)
 
 **Goal:** make the click-through demo usable end-to-end by mass SME office

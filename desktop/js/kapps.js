@@ -3,6 +3,11 @@ import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { showToast } from "./transitions.js";
 
+// Scopes document-level listeners added by the Sheet co-pilot (cell popover
+// + column menu outside-click dismissers) so re-renders of renderSheet do not
+// leak handlers against detached DOM.
+let sheetAbort = null;
+
 // Shared empty-state primitive. Returned as HTML so callers can inline it
 // into their rp-body when a collection is empty.
 export function renderEmptyState({ icon = "?", title, description, ctaLabel, ctaId }) {
@@ -274,34 +279,59 @@ export function renderBase(containerId) {
 }
 
 /* ---------------- Sheet KApp ---------------- */
-export function renderSheet(containerId) {
+export function renderSheet(containerId, params = {}) {
   const view = document.getElementById(containerId);
   if (!view) return;
   const s = D.sheetData;
-  const head = s.columns.map(c => `<th>${c}</th>`).join("");
-  const rows = s.rows.map(r => `<tr>${r.map((v,i) => {
-    const cls = i === s.columns.length - 1
+  const copilot = D.sheetCopilotData || {};
+  const varianceIdx = s.columns.length - 1;
+
+  const head = s.columns.map((c, ci) => {
+    const hasInsight = copilot.columnInsights && copilot.columnInsights[c];
+    return `<th data-col-idx="${ci}" data-col-name="${c}">
+      <span class="col-label">${c}</span>
+      ${hasInsight ? `<button class="col-ai-btn" data-col-ai="${ci}" title="AI actions for ${c}">${iconSvg("ai", 11)}</button>` : ""}
+    </th>`;
+  }).join("");
+
+  const rows = s.rows.map((r, ri) => `<tr data-row-idx="${ri}">${r.map((v,i) => {
+    const isVariance = i === varianceIdx;
+    const cls = isVariance
       ? (v.startsWith("-") ? "text-muted" : v.startsWith("+") ? "" : "")
       : "";
-    const formula = i === s.columns.length - 1 ? ` title="=formula"` : "";
-    return `<td class="${cls}"${formula}>${v}</td>`;
+    const cellAttrs = isVariance
+      ? ` class="${cls} variance-cell" data-variance-cell data-row-idx="${ri}"`
+      : (cls ? ` class="${cls}"` : "");
+    return `<td${cellAttrs}>${v}</td>`;
   }).join("")}</tr>`).join("");
+
   view.innerHTML = `
     <div class="rp-head">
       <div>
         <div class="title">${s.title}</div>
-        <div class="sub">Sheet · ${s.rows.length} rows</div>
+        <div class="sub">Sheet · ${s.rows.length} rows · <span class="ai-chip">Co-pilot</span></div>
       </div>
       <span class="spacer"></span>
+      <button class="btn btn-ai btn-sm" id="sheet-visualize" title="Render a chart of the variance column">${iconSvg("ai", 12)} Visualize</button>
       <button class="btn btn-ai btn-sm" id="sheet-ai">${iconSvg("ai", 12)} Generate Summary</button>
       ${expandBtnHTML()}
       <button class="rp-close" data-close-right>${iconSvg("close", 14)}</button>
     </div>
     <div class="rp-body" style="padding:0">
-      <table class="table">
+      <div class="ai-formula-bar" id="ai-formula-bar">
+        <span class="afb-label">${iconSvg("ai", 12)} fx</span>
+        <input id="ai-formula-input" ${params.focusFormula ? "autofocus" : ""}
+               placeholder="Ask AI: e.g., 'total variance across all categories'" />
+        <button class="btn btn-ai btn-sm" id="ai-formula-run">Run</button>
+        <div class="afb-result" id="afb-result" hidden></div>
+      </div>
+      <table class="table sheet-table" id="sheet-table">
         <thead><tr>${head}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
+      <div class="sheet-chart" id="sheet-chart" hidden></div>
+      <div class="cell-popover" id="cell-popover" hidden></div>
+      <div class="col-ai-menu" id="col-ai-menu" hidden></div>
     </div>
     <div class="rp-foot">
       <button class="btn btn-ghost">Export CSV</button>
@@ -310,5 +340,210 @@ export function renderSheet(containerId) {
   `;
   const ai = document.getElementById("sheet-ai");
   if (ai) ai.addEventListener("click", () => window.app.openRightView("summary"));
+  const viz = document.getElementById("sheet-visualize");
+  if (viz) viz.addEventListener("click", () => toggleSheetChart(view, s, varianceIdx));
   wireExpandButtons();
+
+  // Tear down document-level listeners from the previous renderSheet so the
+  // cell popover + column menu outside-click handlers do not accumulate.
+  if (sheetAbort) sheetAbort.abort();
+  sheetAbort = new AbortController();
+  const sheetSignal = sheetAbort.signal;
+
+  wireFormulaBar(view, s, copilot, varianceIdx);
+  wireVarianceCells(view, copilot, sheetSignal);
+  wireColumnAI(view, s, copilot, sheetSignal);
+
+  if (params.focusFormula) {
+    setTimeout(() => document.getElementById("ai-formula-input")?.focus(), 50);
+  }
+}
+
+/* ---------------- Sheet co-pilot: AI formula bar ---------------- */
+function wireFormulaBar(view, s, copilot, varianceIdx) {
+  const input = view.querySelector("#ai-formula-input");
+  const run = view.querySelector("#ai-formula-run");
+  const result = view.querySelector("#afb-result");
+  if (!input || !run || !result) return;
+
+  function runQuery() {
+    const q = input.value.trim();
+    if (!q) return;
+    clearHighlights(view);
+    result.hidden = true;
+
+    const formula = (copilot.formulaSuggestions || []).find(f => f.match.test(q));
+    if (formula) {
+      result.hidden = false;
+      result.innerHTML = `
+        <div class="afb-formula">
+          <code>${formula.formula}</code>
+          <span class="afb-arrow">→</span>
+          <b>${formula.result}</b>
+        </div>
+        <div class="afb-explain">${formula.explain}</div>
+        <div class="afb-actions">
+          <button class="btn btn-primary btn-sm" data-afb-insert>Insert</button>
+          <button class="btn btn-ghost btn-sm" data-afb-dismiss>Dismiss</button>
+        </div>
+      `;
+      result.querySelector("[data-afb-insert]").addEventListener("click", () => {
+        showToast(`Formula ${formula.formula} inserted.`);
+        result.hidden = true;
+      });
+      result.querySelector("[data-afb-dismiss]").addEventListener("click", () => {
+        result.hidden = true;
+      });
+    }
+
+    // NL query → row highlights (independent of formula suggestion).
+    const nl = (copilot.nlQueries || []).find(n => n.match.test(q));
+    if (nl) {
+      applyHighlights(view, s, varianceIdx, nl.highlightPredicate);
+      showToast(nl.message);
+    } else if (!formula) {
+      showToast("Try: 'total variance', 'over budget', 'Logistics', 'highest'.");
+    }
+  }
+
+  run.addEventListener("click", runQuery);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") runQuery(); });
+}
+
+function applyHighlights(view, s, varianceIdx, predicate) {
+  clearHighlights(view);
+  view.querySelectorAll("tbody tr").forEach(tr => {
+    const idx = parseInt(tr.getAttribute("data-row-idx"), 10);
+    const row = s.rows[idx];
+    const varianceVal = row[varianceIdx];
+    if (predicate(varianceVal, row)) tr.classList.add("highlight");
+  });
+}
+function clearHighlights(view) {
+  view.querySelectorAll("tbody tr.highlight").forEach(tr => tr.classList.remove("highlight"));
+}
+
+/* ---------------- Sheet co-pilot: cell-level AI explain ---------------- */
+function wireVarianceCells(view, copilot, signal) {
+  const popover = view.querySelector("#cell-popover");
+  if (!popover) return;
+  const explain = copilot.cellExplanations && copilot.cellExplanations.variance;
+  if (!explain) return;
+
+  view.querySelectorAll("[data-variance-cell]").forEach(cell => {
+    cell.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const rect = cell.getBoundingClientRect();
+      const bodyRect = view.getBoundingClientRect();
+      popover.innerHTML = `
+        <div class="cp-head">${iconSvg("ai", 12)} AI Explain</div>
+        <div class="cp-body">${explain}</div>
+        <div class="cp-foot">
+          <span class="text-xs text-muted">Value: <b>${cell.textContent}</b></span>
+          <button class="btn btn-ghost btn-sm" data-cp-close>Close</button>
+        </div>
+      `;
+      popover.style.top = `${rect.bottom - bodyRect.top + 6}px`;
+      popover.style.left = `${Math.max(8, rect.left - bodyRect.left - 120)}px`;
+      popover.hidden = false;
+      popover.querySelector("[data-cp-close]").addEventListener("click", () => { popover.hidden = true; });
+    });
+  });
+  document.addEventListener("click", (e) => {
+    if (popover && !popover.hidden && !popover.contains(e.target) && !e.target.closest("[data-variance-cell]")) {
+      popover.hidden = true;
+    }
+  }, { signal });
+}
+
+/* ---------------- Sheet co-pilot: column header AI menu ---------------- */
+function wireColumnAI(view, s, copilot, signal) {
+  const menu = view.querySelector("#col-ai-menu");
+  if (!menu) return;
+
+  view.querySelectorAll(".col-ai-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute("data-col-ai"), 10);
+      const name = s.columns[idx];
+      const insight = copilot.columnInsights && copilot.columnInsights[name];
+      if (!insight) return;
+      const [primary, detail] = insight;
+
+      // Skip hardcoded items whose label matches the dynamic primary action so
+      // columns like Variance (primary="Detect anomalies") or Category
+      // (primary="Categorize values") don't render duplicate menu rows.
+      const extras = [
+        { action: "anomaly",    label: "Detect anomalies" },
+        { action: "categorize", label: "Categorize values" },
+      ].filter(x => x.label !== primary);
+
+      const rect = btn.getBoundingClientRect();
+      const bodyRect = view.getBoundingClientRect();
+      menu.innerHTML = `
+        <div class="cam-head">${iconSvg("ai", 12)} Column · <b>${name}</b></div>
+        <div class="cam-item" data-cam-action="primary">${primary}</div>
+        ${extras.map(x => `<div class="cam-item" data-cam-action="${x.action}">${x.label}</div>`).join("")}
+      `;
+      menu.style.top = `${rect.bottom - bodyRect.top + 4}px`;
+      menu.style.left = `${Math.max(8, rect.left - bodyRect.left - 40)}px`;
+      menu.hidden = false;
+
+      menu.querySelectorAll(".cam-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const action = item.getAttribute("data-cam-action");
+          menu.hidden = true;
+          if (action === "primary") showToast(`${name}: ${detail}`);
+          if (action === "anomaly") showToast(`${name}: anomaly scan complete — 0 outliers.`);
+          if (action === "categorize") showToast(`${name}: categorized into ${name === "Category" ? "3 groups (Ops, Software, People)" : "buckets (low / mid / high)"}.`);
+        });
+      });
+    });
+  });
+  document.addEventListener("click", (e) => {
+    if (!menu.hidden && !menu.contains(e.target) && !e.target.closest(".col-ai-btn")) {
+      menu.hidden = true;
+    }
+  }, { signal });
+}
+
+/* ---------------- Sheet co-pilot: inline bar chart ---------------- */
+function toggleSheetChart(view, s, varianceIdx) {
+  const chart = view.querySelector("#sheet-chart");
+  if (!chart) return;
+  if (!chart.hidden) { chart.hidden = true; chart.innerHTML = ""; return; }
+
+  const values = s.rows.map(r => {
+    const raw = r[varianceIdx];
+    const num = parseFloat(String(raw).replace(/[^-\d.]/g, ""));
+    return { label: r[0], raw, num: isNaN(num) ? 0 : num };
+  });
+  const maxAbs = Math.max(...values.map(v => Math.abs(v.num))) || 1;
+
+  const bars = values.map(v => {
+    const pct = Math.abs(v.num) / maxAbs * 100;
+    const sign = v.num >= 0 ? "pos" : "neg";
+    return `
+      <div class="scb-row">
+        <div class="scb-label">${v.label}</div>
+        <div class="scb-track">
+          <div class="scb-fill ${sign}" style="width:${pct}%"></div>
+        </div>
+        <div class="scb-val ${sign}">${v.raw}</div>
+      </div>
+    `;
+  }).join("");
+
+  chart.innerHTML = `
+    <div class="sc-head">
+      <div class="sc-title">${iconSvg("ai", 12)} Variance by category</div>
+      <button class="btn btn-ghost btn-sm" data-sc-close>Hide</button>
+    </div>
+    <div class="sc-body">${bars}</div>
+  `;
+  chart.hidden = false;
+  chart.querySelector("[data-sc-close]").addEventListener("click", () => {
+    chart.hidden = true;
+    chart.innerHTML = "";
+  });
 }

@@ -1,0 +1,140 @@
+/* Narrow rail of tenant/community icons on the far left of the shell.
+   Each icon selects a tenant, which filters the sidebar below to only that
+   community's domains, channels, DMs, and AI employees. */
+.tenant-rail {
+  background: #141725;
+  border-right: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.tenant-rail::-webkit-scrollbar { width: 0; }
+
+.tr-chat {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  color: var(--sb-text-mut);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+.tr-divider {
+  width: 24px; height: 1px; background: var(--sb-divider);
+  margin: 4px 0 6px;
+}
+
+.tr-item {
+  position: relative;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  border: 0;
+  padding: 0;
+  transition: border-radius var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.tr-item:hover {
+  border-radius: 10px;
+  transform: translateY(-1px);
+}
+.tr-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Active tenant: rounded pill indicator on the left + rounded corners */
+.tr-item.active { border-radius: 10px; }
+.tr-item.active::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 6px; bottom: 6px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: white;
+}
+
+/* Tooltip on hover */
+.tr-item[title]::after,
+.tr-chat[title]::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0b0d14;
+  color: white;
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+.tr-item:hover::after,
+.tr-chat:hover::after { opacity: 1; }
+
+.tr-spacer { flex: 1; }
+
+.tr-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--sb-divider);
+  width: 40px;
+}
+.tr-foot .tr-status {
+  width: 10px; height: 10px; border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(16,185,129,.2);
+}
+
+/* Sidebar tenant banner: replaces the workspace header when a tenant is
+   active, mirroring KChat's community banner pattern. */
+.sb-tenant {
+  position: relative;
+  height: 128px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--sb-divider);
+}
+.sb-tenant .banner {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.85;
+}
+.sb-tenant .banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(20,23,37,.92));
+}
+.sb-tenant .sb-tenant-meta {
+  position: absolute;
+  left: 14px; right: 14px; bottom: 10px;
+  color: white;
+}
+.sb-tenant-name {
+  display: flex; align-items: center; gap: 6px;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.1;
+}
+.sb-tenant-name .chev { font-size: 12px; opacity: 0.7; }
+.sb-tenant-sub {
+  margin-top: 4px;
+  color: rgba(255,255,255,0.8);
+  font-size: 11px;
+  display: flex; align-items: center; gap: 6px;
+}
+.sb-tenant-sub .dot { opacity: 0.6; }

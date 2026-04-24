@@ -2,13 +2,14 @@
 import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { initModals, openModal, closeModal, closeAllModals } from "./modals.js";
-import { renderSidebar } from "./navigation.js";
+import { renderSidebar, renderTenantRail } from "./navigation.js";
 import { renderChannel } from "./chat.js";
 import { renderThread } from "./threads.js";
 import { renderTaskPanel, renderTaskDetail, renderForm, renderBase, renderSheet } from "./kapps.js";
 import { openActionLauncher, renderBrief, renderProcessing, renderOutputReview, renderSummary, renderAIProcessingScreen, renderAIOutputReviewScreen } from "./ai-actions.js";
 import { renderAIEmployee } from "./ai-employees.js";
 import { renderArtifactWorkspace } from "./artifacts.js";
+import { renderSlideWorkspace } from "./slides.js";
 import { renderApprovalForm, renderApprovalReview } from "./approvals.js";
 import { openSettings } from "./settings.js";
 import { renderTemplateIntake } from "./templates.js";
@@ -22,6 +23,7 @@ import { startOnboarding } from "./onboarding.js";
 /* ---------- State ---------- */
 const state = {
   screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-gallery | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
+  tenantId: D.primaryTenantId(),  // selected community / tenant (far-left rail)
   domainId: null,
   channelId: null,
   threadId: null,
@@ -38,9 +40,10 @@ window.app = {
   openRightView,
   closeRightView,
   expandRightView,
-  openActionLauncher: () => openActionLauncher(),
+  openActionLauncher: (params = {}) => openActionLauncher(params),
   openSettings: () => openSettings(),
   toggleSection,
+  selectTenant,
   refreshSidebar: () => renderSidebar(state),
   startOnboarding: (opts) => startOnboarding(opts),
 };
@@ -134,6 +137,7 @@ function applyShellForScreen(screenId) {
     app.classList.remove("no-sidebar");
     sidebar.classList.remove("hidden");
     work.classList.remove("hidden");
+    renderTenantRail(state);
     renderSidebar(state);
   }
 
@@ -157,16 +161,17 @@ function applyShellForScreen(screenId) {
 function renderTopbar(screenId) {
   let title = "KChat B2B";
   let sub = "";
-  if (screenId === "workspace-home") { title = "Home"; sub = D.workspace.name; }
+  const tenantName = (D.tenantById(state.tenantId) || D.tenants[0] || { name: D.workspace.name }).name;
+  if (screenId === "workspace-home") { title = "Home"; sub = tenantName; }
   if (screenId === "domain-view") {
     const d = D.domainById(state.domainId);
     title = d ? d.name : "Domain";
-    sub = D.workspace.name;
+    sub = tenantName;
   }
   if (screenId === "channel-chat") {
     const c = D.channelById(state.channelId);
     title = c ? "#" + c.name : "Channel";
-    sub = D.workspace.name;
+    sub = tenantName;
   }
   if (screenId === "thread-detail") {
     const t = D.threadById(state.threadId);
@@ -182,6 +187,11 @@ function renderTopbar(screenId) {
     const a = D.artifactById(state.artifactId);
     title = a ? a.title : "Artifact";
     sub = "Document workspace";
+  }
+  if (screenId === "slide-workspace") {
+    const a = D.artifactById(state.artifactId);
+    title = a ? a.title : "Slides";
+    sub = "Slide workspace · Co-pilot";
   }
   if (screenId === "template-gallery") {
     title = "Templates";
@@ -285,6 +295,7 @@ function renderScreen(id) {
     case "thread-detail":     renderThread(state.threadId || "thread-vendor-tasks"); break;
     case "ai-employee":       renderAIEmployee(state.aiEmployeeId || "ai-kara"); break;
     case "artifact-workspace":renderArtifactWorkspace(state.artifactId || "a-prd-vendor-portal"); break;
+    case "slide-workspace":   renderSlideWorkspace(state.artifactId || "a-qbr-globex"); break;
     case "template-gallery":  renderTemplateGallery(); break;
     case "template-intake":   renderTemplateIntake({ templateId: state.templateId, recipeId: state.recipeId }); break;
     case "ai-processing":     renderAIProcessingScreen({ templateId: state.templateId, recipeId: state.recipeId }); break;
@@ -315,7 +326,7 @@ function openRightView(name, params = {}) {
       case "task-detail":     renderTaskDetail(id, params); break;
       case "form":            renderForm(id); break;
       case "base":            renderBase(id); break;
-      case "sheet":           renderSheet(id); break;
+      case "sheet":           renderSheet(id, params); break;
       case "approval-form":   renderApprovalForm(id); break;
       case "approval-review": renderApprovalReview(id, params); break;
       case "summary":         renderSummary(id); break;
@@ -357,6 +368,25 @@ function toggleSection(id) {
   renderSidebar(state);
 }
 
+/* ---------- Tenant / community switching ---------- */
+function selectTenant(tenantId) {
+  if (!tenantId || tenantId === state.tenantId) {
+    renderTenantRail(state);
+    return;
+  }
+  const t = D.tenantById(tenantId);
+  if (!t) return;
+  state.tenantId = tenantId;
+  // Drop any state that referenced the previous tenant's channels/domains;
+  // the sidebar and screens reload fresh against the new tenant.
+  state.channelId = null;
+  state.domainId = null;
+  state.threadId = null;
+  state.aiEmployeeId = null;
+  state.rightView = null;
+  navigateTo("workspace-home");
+}
+
 /* ---------- Login ---------- */
 function wireLoginScreen() {
   const btn = document.getElementById("login-continue");
@@ -374,15 +404,45 @@ function renderWorkspaceHome() {
   const pendingApprovals = D.approvals ? Object.values(D.approvals).filter(a => a.status === "pending").length : 1;
   const dueTasks = D.tasks ? D.tasks.filter(t => t.status !== "done").length : 3;
   const unreadInbox = D.unreadNotificationCount ? D.unreadNotificationCount() : 0;
+  // Scope domains + recent channels to the active tenant so the home page
+  // mirrors the sidebar rather than showing other communities' surfaces.
+  const tenant = D.tenantById(state.tenantId) || D.tenants[0];
+  const tenantDomains = D.domains.filter(d => (tenant.domainIds || []).includes(d.id));
+  const channelCount = tenantDomains.reduce((n, d) => n + d.channels.length, 0);
+  const tenantChannelIds = tenantDomains.flatMap(d => d.channels);
+  const defaultRecent = ["c-vendor", "c-specs", "c-deals", "c-logistics"];
+  const recentChannelIds = defaultRecent.filter(id => tenantChannelIds.includes(id));
+  const recent = (recentChannelIds.length ? recentChannelIds : tenantChannelIds).slice(0, 4);
+  const tenantAI = D.aiEmployees.filter(ai => (tenant.aiEmployeeIds || []).includes(ai.id));
 
   container.innerHTML = `
     <div class="dash-wrap">
       <div class="hero">
         <h1>Welcome back, ${D.userById(D.currentUserId).name.split(" ")[0]}</h1>
-        <p>3 domains · 7 channels · AI Employees: ${D.aiEmployees.length} active. On-device AI is preferred for ${D.workspace.name}.</p>
+        <p>${tenant.name} · ${tenantDomains.length} domain${tenantDomains.length === 1 ? "" : "s"} · ${channelCount} channel${channelCount === 1 ? "" : "s"} · AI Employees: ${tenantAI.length} active. On-device AI is preferred.</p>
       </div>
 
-      <div class="section-head"><h2>Quick actions</h2><span class="more" data-restart-tour title="Replay the product tour">Take the tour</span></div>
+      <div class="section-head">
+        <h2>Core Intents <span class="section-sub">Pick what you want to do — AI decides auto vs. inline</span></h2>
+        <span class="more" data-restart-tour title="Replay the product tour">Take the tour</span>
+      </div>
+      <div class="intent-cards">
+        ${D.coreIntents.map(i => {
+          const peek = i.actions.slice(0, 3).map(a => a.label).join(" · ");
+          return `
+            <div class="intent-card" data-intent="${i.id}">
+              <div class="intent-icon">${iconSvg(i.icon, 22)}</div>
+              <div class="intent-name">${i.label}</div>
+              <div class="intent-sub">${i.sub}</div>
+              <div class="intent-peek">${peek}${i.actions.length > 3 ? ` · +${i.actions.length - 3}` : ""}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="section-head">
+        <h2>Your workspace</h2>
+      </div>
       <div class="quick-actions">
         <div class="qa-item" data-qa="inbox">
           <div class="qa-icon">${iconSvg("inbox", 18)}</div>
@@ -399,16 +459,16 @@ function renderWorkspaceHome() {
           <div class="qa-label">Approvals</div>
           <div class="qa-count">${pendingApprovals} pending</div>
         </div>
-        <div class="qa-item" data-qa="create">
+        <div class="qa-item" data-qa="templates">
           <div class="qa-icon">${iconSvg("ai", 18)}</div>
-          <div class="qa-label">Create with AI</div>
-          <div class="qa-count">${Object.keys(D.templates).length} templates</div>
+          <div class="qa-label">Templates</div>
+          <div class="qa-count">${Object.keys(D.templates).length} starting points</div>
         </div>
       </div>
 
       <div class="section-head"><h2>Domains</h2><span class="more">Explore all</span></div>
       <div class="grid-3">
-        ${D.domains.map(d => {
+        ${tenantDomains.map(d => {
           const cnames = d.channels.map(cid => "#" + D.channels[cid].name).slice(0,3);
           return `<div class="domain-card" data-domain-id="${d.id}">
             <div class="icon">${d.name[0]}</div>
@@ -423,7 +483,7 @@ function renderWorkspaceHome() {
 
       <div class="section-head"><h2>Recent channels</h2><span class="more">See all</span></div>
       <div class="grid-2">
-        ${["c-vendor", "c-specs", "c-deals", "c-logistics"].map(cid => {
+        ${recent.map(cid => {
           const c = D.channels[cid];
           const d = D.domainById(c.domainId);
           return `<div class="channel-row" data-channel-id="${cid}">
@@ -491,9 +551,13 @@ function wireHomeScreen() {
       const kind = el.getAttribute("data-qa");
       if (kind === "approvals") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("approval-review", { approvalId: "ap-orbix" }));
       else if (kind === "tasks") navigateTo("channel-chat", { channelId: "c-vendor" }, () => openRightView("task-panel"));
-      else if (kind === "create") navigateTo("template-gallery");
+      else if (kind === "templates") navigateTo("template-gallery");
       else if (kind === "inbox") navigateTo("notifications");
     });
+  });
+  // Intent cards open the Action Launcher scrolled to the chosen intent.
+  document.querySelectorAll("#screen-workspace-home [data-intent]").forEach(el => {
+    el.addEventListener("click", () => openActionLauncher({ intent: el.getAttribute("data-intent") }));
   });
   const tourLink = document.querySelector("[data-restart-tour]");
   if (tourLink) tourLink.addEventListener("click", () => startOnboarding({ force: true }));

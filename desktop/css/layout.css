@@ -1,7 +1,8 @@
-/* App shell: three-column layout with top bar */
+/* App shell: narrow tenant rail + sidebar + work area. Each icon on the rail
+   is a separate community/tenant (mirrors KChat's multi-tenant surface). */
 .app {
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-columns: var(--tenant-rail-w) var(--sidebar-w) 1fr;
   grid-template-rows: 100vh;
   height: 100vh;
   overflow: hidden;
@@ -9,6 +10,7 @@
 .app.no-sidebar {
   grid-template-columns: 1fr;
 }
+.app.no-sidebar .tenant-rail { display: none; }
 
 /* The main working area switches between single-column (home/domain/login)
    and a center + right panel when in chat/artifact contexts. */

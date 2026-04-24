@@ -5,7 +5,19 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
 - **Mobile / shared:** reserved for future tasks.
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.2 UX audit pass).
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.4 Core Intents taxonomy + multi-tenant rail).
+
+> **Core Intents.** Every AI action is organized under four verbs so
+> users don't have to know which *kind* of AI they want before picking a
+> task:
+> - **Create** — Document · Slides · Sheet · Schedule · PRD · QBR · SOP · Proposal · Form
+> - **Analyze** — Summarize · Extract · Compare · Report · Spreadsheet AI
+> - **Plan** — Tasks · Project Plan · Agenda · Risk Register · Budget
+> - **Approve** — Purchase · Exception · Policy · Budget
+>
+> Each tile carries a small mode badge — **Auto** (AI Employee runs it
+> in the queue) or **Inline** (AI Co-pilot assists you in the editor).
+> Both modes are first-class in Doc, Slides, and Sheet surfaces.
 
 ---
 
@@ -31,27 +43,28 @@ npx --yes http-server -p 8000 -c-1
 
 There is nothing to install — all CSS and JS are in the repo and the demo data is pre-scripted in `desktop/js/demo-data.js`.
 
-## Click-through guide (17 screens + onboarding)
+## Click-through guide (18 screens + onboarding)
 
 The demo is a state machine. `desktop/js/app.js` controls which `<section data-screen="...">` is visible. You can click through the whole story in order:
 
 1. **Login / workspace select** — click *Continue*.
 1a. **Guided onboarding tour (first visit only)** — a 5-step overlay walks through sidebar domains, channels, AI Employees, the compose bar, and the right panel. Completion is stored in `localStorage` under `kchat.onboarded`; clear local storage to see it again.
-2. **Workspace home** — hero, **Role-based Quick Actions** (approvals / tasks / draft / inbox), then domain cards, recent channels, pinned items.
+2. **Workspace home** — hero, then the **Core Intents** row (Create / Analyze / Plan / Approve — each card opens the Action Launcher scrolled to that intent), then a "Your workspace" row (Inbox / My Tasks / Approvals / Templates with live counts), then domain cards, recent channels, pinned items.
 3. **Domain view** — channel list for the domain. Click `#vendor-management`.
 4. **Channel chat** — 3-column layout. Hover a message for action icons. Click `+` in the compose bar for the Action Launcher.
 5. **Thread detail** — click *Open Thread* on any message; use the thread action bar (Extract Tasks / Summarize / Draft Doc / Create Approval).
-6. **Action Launcher (modal)** — grouped actions (Create / Track / Plan / Approve / Collect / Analyze). Pick *Create → PRD*.
+6. **Action Launcher (modal)** — intent-organized actions (Create / Analyze / Plan / Approve) with a pill filter bar and a per-tile **Auto / Inline** mode badge. Pick *Create → PRD*.
 7. **Guided intake / brief builder (right panel)** — goal, audience chips, sources, template, tone, missing info, compute-mode privacy review.
 8. **AI processing (right panel)** — 4-step animation (Reading sources → Planning outline → Drafting sections → Ready for review). Auto-advances to output review.
 9. **AI output review (right panel)** — draft PRD with citations, per-section confidence, sources. Click *Edit in Workspace*.
-10. **Document artifact workspace (center)** — outline nav, editable sections, version history, *Publish* (confirmation modal).
-11. **Task KApp (right panel)** — list / Kanban toggle, AI-extracted badge, task detail.
-12. **Approval flow** — form → pending card → review → approved with immutable audit trail.
-13. **Forms KApp (right panel)** — AI-prefilled New Vendor Intake form.
-14. **Base / Sheet KApps (right panel)** — Vendor Register (Base) and Budget Tracker (Sheet).
-15. **AI Employee profile** — click *Kara Ops AI* in the sidebar for her profile + task queue.
-16. **Workspace settings (modal)** — click the gear in the sidebar footer. Tabs: General / Privacy & AI / Connectors / AI Employees / Templates.
+10. **Document artifact workspace (center)** — outline nav, editable sections, version history, *Publish* (confirmation modal). Also home to the **Document Co-pilot**: select any paragraph to surface the floating **Rewrite / Shorten / Expand / Tone / Translate** toolbar, press **Tab** on the ghost-autocomplete hint to accept a suggestion, or use the **"Ask AI about this document"** chat under the Compute card in the right aside.
+11. **Slide workspace (center)** — new *slide-workspace* screen. Left rail of slide thumbnails, large center canvas, right rail of **per-slide AI actions** (Simplify slide, Add chart placeholder, Generate speaker notes, Suggest layout). The header's **Design with AI** dropdown applies consistent theme / transitions / narrative reorder. Entered via the *Deck* action in the launcher or the *Design a deck* quick action on home.
+12. **Task KApp (right panel)** — list / Kanban toggle, AI-extracted badge, task detail.
+13. **Approval flow** — form → pending card → review → approved with immutable audit trail.
+14. **Forms KApp (right panel)** — AI-prefilled New Vendor Intake form.
+15. **Base / Sheet KApps (right panel)** — Vendor Register (Base) and Budget Tracker (Sheet). The Sheet now carries the **Sheet Co-pilot**: an **AI formula bar** at the top (try *"total variance"*, *"over budget"*, *"Logistics"*, *"highest"*), a **Visualize** button that renders an inline variance bar chart, **AI explain** popovers on any Variance cell, and a hover **AI icon on each column header** with Summarize / Detect anomalies / Categorize.
+16. **AI Employee profile** — click *Kara Ops AI* in the sidebar for her profile + task queue.
+17. **Workspace settings (modal)** — click the gear in the sidebar footer. Tabs: General / Privacy & AI / Connectors / AI Employees / Templates.
 
 ## Repository layout
 
