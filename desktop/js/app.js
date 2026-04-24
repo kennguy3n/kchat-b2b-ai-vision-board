@@ -2,7 +2,7 @@
 import * as D from "./demo-data.js";
 import { iconSvg } from "./icons.js";
 import { initModals, openModal, closeModal, closeAllModals } from "./modals.js";
-import { renderSidebar } from "./navigation.js";
+import { renderSidebar, renderTenantRail } from "./navigation.js";
 import { renderChannel } from "./chat.js";
 import { renderThread } from "./threads.js";
 import { renderTaskPanel, renderTaskDetail, renderForm, renderBase, renderSheet } from "./kapps.js";
@@ -23,6 +23,7 @@ import { startOnboarding } from "./onboarding.js";
 /* ---------- State ---------- */
 const state = {
   screen: "login",           // login | workspace-home | domain-view | channel-chat | thread-detail | ai-employee | artifact-workspace | template-gallery | template-intake | ai-processing | ai-output-review | notifications | channel-knowledge | connectors
+  tenantId: D.primaryTenantId(),  // selected community / tenant (far-left rail)
   domainId: null,
   channelId: null,
   threadId: null,
@@ -42,6 +43,7 @@ window.app = {
   openActionLauncher: () => openActionLauncher(),
   openSettings: () => openSettings(),
   toggleSection,
+  selectTenant,
   refreshSidebar: () => renderSidebar(state),
   startOnboarding: (opts) => startOnboarding(opts),
 };
@@ -135,6 +137,7 @@ function applyShellForScreen(screenId) {
     app.classList.remove("no-sidebar");
     sidebar.classList.remove("hidden");
     work.classList.remove("hidden");
+    renderTenantRail(state);
     renderSidebar(state);
   }
 
@@ -158,16 +161,17 @@ function applyShellForScreen(screenId) {
 function renderTopbar(screenId) {
   let title = "KChat B2B";
   let sub = "";
-  if (screenId === "workspace-home") { title = "Home"; sub = D.workspace.name; }
+  const tenantName = (D.tenantById(state.tenantId) || D.tenants[0] || { name: D.workspace.name }).name;
+  if (screenId === "workspace-home") { title = "Home"; sub = tenantName; }
   if (screenId === "domain-view") {
     const d = D.domainById(state.domainId);
     title = d ? d.name : "Domain";
-    sub = D.workspace.name;
+    sub = tenantName;
   }
   if (screenId === "channel-chat") {
     const c = D.channelById(state.channelId);
     title = c ? "#" + c.name : "Channel";
-    sub = D.workspace.name;
+    sub = tenantName;
   }
   if (screenId === "thread-detail") {
     const t = D.threadById(state.threadId);
@@ -364,6 +368,25 @@ function toggleSection(id) {
   renderSidebar(state);
 }
 
+/* ---------- Tenant / community switching ---------- */
+function selectTenant(tenantId) {
+  if (!tenantId || tenantId === state.tenantId) {
+    renderTenantRail(state);
+    return;
+  }
+  const t = D.tenantById(tenantId);
+  if (!t) return;
+  state.tenantId = tenantId;
+  // Drop any state that referenced the previous tenant's channels/domains;
+  // the sidebar and screens reload fresh against the new tenant.
+  state.channelId = null;
+  state.domainId = null;
+  state.threadId = null;
+  state.aiEmployeeId = null;
+  state.rightView = null;
+  navigateTo("workspace-home");
+}
+
 /* ---------- Login ---------- */
 function wireLoginScreen() {
   const btn = document.getElementById("login-continue");
@@ -381,12 +404,22 @@ function renderWorkspaceHome() {
   const pendingApprovals = D.approvals ? Object.values(D.approvals).filter(a => a.status === "pending").length : 1;
   const dueTasks = D.tasks ? D.tasks.filter(t => t.status !== "done").length : 3;
   const unreadInbox = D.unreadNotificationCount ? D.unreadNotificationCount() : 0;
+  // Scope domains + recent channels to the active tenant so the home page
+  // mirrors the sidebar rather than showing other communities' surfaces.
+  const tenant = D.tenantById(state.tenantId) || D.tenants[0];
+  const tenantDomains = D.domains.filter(d => (tenant.domainIds || []).includes(d.id));
+  const channelCount = tenantDomains.reduce((n, d) => n + d.channels.length, 0);
+  const tenantChannelIds = tenantDomains.flatMap(d => d.channels);
+  const defaultRecent = ["c-vendor", "c-specs", "c-deals", "c-logistics"];
+  const recentChannelIds = defaultRecent.filter(id => tenantChannelIds.includes(id));
+  const recent = (recentChannelIds.length ? recentChannelIds : tenantChannelIds).slice(0, 4);
+  const tenantAI = D.aiEmployees.filter(ai => (tenant.aiEmployeeIds || []).includes(ai.id));
 
   container.innerHTML = `
     <div class="dash-wrap">
       <div class="hero">
         <h1>Welcome back, ${D.userById(D.currentUserId).name.split(" ")[0]}</h1>
-        <p>3 domains · 7 channels · AI Employees: ${D.aiEmployees.length} active. On-device AI is preferred for ${D.workspace.name}.</p>
+        <p>${tenant.name} · ${tenantDomains.length} domain${tenantDomains.length === 1 ? "" : "s"} · ${channelCount} channel${channelCount === 1 ? "" : "s"} · AI Employees: ${tenantAI.length} active. On-device AI is preferred.</p>
       </div>
 
       <div class="section-head">
@@ -439,7 +472,7 @@ function renderWorkspaceHome() {
 
       <div class="section-head"><h2>Domains</h2><span class="more">Explore all</span></div>
       <div class="grid-3">
-        ${D.domains.map(d => {
+        ${tenantDomains.map(d => {
           const cnames = d.channels.map(cid => "#" + D.channels[cid].name).slice(0,3);
           return `<div class="domain-card" data-domain-id="${d.id}">
             <div class="icon">${d.name[0]}</div>
@@ -454,7 +487,7 @@ function renderWorkspaceHome() {
 
       <div class="section-head"><h2>Recent channels</h2><span class="more">See all</span></div>
       <div class="grid-2">
-        ${["c-vendor", "c-specs", "c-deals", "c-logistics"].map(cid => {
+        ${recent.map(cid => {
           const c = D.channels[cid];
           const d = D.domainById(c.domainId);
           return `<div class="channel-row" data-channel-id="${cid}">

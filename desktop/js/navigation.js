@@ -7,19 +7,18 @@ function avatarHTML(user, size = "md") {
   return `<div class="avatar ${size}" style="background:${color}">${user.initials}</div>`;
 }
 
-function renderWorkspaceHeader() {
+function renderTenantBanner(tenant) {
+  // KChat-style community banner: large tinted header with tenant name and a
+  // chevron hint, sitting above the channel list. Gradient stands in for the
+  // uploaded community cover image.
+  const gradient = tenant.gradient || `linear-gradient(135deg, ${tenant.color}, #1d2030)`;
   return `
-    <div class="sb-head">
-      <div class="sb-ws-logo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <defs><linearGradient id="kg-sb" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
-          <rect width="24" height="24" rx="6" fill="url(#kg-sb)"/>
-          <path d="M5 6v12M5 12l6-6M5 12l6 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div>
-        <div class="sb-ws-name">${D.workspace.name}</div>
-        <div class="sb-ws-tier">KChat Business · ${D.workspace.memberCount} members</div>
+    <div class="sb-tenant">
+      <div class="banner" style="background-image:${gradient}"></div>
+      <div class="banner-overlay"></div>
+      <div class="sb-tenant-meta">
+        <div class="sb-tenant-name">${tenant.name} <span class="chev">›</span></div>
+        <div class="sb-tenant-sub"><span>🌐</span> ${tenant.description}</div>
       </div>
     </div>
     <div class="sb-search" role="search">
@@ -34,6 +33,7 @@ function renderDomainSection(domain, state) {
   const unreadChannels = new Set(["c-vendor", "c-specs"]);
   const chanItems = domain.channels.map(cid => {
     const c = D.channels[cid];
+    if (!c) return "";
     const active = state.channelId === cid ? " active" : "";
     const hasUnread = unreadChannels.has(cid);
     const unreadClass = hasUnread ? " unread" : "";
@@ -53,8 +53,13 @@ function renderDomainSection(domain, state) {
   `;
 }
 
-function renderDMs() {
-  return D.directMessages.map(dm => {
+function renderDMs(tenant) {
+  const allowed = new Set(tenant.dmIds || []);
+  const list = D.directMessages.filter(dm => allowed.has(dm.id));
+  if (!list.length) {
+    return `<div class="sb-section-empty">No direct messages in ${tenant.name}.</div>`;
+  }
+  return list.map(dm => {
     const u = D.userById(dm.withUserId);
     const badge = dm.unread ? `<span class="badge">${dm.unread}</span>` : "";
     return `<div class="sb-item online" data-nav="dm" data-id="${dm.id}">
@@ -63,8 +68,13 @@ function renderDMs() {
   }).join("");
 }
 
-function renderAIEmployees(state) {
-  return D.aiEmployees.map(ai => {
+function renderAIEmployees(state, tenant) {
+  const allowed = new Set(tenant.aiEmployeeIds || []);
+  const list = D.aiEmployees.filter(ai => allowed.has(ai.id));
+  if (!list.length) {
+    return `<div class="sb-section-empty">No AI employees provisioned in ${tenant.name}.</div>`;
+  }
+  return list.map(ai => {
     const active = state.aiEmployeeId === ai.id ? " active" : "";
     const idle = ai.status === "Idle" ? " idle" : "";
     const coolState = ai.budget?.cooldown?.state || "ready";
@@ -98,20 +108,63 @@ function renderFooter() {
   `;
 }
 
+/* ---------- Tenant / community rail (far-left) ---------- */
+export function renderTenantRail(state) {
+  const el = document.getElementById("tenant-rail");
+  if (!el) return;
+  const items = D.tenants.map(t => {
+    const active = t.id === state.tenantId ? " active" : "";
+    const unread = (t.dmIds || []).reduce((n, id) => {
+      const dm = D.directMessages.find(d => d.id === id);
+      return n + (dm?.unread || 0);
+    }, 0);
+    const badge = unread > 0 ? `<span class="tr-unread" aria-hidden="true"></span>` : "";
+    return `<button class="tr-item${active}" type="button"
+              data-tenant-id="${t.id}" title="${t.name}"
+              style="background:${t.gradient || t.color}">${t.initials}${badge}</button>`;
+  }).join("");
+  el.innerHTML = `
+    <div class="tr-chat" title="Chats">${iconSvg("home", 18)}</div>
+    <div class="tr-divider"></div>
+    ${items}
+    <div class="tr-spacer"></div>
+    <div class="tr-foot">
+      <button class="tr-item" type="button" title="Add community"
+              style="background:#2e3348;color:var(--sb-text-mut);font-size:16px">+</button>
+      <div class="tr-status" title="Online"></div>
+    </div>
+  `;
+  el.querySelectorAll("[data-tenant-id]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-tenant-id");
+      window.app.selectTenant(id);
+    });
+  });
+}
+
 export function renderSidebar(state) {
   const el = document.getElementById("sidebar");
   if (!el) return;
   el.setAttribute("role", "navigation");
   el.setAttribute("aria-label", "Workspace navigation");
+
+  const tenant = D.tenantById(state.tenantId) || D.tenants[0];
+  const tenantDomains = D.domains.filter(d =>
+    (tenant.domainIds || []).includes(d.id),
+  );
+  const domainsBody = tenantDomains.length
+    ? tenantDomains.map(d => renderDomainSection(d, state)).join("")
+    : `<div class="sb-section-empty">No channels joined in ${tenant.name}.</div>`;
+
   const sections = [
-    { id: "channels", title: "Domains", body: D.domains.map(d => renderDomainSection(d, state)).join("") },
-    { id: "dms",      title: "Direct Messages", body: renderDMs() },
-    { id: "ai",       title: "AI Employees", body: renderAIEmployees(state) },
+    { id: "channels", title: "Channels",        body: domainsBody },
+    { id: "dms",      title: "Direct Messages", body: renderDMs(tenant) },
+    { id: "ai",       title: "AI Employees",    body: renderAIEmployees(state, tenant) },
   ];
   const unread = D.unreadNotificationCount();
   const inboxBadge = unread > 0 ? `<span class="ib-badge">${unread}</span>` : "";
   el.innerHTML = `
-    ${renderWorkspaceHeader()}
+    ${renderTenantBanner(tenant)}
     <button class="sb-new-btn" id="sb-new-btn" type="button">
       ${iconSvg("plus", 14)} New
     </button>

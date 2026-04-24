@@ -102,27 +102,74 @@ export const aiEmployees = [
   },
 ];
 
+/* ---------------- Tenants / Communities ---------------- */
+// The far-left rail on the sidebar maps 1:1 to tenants — each icon is a
+// separate community / workspace the current user belongs to. Picking a
+// tenant filters the rest of the sidebar (domains, channels, DMs, AI
+// employees) to just that tenant's surface.
+export const tenants = [
+  {
+    id: "t-acme",
+    name: "Acme Corp",
+    initials: "AC",
+    color: "#6366f1",
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    description: "KChat Business · 248 members",
+    domainIds: ["d-ops", "d-sales", "d-product"],
+    dmIds: ["dm-mira", "dm-tom", "dm-ana"],
+    aiEmployeeIds: ["ai-kara", "ai-mika", "ai-nina"],
+    primary: true,
+  },
+  {
+    id: "t-globex",
+    name: "Globex Partners",
+    initials: "GX",
+    color: "#10b981",
+    gradient: "linear-gradient(135deg, #10b981, #0ea5e9)",
+    description: "Partner network · 42 members",
+    domainIds: ["d-gx"],
+    dmIds: [],
+    aiEmployeeIds: [],
+  },
+  {
+    id: "t-labs",
+    name: "Acme Labs",
+    initials: "AL",
+    color: "#f59e0b",
+    gradient: "linear-gradient(135deg, #f59e0b, #ef4444)",
+    description: "R&D subsidiary · 18 members",
+    domainIds: ["d-labs"],
+    dmIds: [],
+    aiEmployeeIds: [],
+  },
+];
+
 /* ---------------- Domains / Channels / DMs ---------------- */
 export const domains = [
-  { id: "d-ops",     name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
-  { id: "d-sales",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
-  { id: "d-product", name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
+  { id: "d-ops",     tenantId: "t-acme",   name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
+  { id: "d-sales",   tenantId: "t-acme",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
+  { id: "d-product", tenantId: "t-acme",   name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
+  { id: "d-gx",      tenantId: "t-globex", name: "Account",    icon: "sales",   channels: ["c-gx-general", "c-gx-qbrs"],                knowledge: { policies: 0, templates: 1, summary: "Joint account workspace"           } },
+  { id: "d-labs",    tenantId: "t-labs",   name: "Research",   icon: "product", channels: ["c-labs-general"],                           knowledge: { policies: 0, templates: 0, summary: "R&D lab"                          } },
 ];
 
 export const channels = {
-  "c-vendor":     { id: "c-vendor",     domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk", members: 14, knowledgeRebuilt: "12m ago", knowledgeEntityCount: 18 },
-  "c-logistics":  { id: "c-logistics",  domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",   members:  9, knowledgeRebuilt: "1h ago",  knowledgeEntityCount: 11 },
-  "c-compliance": { id: "c-compliance", domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",             members:  6, knowledgeRebuilt: "3h ago",  knowledgeEntityCount:  7 },
-  "c-pipeline":   { id: "c-pipeline",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",       members: 11, knowledgeRebuilt: "23m ago", knowledgeEntityCount: 14 },
-  "c-deals":      { id: "c-deals",      domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",               members:  7, knowledgeRebuilt: "45m ago", knowledgeEntityCount: 22 },
-  "c-roadmap":    { id: "c-roadmap",    domainId: "d-product", name: "roadmap",            description: "Quarterly planning",               members: 10, knowledgeRebuilt: "2h ago",  knowledgeEntityCount:  9 },
-  "c-specs":      { id: "c-specs",      domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",          members: 12, knowledgeRebuilt: "15m ago", knowledgeEntityCount: 26 },
+  "c-vendor":      { id: "c-vendor",      tenantId: "t-acme",   domainId: "d-ops",     name: "vendor-management", description: "Vendor onboarding, reviews, risk", members: 14, knowledgeRebuilt: "12m ago", knowledgeEntityCount: 18 },
+  "c-logistics":   { id: "c-logistics",   tenantId: "t-acme",   domainId: "d-ops",     name: "logistics",          description: "Shipping, carriers, warehouses",   members:  9, knowledgeRebuilt: "1h ago",  knowledgeEntityCount: 11 },
+  "c-compliance":  { id: "c-compliance",  tenantId: "t-acme",   domainId: "d-ops",     name: "compliance",         description: "Policy, audits, SOC2",             members:  6, knowledgeRebuilt: "3h ago",  knowledgeEntityCount:  7 },
+  "c-pipeline":    { id: "c-pipeline",    tenantId: "t-acme",   domainId: "d-sales",   name: "pipeline",           description: "Opportunities and forecast",       members: 11, knowledgeRebuilt: "23m ago", knowledgeEntityCount: 14 },
+  "c-deals":       { id: "c-deals",       tenantId: "t-acme",   domainId: "d-sales",   name: "deals",              description: "Active deals, QBRs",               members:  7, knowledgeRebuilt: "45m ago", knowledgeEntityCount: 22 },
+  "c-roadmap":     { id: "c-roadmap",     tenantId: "t-acme",   domainId: "d-product", name: "roadmap",            description: "Quarterly planning",               members: 10, knowledgeRebuilt: "2h ago",  knowledgeEntityCount:  9 },
+  "c-specs":       { id: "c-specs",       tenantId: "t-acme",   domainId: "d-product", name: "specs",              description: "PRDs, RFCs, design docs",          members: 12, knowledgeRebuilt: "15m ago", knowledgeEntityCount: 26 },
+  "c-gx-general":  { id: "c-gx-general",  tenantId: "t-globex", domainId: "d-gx",      name: "general",            description: "Joint working channel",            members: 12, knowledgeRebuilt: "1d ago",  knowledgeEntityCount:  4 },
+  "c-gx-qbrs":     { id: "c-gx-qbrs",     tenantId: "t-globex", domainId: "d-gx",      name: "qbrs",               description: "Quarterly business reviews",       members:  8, knowledgeRebuilt: "2d ago",  knowledgeEntityCount:  6 },
+  "c-labs-general":{ id: "c-labs-general",tenantId: "t-labs",   domainId: "d-labs",    name: "general",            description: "Lab announcements",                members: 18, knowledgeRebuilt: "1w ago", knowledgeEntityCount:  2 },
 };
 
 export const directMessages = [
-  { id: "dm-mira", withUserId: "u-mira", unread: 2 },
-  { id: "dm-tom",  withUserId: "u-tom",  unread: 0 },
-  { id: "dm-ana",  withUserId: "u-ana",  unread: 1 },
+  { id: "dm-mira", tenantId: "t-acme", withUserId: "u-mira", unread: 2 },
+  { id: "dm-tom",  tenantId: "t-acme", withUserId: "u-tom",  unread: 0 },
+  { id: "dm-ana",  tenantId: "t-acme", withUserId: "u-ana",  unread: 1 },
 ];
 
 /* ---------------- Messages ---------------- */
@@ -1001,6 +1048,8 @@ export function userById(id) {
 }
 export function channelById(id)   { return channels[id] || null; }
 export function domainById(id)    { return domains.find(d => d.id === id) || null; }
+export function tenantById(id)    { return tenants.find(t => t.id === id) || null; }
+export function primaryTenantId() { return (tenants.find(t => t.primary) || tenants[0]).id; }
 export function aiById(id)        { return aiEmployees.find(a => a.id === id) || null; }
 export function artifactById(id)  { return artifacts[id] || null; }
 export function approvalById(id)  { return approvals[id] || null; }
