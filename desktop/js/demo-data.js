@@ -221,7 +221,7 @@ export const channels = {
   "c-hr-people":   { id: "c-hr-people",   tenantId: "t-acme",   domainId: "d-people",  name: "hr-people",          description: "Leave, onboarding, HR requests",   members: 18, knowledgeRebuilt: "30m ago", knowledgeEntityCount: 12 },
   "c-procurement": { id: "c-procurement", tenantId: "t-acme",   domainId: "d-ops",     name: "procurement",        description: "Purchase requests, POs, suppliers",members:  8, knowledgeRebuilt: "1h ago",  knowledgeEntityCount:  9 },
   "c-finance":     { id: "c-finance",     tenantId: "t-acme",   domainId: "d-finance", name: "finance",            description: "Budget, invoices, ledger",         members:  6, knowledgeRebuilt: "20m ago", knowledgeEntityCount: 15 },
-  "c-shieldnet":   { id: "c-shieldnet",   tenantId: "t-acme",   domainId: "d-sales",   name: "shieldnet-360",      description: "ShieldNet 360 deal room",          members:  5, knowledgeRebuilt: "15m ago", knowledgeEntityCount:  8 },
+  "c-shieldnet":   { id: "c-shieldnet",   tenantId: "t-acme",   domainId: "d-sales",   name: "abc-corp-360",      description: "ABC Corp — ShieldNet 360 deal room", members:  5, knowledgeRebuilt: "15m ago", knowledgeEntityCount:  8 },
 };
 
 export const directMessages = [
@@ -310,19 +310,19 @@ export const messages = {
     { id: "m-fin-8", senderId: "ai-finn", isAI: true, ts: "11:23", text: "Posted. Journal entry JE-2026-0412 created. AP subledger updated. IT Equipment budget: $18,200 → $11,450 remaining.", card: { type: "journal-entry", refId: "je-2026-0412" } },
   ],
 
-  /* Flow 4 — CRM pipeline (ShieldNet 360) */
+  /* Flow 4 — CRM pipeline (ABC Corp — ShieldNet 360) */
   "c-shieldnet": [
-    { id: "m-sn-1",  senderId: "u-tom",   ts: "14:00", text: "Just got off a call with ShieldNet's CISO. They're interested in our 360 platform — 200 seats, enterprise tier." },
-    { id: "m-sn-2",  senderId: "ai-mika", isAI: true, ts: "14:01", text: "I can create a deal from this thread. Detected: ShieldNet Inc, 200 seats × $180/seat/yr = $36,000 ARR, contact: CISO. Shall I file it?", cardType: "ai-suggest" },
+    { id: "m-sn-1",  senderId: "u-tom",   ts: "14:00", text: "Just got off a call with ABC Corp's CISO. They're interested in our ShieldNet 360 platform — 200 seats, enterprise tier." },
+    { id: "m-sn-2",  senderId: "ai-mika", isAI: true, ts: "14:01", text: "I can create a deal from this thread. Detected: ABC Corp, 200 seats × $180/seat/yr = $36,000 ARR, contact: CISO. Shall I file it?", cardType: "ai-suggest" },
     { id: "m-sn-3",  senderId: "u-tom",   ts: "14:02", text: "Yes — set close date to end of Q2." },
     { id: "m-sn-4",  senderId: "ai-mika", isAI: true, ts: "14:03", text: "Deal created.", card: { type: "deal", refId: "deal-shieldnet-360" } },
-    { id: "m-sn-5",  senderId: "u-tom",   ts: "14:30", text: "ShieldNet wants a formal proposal with volume discount." },
+    { id: "m-sn-5",  senderId: "u-tom",   ts: "14:30", text: "ABC Corp wants a formal proposal with volume discount." },
     { id: "m-sn-6",  senderId: "ai-mika", isAI: true, ts: "14:31", text: "Generating a quote from the enterprise price list. 10% volume discount applied.", card: { type: "quote", refId: "q-shieldnet-1" } },
     { id: "m-sn-7",  senderId: "u-tom",   ts: "14:35", text: "Advance to proposal stage." },
     { id: "m-sn-8",  senderId: "ai-mika", isAI: true, ts: "14:36", text: "Deal advanced to Proposal. Follow-up activity scheduled for Thursday. Call logged.", card: { type: "deal", refId: "deal-shieldnet-360" } },
-    { id: "m-sn-9",  senderId: "u-tom",   ts: "15:00", text: "ShieldNet accepted. They want to negotiate payment terms — Net-30 vs Net-45." },
-    { id: "m-sn-10", senderId: "ai-mika", isAI: true, ts: "15:01", text: "Advancing to Negotiation. Risk assessment: Low — ShieldNet has strong credit, no outstanding AR. Recommend Net-30.", card: { type: "deal", refId: "deal-shieldnet-360" } },
-    { id: "m-sn-11", senderId: "u-tom",   ts: "16:00", text: "Deal closed! ShieldNet signed on Net-30 terms." },
+    { id: "m-sn-9",  senderId: "u-tom",   ts: "15:00", text: "ABC Corp accepted. They want to negotiate payment terms — Net-30 vs Net-45." },
+    { id: "m-sn-10", senderId: "ai-mika", isAI: true, ts: "15:01", text: "Advancing to Negotiation. Risk assessment: Low — ABC Corp has strong credit, no outstanding AR. Recommend Net-30.", card: { type: "deal", refId: "deal-shieldnet-360" } },
+    { id: "m-sn-11", senderId: "u-tom",   ts: "16:00", text: "Deal closed! ABC Corp signed on Net-30 terms." },
     { id: "m-sn-12", senderId: "ai-mika", isAI: true, ts: "16:01", text: "Congratulations! Marked as Won. Deal moved to Closed-Won at $36,000 ARR. Activity logged, contract workflow kicked off, and #finance notified to schedule the first invoice.", card: { type: "deal", refId: "deal-shieldnet-360" } },
   ],
 };
@@ -517,7 +517,7 @@ export const artifacts = {
 
 /* ---------------- Business-suite reference data (HR / Procurement / Finance / CRM) ---------------- */
 // Backs the new inline cards shown in the HR, procurement, finance, and
-// ShieldNet sales channels. Keyed by refId used inside each message's
+// ABC Corp ShieldNet 360 sales channel. Keyed by refId used inside each message's
 // `card.refId`. Lookup helpers are exported at the bottom of this file.
 
 export const leaveBalances = {
@@ -677,8 +677,8 @@ export const journalEntries = {
 export const deals = {
   "deal-shieldnet-360": {
     id: "deal-shieldnet-360",
-    name: "ShieldNet — 360 Platform",
-    account: "ShieldNet Inc",
+    name: "ABC Corp — ShieldNet 360",
+    account: "ABC Corp",
     contactRole: "CISO",
     seats: 200,
     pricePerSeat: 180,

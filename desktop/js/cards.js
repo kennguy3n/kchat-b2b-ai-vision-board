@@ -404,7 +404,7 @@ function dealCard(refId) {
   const d = D.dealById(refId);
   if (!d) return "";
   // businessRecords.crm entries have a simple `value` string and `owner`;
-  // the rich shieldnet deal shape uses `arr`/`ownerId`/`account`.
+  // the rich abc-corp-360 deal shape uses `arr`/`ownerId`/`account`.
   if (!("arr" in d)) return simpleDealCard(d, refId);
   const owner = D.userById(d.ownerId);
   const stages = ["Qualified", "Proposal", "Negotiation", "Closed Won"];
