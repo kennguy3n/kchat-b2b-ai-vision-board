@@ -233,8 +233,15 @@ function renderActiveScreen({ animate = false } = {}) {
 
 function refreshAll() {
   // Re-render the currently active screen and topbar (used after tenant
-  // switches to refresh content scoped by tenant).
+  // switches to refresh content scoped by tenant). Reset every tab stack
+  // to its root so stale entries scoped to the previous tenant cannot
+  // resurface when the user switches tabs.
+  for (const tabId of Object.keys(TAB_ROOTS)) {
+    state.tabStacks[tabId] = [{ screen: TAB_ROOTS[tabId], params: {} }];
+  }
+  applyEntryState(currentEntry());
   renderActiveScreen();
   renderTopbar(state);
   renderTabbar(state);
+  persist();
 }
