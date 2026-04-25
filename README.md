@@ -4,8 +4,9 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
-- **Mobile / shared:** reserved for future tasks.
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.4 Core Intents taxonomy + multi-tenant rail).
+- **Mobile demo:** messaging-first click-through under [`mobile/`](./mobile/) — see [`mobile/README.md`](./mobile/README.md). Reuses the desktop demo data and icons via ES module relative imports.
+- **Shared:** design tokens at [`shared/design-tokens.json`](./shared/design-tokens.json).
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.6 Mobile click-through).
 
 > **Core Intents.** Every AI action is organized under four verbs so
 > users don't have to know which *kind* of AI they want before picking a
@@ -42,6 +43,18 @@ npx --yes http-server -p 8000 -c-1
 ```
 
 There is nothing to install — all CSS and JS are in the repo and the demo data is pre-scripted in `desktop/js/demo-data.js`.
+
+## Run the mobile demo locally
+
+The mobile click-through reuses the same demo data, so it must be served from the **repo root** (not `mobile/`) so that `mobile/js/*.js` can import from `../desktop/js/`.
+
+```bash
+# from the repo root
+python3 -m http.server 8000
+# then open http://localhost:8000/mobile/index.html
+```
+
+For the best feel, use Chrome DevTools' device toolbar and pick **iPhone 14 Pro** (390 × 844). The demo is fluid up to 428px wide and gracefully scales down on smaller phones. See [`mobile/README.md`](./mobile/README.md) for the click-through guide.
 
 ## Click-through guide (18 screens + onboarding)
 

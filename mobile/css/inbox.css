@@ -1,0 +1,55 @@
+.inbox-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  min-height: 60px;
+}
+.inbox-row:active { background: var(--surface-2); }
+.inbox-row .ib-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.inbox-row.k-mention   .ib-icon { background: var(--primary-50);  color: var(--primary-600); }
+.inbox-row.k-approval  .ib-icon { background: var(--warning-50);  color: var(--warning); }
+.inbox-row.k-ai        .ib-icon { background: var(--ai-50);       color: var(--ai-strong); }
+.inbox-row.k-thread    .ib-icon { background: var(--info-50);     color: var(--info); }
+.inbox-row.k-budget    .ib-icon { background: var(--surface-2);   color: var(--text-muted); }
+.inbox-row.k-email     .ib-icon { background: var(--info-50);     color: var(--info); }
+.inbox-row.k-calendar  .ib-icon { background: var(--success-50);  color: var(--success); }
+.inbox-row .ib-title {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.inbox-row.unread .ib-title { font-weight: 700; }
+.inbox-row .ib-preview {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+.inbox-row .ib-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.action-required-banner {
+  margin: 12px var(--content-pad) 0;
+  padding: 8px 12px;
+  background: var(--warning-50);
+  color: var(--warning);
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
