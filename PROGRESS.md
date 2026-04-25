@@ -7,6 +7,63 @@ changes.
 
 ---
 
+## Mobile — Community hierarchy polish on channel list (v0.8.1)
+
+**Goal:** Fix the channel-list hierarchy so the community strip reads
+as a *peer-communities picker* rather than as children of the active
+tenant. Matches the KChat reference more precisely.
+
+### Why
+
+In v0.8 the topbar said "Acme Corp · General · 248 members" with the
+community strip (Chat · Acme · Globex · Labs · +Join) rendered
+directly below it. That layout implies "everything below is inside
+Acme" — the opposite of the intent: the strip is the tenant picker
+itself, and Acme is one tenant among several peers. The leading
+personal-chat bubble also carried a "Chat" label, making it read as
+a fourth peer community instead of a B2C-style mode switcher.
+
+### Changes
+
+- [x] **Topbar is now generic** — title is just **"👥 Community"** with
+      no subtitle and no tenant name. The active tenant name is no
+      longer injected at render time.
+- [x] **Active-tenant header moved BELOW the community strip** —
+      dedicated `.tenant-header` section shows the active tenant's
+      name with a `›` caret (tap to open the workspace dashboard),
+      `🌐 General · N members` subtitle, and the search icon aligned
+      to the right. Matches the reference KChat layout.
+- [x] **Active-indicator underline** — `.community-icon.active::after`
+      renders a short horizontal bar under the selected community
+      icon, reinforcing that the strip is the top-level selector.
+- [x] **Personal-chat icon is a mode switcher, not a peer community**
+      — dropped the "Chat" text label under the leading 💬 icon and
+      inserted a `.community-strip-divider` between it and the B2B
+      community icons. Visually communicates the split between B2C
+      personal DMs and B2B communities.
+- [x] **Search icon moved from topbar to the tenant-header row** — a
+      cleaner topbar (just the back arrow + "👥 Community" + the ⊞
+      workspace-dashboard icon), with search sitting next to the
+      active tenant's name since it searches within that community.
+- [x] **Updated `mobile/screenshots/03-channel-list.png`** to reflect
+      the new layout.
+- [x] **Doc refresh** — `mobile/README.md` row 3 describes the new
+      channel-list shape; `mobile/screenshots/README.md` row 03
+      updated; top-level `README.md` "Progress log" pointer bumped
+      to v0.8.1.
+
+### Segments that benefit most
+
+- **Cross-community users (partners, consultants, internal ops on
+  multiple subsidiaries)** — with the peer-picker hierarchy made
+  explicit, switching Acme ⇄ Globex ⇄ Labs feels like the primary
+  navigation gesture instead of a drill-down.
+- **Demo viewers (sales / onboarding)** — the new layout matches the
+  reference KChat screenshot almost 1:1, so the click-through reads
+  more convincingly as "real chat app" at first glance.
+
+---
+
 ## Mobile — Channel List KChat-fidelity pass (v0.8)
 
 **Goal:** Make the mobile channel-list screen (the first real screen a

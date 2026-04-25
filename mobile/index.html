@@ -175,14 +175,17 @@
       <section class="screen" id="screen-channel-list">
         <div class="topbar" data-channel-list-topbar>
           <button class="back-btn" onclick="KApp.back()" aria-label="Back">‹</button>
-          <div class="title" data-channel-list-title>Acme Corp<div class="subtitle" data-channel-list-subtitle>General · 248 members</div></div>
+          <div class="title">
+            <span class="topbar-title-icon" aria-hidden="true">👥</span>
+            Community
+          </div>
           <div class="actions">
             <button onclick="KApp.show('home')" aria-label="Workspace dashboard">⊞</button>
-            <button onclick="KApp.show('search')" aria-label="Search">🔎</button>
           </div>
         </div>
         <div class="content">
           <div data-community-strip></div>
+          <div data-tenant-header></div>
           <div data-channel-list-body></div>
         </div>
       </section>

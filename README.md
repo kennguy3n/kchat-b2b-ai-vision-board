@@ -6,7 +6,7 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
 - **Mobile demo:** phone click-through under [`mobile/`](./mobile/) — see [`mobile/README.md`](./mobile/README.md). Mirrors the KChat B2C prototype's 5-tab shell (Message · Notification · Tasks · Settings · More) with B2B content (workspaces, Core Intents, AI Employees, approvals).
 - **Shared:** design tokens at [`shared/design-tokens.json`](./shared/design-tokens.json).
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: **v0.8 Mobile — Channel List KChat-fidelity pass** — community/tenant strip, rich channel rows, pinned Announcement, "Joined groups (N)").
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: **v0.8.1 Mobile — Community hierarchy polish** — generic "👥 Community" topbar, active-tenant header moved below the community strip, active-indicator underline, personal-chat icon separated from B2B communities by a divider).
 
 > **Core Intents.** Every AI action is organized under four verbs so
 > users don't have to know which *kind* of AI they want before picking a
