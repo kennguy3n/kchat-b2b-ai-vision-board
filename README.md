@@ -4,9 +4,9 @@ Static click-through vision board for **KChat B2B** — enterprise messaging wit
 
 - **Proposal:** see [`PROPOSAL.md`](./PROPOSAL.md) for phases, features, use case flow, and architecture.
 - **Desktop demo:** fully working static HTML/CSS/JS under [`desktop/`](./desktop/). No build tools, no frameworks, no server calls.
-- **Mobile demo:** messaging-first click-through under [`mobile/`](./mobile/) — see [`mobile/README.md`](./mobile/README.md). Reuses the desktop demo data and icons via ES module relative imports.
+- **Mobile demo:** phone click-through under [`mobile/`](./mobile/) — see [`mobile/README.md`](./mobile/README.md). Mirrors the KChat B2C prototype's 5-tab shell (Message · Notification · Tasks · Settings · More) with B2B content (workspaces, Core Intents, AI Employees, approvals).
 - **Shared:** design tokens at [`shared/design-tokens.json`](./shared/design-tokens.json).
-- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: v0.6 Mobile click-through).
+- **Progress log:** see [`PROGRESS.md`](./PROGRESS.md) for the change log (current: **v0.7 Mobile — B2C-mirrored rebuild**).
 
 > **Core Intents.** Every AI action is organized under four verbs so
 > users don't have to know which *kind* of AI they want before picking a
@@ -46,15 +46,15 @@ There is nothing to install — all CSS and JS are in the repo and the demo data
 
 ## Run the mobile demo locally
 
-The mobile click-through reuses the same demo data, so it must be served from the **repo root** (not `mobile/`) so that `mobile/js/*.js` can import from `../desktop/js/`.
+The mobile click-through is fully self-contained under [`mobile/`](./mobile/) — no ES modules, no cross-folder imports.
 
 ```bash
 # from the repo root
 python3 -m http.server 8000
-# then open http://localhost:8000/mobile/index.html
+# then open http://localhost:8000/mobile/
 ```
 
-For the best feel, use Chrome DevTools' device toolbar and pick **iPhone 14 Pro** (390 × 844). The demo is fluid up to 428px wide and gracefully scales down on smaller phones. See [`mobile/README.md`](./mobile/README.md) for the click-through guide.
+For the best feel, use Chrome DevTools' device toolbar and pick **iPhone 14 Pro** (390 × 844). The mobile app mirrors the KChat B2C prototype's 5-tab shell exactly (💬 Message · 🔔 Notification · 📅 Tasks · ⚙ Settings · ··· More) while surfacing B2B content — see [`mobile/README.md`](./mobile/README.md) for the screen inventory and guided-demo paths.
 
 ## Click-through guide (18 screens + onboarding)
 

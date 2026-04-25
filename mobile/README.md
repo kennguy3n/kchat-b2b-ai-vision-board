@@ -1,108 +1,120 @@
 # KChat B2B — Mobile Click-Through
 
-A pure static HTML/CSS/JS click-through that retells the desktop vision board's KChat B2B product story with **mobile-native** UX patterns. Inspired by Slack mobile and Lark mobile: bottom tab bar, single-column screens, push/pop view stacks, bottom sheets for contextual actions, and thumb-zone-friendly touch targets.
+A static HTML/CSS/JS click-through that mirrors the **B2C prototype's exact 5‑tab
+mobile shell** (see [`kchat-b2c-ai-vision-board/prototype/`](https://github.com/kennguy3n/kchat-b2c-ai-vision-board/tree/main/prototype))
+but is populated with **B2B enterprise content** — workspaces, Core Intents, AI
+Employees, approvals with audit trails, compute-mode badges, and KApps.
 
-The mobile demo **does not duplicate any data**. It imports the desktop demo's exports — `desktop/js/demo-data.js`, `desktop/js/icons.js`, `desktop/js/cards.js`, `desktop/css/cards.css`, `desktop/css/variables.css` — via ES module relative paths (`../desktop/js/`). That's why the mobile shell must be served from the repo root.
+> The app is the same structure — only the features differ depending on the
+> community. **Community is a tenant construct.** On mobile, a tenant is a
+> workspace (Acme Corp, Globex, Acme Labs).
 
-## Run
+## Run locally
 
 ```bash
-# from the repo root (NOT from mobile/)
+cd /path/to/kchat-b2b-ai-vision-board
 python3 -m http.server 8000
-# then open http://localhost:8000/mobile/index.html
+# open http://localhost:8000/mobile/
 ```
 
-For the best fidelity, open Chrome DevTools, toggle the device toolbar, and pick **iPhone 14 Pro** (390 × 844) or **iPhone 14 Pro Max** (428 × 926). The shell is fluid between 320px and 428px wide.
+No build, no npm, no frameworks. Just open `mobile/index.html` through any
+static server.
 
-## What's different from desktop
-
-- **Messaging-first.** The default landing tab is **Chat** (channel list), not a workspace dashboard. The home screen / domain dashboards / workspace landing pages are **intentionally absent** — opening the app drops you straight into your conversations, exactly like Slack mobile and WhatsApp.
-- **5-tab bottom navigation.** Chat / AI / Inbox / Activity / Me. Unread badges appear on Chat (unread channel count) and Inbox (action-required count).
-- **Single-column screens.** No 3-column grid, no side panels, no sidebar. The desktop's right-panel surfaces (brief / processing / output / approval / task panel / AI employee) become **full-screen pushed views** in their own navigation stack.
-- **Per-tab navigation stacks.** Each tab keeps its own push/pop history; switching tabs preserves where you were.
-- **Bottom sheets for context actions.** The Action Launcher invoked from the chat compose bar slides up as a half-sheet; from the AI tab, it's the full-screen root.
-- **Inline KApp cards.** Artifact / approval / task-list / email / deal / calendar cards reuse `desktop/js/cards.js` directly, with the desktop's `desktop/css/cards.css` chrome and a `max-width: 100%` mobile override so they fit a phone column.
-- **No onboarding tour, no template gallery, no slide / sheet / artifact workspaces, no settings modal.** Those are desktop-only flows. On mobile the surface focuses on the *messaging-first* loop: discuss in chat → invoke AI → review draft → approve → done.
-
-## Screens (12)
-
-| # | Screen | Tab | Pushed from |
-|---|--------|-----|-------------|
-| 1 | Channel list (root) | Chat | — |
-| 2 | Channel chat | Chat | tap a channel |
-| 3 | Thread detail | Chat | tap *Thread* on a message |
-| 4 | AI Action Launcher (root) | AI | — |
-| 5 | Brief Builder | AI | tap a Create action |
-| 6 | AI Processing | AI | tap *Generate Draft* |
-| 7 | AI Output Review | AI | auto after Processing |
-| 8 | Inbox | Inbox | — |
-| 9 | Activity | Activity | — |
-| 10 | Me | Me | — |
-| 11 | Tasks (+ Task Detail) | any | thread chip / Me / inline card |
-| 12 | Approval Review | any | Inbox / inline card / thread |
-| — | AI Employee profile | any | Me strip / chat author |
-
-(Tasks counts as one screen + a pushed detail view; AI Employee is a pushed view from the Me tab strip or any chat author tap.)
-
-## Click-through happy path
-
-1. Open the app → **Chat tab** with an Unreads section at the top, then domain-grouped channels and DMs.
-2. Tap **#vendor-management** → channel chat with messages, attachments, AI suggestion pills, and inline KApp cards (Vendor Renewal Checklist artifact, 5-task list, Orbix payment-hold approval, calendar reminder).
-3. Tap a message → the message-action bar appears with **Reply / Thread / Task / AI**. Tap **Thread** to push the Thread Detail view.
-4. In Thread Detail, tap the **5 Tasks** chip → Tasks full-screen list. Back twice to the channel.
-5. Tap the AI sparkle in the **compose bar** → the Action Launcher slides up as a bottom sheet with channel-aware suggestions on top and the full action grid below. Pick **PRD** → Brief Builder → tap **Generate Draft** → Processing animation auto-advances → AI Output Review with sections, citations, and per-section confidence.
-6. Back to the channel, scroll to the **Orbix payment hold approval** card and tap **Review** → Approval Review with audit trail. Tap **Approve $42,500** → toast + audit trail updates inline.
-7. Tap **Inbox tab** → priority-grouped notifications; the *Action required* section surfaces unread approvals + mentions.
-8. Tap **AI tab** → the Action Launcher as a full-screen root with intent filter pills (All / Create / Analyze / Plan / Approve) and 2-column action grid.
-9. Tap **Me tab** → profile, AI Employee chips horizontal scroll, quick actions, **Communities** list (tenant switcher).
-10. Tap **Kara Ops AI** → AI Employee profile with allowed channels, monthly budget bar, cooldown state, task queue.
-11. Back to Me → tap **Globex Partners** → workspace switches, toast confirms.
-
-## Folder layout
+## Architecture (mirrors B2C)
 
 ```
 mobile/
-├── index.html              # Single shell with all screen <section>s
-├── css/
-│   ├── variables.css       # Mobile layout tokens (inherits color tokens from desktop)
-│   ├── layout.css          # Phone shell, top bar, content stack, sticky footer
-│   ├── tabs.css            # Bottom 5-tab bar with unread badges
-│   ├── components.css      # Pills, badges, avatars, list rows, status pills, mention
-│   ├── chat.css            # Channel list, channel chat, compose bar, message action bar, typing
-│   ├── thread.css          # Thread detail header, linked chips, action bar
-│   ├── ai.css              # Suggestion cards, action grid, brief form, processing, output
-│   ├── kapps.css           # Tasks, task detail, approval review, AI employee profile
-│   ├── inbox.css           # Inbox kind icons + action-required banner
-│   ├── activity.css        # Activity timeline rows
-│   ├── profile.css         # Me hero, AI strip, communities list
-│   └── transitions.css     # Push/pop screen animation, bottom sheet slide-up, toast
-├── js/
-│   ├── app.js              # State machine, per-tab nav stacks, screen routing
-│   ├── navigation.js       # Top bar (back + title) and bottom tab bar rendering
-│   ├── channels.js         # Channel list + channel chat + message action bar
-│   ├── thread.js           # Thread detail
-│   ├── ai-actions.js       # Action Launcher (full-screen + bottom-sheet) + brief + processing + output
-│   ├── kapps.js            # Tasks, task detail, approval review, AI employee profile
-│   ├── inbox.js            # Inbox tab
-│   ├── activity.js         # Activity tab
-│   ├── profile.js          # Me tab
-│   ├── sheets.js           # Bottom sheet primitive
-│   └── transitions.js      # Toast + push/pop animation helpers
-└── assets/                 # Symlink → ../desktop/assets (logos)
+  index.html              iPhone frame + all screens + tab bar
+  css/
+    style.css             Global styles, iPhone frame, B2B design tokens, transitions
+    components.css        Cards, chips, buttons, bubbles, privacy strip, AI bits
+  js/
+    data.js               window.KDATA — hardcoded B2B demo content (no ES modules)
+    simulate-ai.js        Copied verbatim from B2C — KAI.processInto / attachLongPress / typingHTML
+    app.js                Navigation (KApp namespace), SCREEN_ENTER hooks, guided demos
+  screenshots/            PR screenshots
 ```
 
-## State + persistence
+The CSS variable names (`--k-primary`, `--k-accent`, …) match the B2C prototype
+exactly; only the **values** are swapped to the B2B desktop palette
+(primary `#6366F1`, accent `#8B5CF6`, danger `#EF4444`, …) so the shared
+`components.css` and `simulate-ai.js` work unchanged.
 
-- One `state` object in `mobile/js/app.js` with a per-tab `tabStacks` map. `navigate(screen, params)` pushes onto the active tab's stack; `back()` pops; `switchTab(tabId)` restores the top of the destination tab's stack.
-- `localStorage` key: `kchat.mobile.lastScreen` — stores the active tab, all tab stacks, and the current tenant. Reload to restore your spot.
-- The desktop `kchat.lastScreen` key is left untouched; the two demos persist independently.
+## Bottom tab bar — identical to B2C
 
-## Implementation notes
+| Tab | Icon | B2C content | B2B content (same shape, different features) |
+|---|---|---|---|
+| `chats` / **Message** | 💬 | DMs, communities | Workspace home, channel list, channel chat, threads, action launcher, brief, AI processing/output, artifact workspace, email detail |
+| `notifications` / **Notification** | 🔔 | Social notifications | Priority-grouped inbox: Action Required (approvals, tasks, legal review) + Updates (AI completions, calendar, mentions) |
+| `tasks` / **Tasks** | 📅 | Personal tasks | Task list with AI-extracted badges + segmented control to **Approvals** list |
+| `settings` / **Settings** | ⚙ | Personal settings | **AI Employees** as prominent top group, AI Memory, Compute Transparency, Connectors, Workspace, Preferences |
+| `more` / **More** | ··· | Tools | Ask KChat AI, AI Insights, Metrics Dashboard, Template gallery, Packaging & Tiers, KApps (Form/Base/Sheet), Connectors |
 
-- **No frameworks, no build tools.** Plain ES modules. The `<script type="module">` tag in `index.html` is the only entry point.
-- **Inline KApp cards** are rendered by importing `renderCard` from `../desktop/js/cards.js` directly. The desktop's `cards.css` is included as-is and a `max-width: 100% !important` mobile override in `mobile/css/chat.css` lets cards fill the phone column.
-- **Icons** are rendered via `iconSvg(name, size)` from `../desktop/js/icons.js`.
-- **AI processing** is simulated client-side: a 4-step animation auto-advances and then `replaceCurrent()`s the stack entry with the Output Review screen so the back button returns to the Brief Builder, not back to a stale processing screen.
-- **Approvals** mutate the same `D.approvals` map the desktop uses, so an approve on mobile will (until the page reloads) reflect in the audit trail. They're not persisted because the demo data is module-scoped.
-- **Safe areas** — the bottom tab bar adds `env(safe-area-inset-bottom)` padding so the home-indicator doesn't overlap.
-- **Accessibility** — every interactive element is at least 44px tall (Apple HIG), tab buttons use `role="tablist"` / `role="tab"` / `aria-selected`, and the bottom sheet sets `aria-modal="true"` while open.
+Same `data-tab` IDs, same red-pill badge pattern, same `KApp.onTabClick(tab)`
+switch, same `updateTabs(screenId)` map pattern — so future B2C fixes to the
+tab bar drop into B2B with zero rework.
+
+## Screens (25)
+
+### Phase 1 — Core navigation (8)
+1. `launcher` — guided-demo landing
+2. `home` — Acme Corp workspace (tenant switcher, Core Intents, quick actions, recent channels)
+3. `channel-list` — 9 channels grouped by domain (Ops, Sales, Product, People, Finance)
+4. `channel-chat` — `#vendor-management` with 12 messages, AI cards, approval card, email card
+5. `thread-detail` — 5 extracted tasks inline, thread chips
+6. `notifications` — 3 action-required + 5 updates
+7. `task-list` — 7 tasks (Tasks/Approvals segmented control)
+8. `settings` — AI Employees, AI & Privacy, Workspace, Preferences
+
+### Phase 2 — AI & enterprise flows (10)
+9.  `action-launcher` — bottom-sheet Core Intents with mode badges
+10. `brief-builder` — pre-filled intake
+11. `ai-processing` — step-by-step thinking with compute-mode privacy strip
+12. `ai-output-review` — 5 sections with per-section confidence & citations
+13. `artifact-workspace` — mobile document editor with section chats
+14. `approval-form` — pre-filled approval intake
+15. `approval-review` — audit trail with timestamps
+16. `ai-employee-list` — 5 AI Employees with budget, compute mode
+17. `ai-employee-detail` — Kara profile with queue, allowed channels, budget bar
+18. `long-press-menu` — bottom-sheet context actions
+
+### Phase 3 — KApps & more (7)
+19. `task-detail` — AI-extracted task with source
+20. `form-view` — KApp Form (vendor onboarding)
+21. `base-view` — KApp Base (Vendor Register)
+22. `sheet-view` — KApp Sheet (Q2 Vendor Spend)
+23. `search` — Ask KChat AI natural-language queries
+24. `email-detail` — inbound email with AI summary
+25. `more` — Ask KChat AI · shortcuts · connected apps
+26. Plus secondary screens: `ai-memory`, `compute-transparency`, `connectors`, `metrics-dashboard`, `ai-insights`, `template-gallery`, `packaging-tiers`, `approval-list`.
+
+## Guided demo paths
+
+- **Vendor Review Week** (8 steps) — home → channel-chat → long-press → thread → tasks → approval-form → approval-review → notifications
+- **Draft a PRD with Nina** (7 steps) — home → channel-chat → action-launcher → brief-builder → ai-processing → ai-output-review → artifact-workspace
+- **AI Employee Check-in** (5 steps) — home → settings → ai-employee-list → ai-employee-detail (Kara) → channel-chat
+
+Start a demo from the launcher or call `KApp.startDemo('vendor-review')` /
+`'draft-prd'` / `'ai-employee'` from the console.
+
+## Mobile UX principles
+
+- Single-column, full-screen push navigation (no 3-column layout)
+- Right panels → full screens with back button
+- Action Launcher & long-press → bottom sheets
+- Tab bar hidden on deep flows (threads, AI processing, approvals, artifact workspace)
+- Horizontal scroll for overflow (Core Intents, channel context chips)
+- Privacy strip on every AI result
+- Touch targets ≥ 44px
+- Tested at 390×844 viewport
+
+## B2B-specific adaptations (content only, shape unchanged)
+
+1. Tenant switcher (Acme / Globex / Labs) instead of personal communities
+2. **Core Intents** row (Create / Analyze / Plan / Approve) instead of B2C "Catch me up"
+3. AI Employees section in Settings
+4. Approval flows with audit trails (accessible from Tasks tab)
+5. Channel context bar with connected services (Drive, Calendar, KMail, Base)
+6. Action Launcher with **Auto / Inline** mode badges
+7. Compute-mode badges: **On-device** / **Confidential server** / **Frontier**
+8. Simplified mobile co-pilot surfaces for Doc / Slide / Sheet

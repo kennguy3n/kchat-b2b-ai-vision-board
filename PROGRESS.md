@@ -7,7 +7,81 @@ changes.
 
 ---
 
-## Mobile Click-Through (v0.6)
+## Mobile — B2C-Mirrored Rebuild (v0.7)
+
+**Goal:** Rebuild the mobile click-through so it **mirrors the B2C prototype's
+exact 5-tab shell** (Message · Notification · Tasks · Settings · More) while
+surfacing **B2B content** (workspaces, Core Intents, AI Employees, approvals,
+compute-mode badges). The app is the same structure — only the features differ
+depending on the tenant (community is a tenant construct).
+
+### Why
+
+The previous v0.6 mobile effort invented its own 5-tab shape (Chat / AI /
+Inbox / Activity / Me) with ES-module imports from `desktop/js/`. Shipping a
+second, divergent shell fragments engineering: every B2C mobile fix would
+need a manual reapplication. This rebuild re-uses B2C's tab IDs, labels,
+icons, `onTabClick` switch, `updateTabs` map, and CSS variable *names* so
+future consumer-side fixes drop into B2B unchanged.
+
+### Changes
+
+- [x] **Pure static HTML/CSS/JS under `mobile/`** — no build tools, no
+      frameworks, no ES modules. A single `window.KDATA` in `js/data.js`
+      holds all demo content; `js/simulate-ai.js` is copied verbatim from
+      the B2C prototype.
+- [x] **5-tab bottom bar identical to B2C** — same `data-tab` IDs
+      (`chats` · `notifications` · `tasks` · `settings` · `more`), same
+      labels (Message · Notification · Tasks · Settings · More), same
+      icons (💬 🔔 📅 ⚙ ···), same red-pill badge pattern, same
+      `KApp.onTabClick(tab)` switch.
+- [x] **B2B content mapped into the B2C tabs**
+  - **Message** → workspace home (tenant switcher, Core Intents row),
+    channel list, channel chat with inline AI/approval/email cards,
+    thread detail, action launcher, brief builder, AI processing, AI
+    output review, artifact workspace.
+  - **Notification** → priority-grouped inbox (Action Required /
+    Updates) covering approvals, AI completions, mentions, calendar,
+    email.
+  - **Tasks** → task list with AI-extracted badges + segmented control
+    toggling **Approvals**.
+  - **Settings** → **AI Employees** as a prominent top group (Kara Ops,
+    Mika Sales, Nina PM, Hana HR, Finn Finance), AI Memory, Compute
+    Transparency, Connectors, Workspace, Preferences.
+  - **More** → Ask KChat AI, AI Insights, Metrics Dashboard, Template
+    gallery, Packaging & Tiers, KApps (Form / Base / Sheet), Connectors.
+- [x] **B2B CSS tokens under B2C variable names** — `--k-primary:
+      #6366F1`, `--k-accent: #8B5CF6`, `--k-ai: #8B5CF6`, etc. so the
+      shared `components.css` works unchanged but the palette comes from
+      the B2B desktop variables.
+- [x] **25 screens** across 3 phases (see `mobile/README.md`).
+- [x] **3 guided demo paths** — Vendor Review Week, Draft a PRD with
+      Nina, AI Employee Check-in with Kara. Each step deep-links a
+      screen plus a hint toast.
+- [x] **AI simulation via `KAI.processInto`** on `ai-processing`,
+      `ai-output-review`, `approval-review`, `ai-employee-detail`, and
+      `task-detail` screens. Privacy strip (compute-mode badge) on every
+      AI result.
+- [x] **Tab bar visibility** mirrors B2C: visible on primary screens
+      (home, channel-list, channel-chat, notifications, task-list,
+      settings, more, connectors), hidden on deep flows (threads,
+      approvals, AI processing, AI output, artifact workspace, brief
+      builder, bottom sheets).
+- [x] **README at `mobile/README.md`** documenting the architecture,
+      run command, tab mapping, screen inventory, and demo paths.
+
+### Segments that benefit most
+
+- **Operations (Kara, Mira, Sofia, Dan)** — vendor-review flow, approval
+  audit trail, thread task extraction on mobile.
+- **Product (Nina, Ken)** — Draft-a-PRD flow all the way through artifact
+  workspace.
+- **Platform / IT** — compute-mode transparency screen and
+  per-AI-employee budget caps are browsable on the phone.
+
+---
+
+## Mobile Click-Through (v0.6 — superseded by v0.7)
 
 **Goal:** Retell the same KChat B2B product story on a phone with
 **mobile-native** UX patterns. The desktop demo's home / domain dashboards
