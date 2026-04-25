@@ -3,88 +3,1285 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <meta name="theme-color" content="#6366f1"/>
+  <meta name="theme-color" content="#6366F1"/>
   <title>KChat B2B — Mobile Demo</title>
-  <meta name="description" content="Static HTML/CSS/JS mobile click-through demo of the KChat B2B messaging-first experience."/>
-
-  <!-- Reuse desktop card chrome + design tokens; mobile stylesheets layer on top. -->
-  <link rel="stylesheet" href="../desktop/css/variables.css"/>
-  <link rel="stylesheet" href="../desktop/css/cards.css"/>
-  <link rel="stylesheet" href="css/variables.css"/>
+  <meta name="description" content="Static HTML/CSS/JS mobile click-through demo of the KChat B2B enterprise messaging-first experience."/>
+  <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/components.css"/>
-  <link rel="stylesheet" href="css/layout.css"/>
-  <link rel="stylesheet" href="css/tabs.css"/>
-  <link rel="stylesheet" href="css/chat.css"/>
-  <link rel="stylesheet" href="css/thread.css"/>
-  <link rel="stylesheet" href="css/ai.css"/>
-  <link rel="stylesheet" href="css/kapps.css"/>
-  <link rel="stylesheet" href="css/inbox.css"/>
-  <link rel="stylesheet" href="css/activity.css"/>
-  <link rel="stylesheet" href="css/profile.css"/>
-  <link rel="stylesheet" href="css/transitions.css"/>
 </head>
 <body>
+<a href="#screens" class="sr-only" style="position:absolute;top:0;left:0;z-index:9999;background:#6366F1;color:white;padding:8px 16px;">Skip to content</a>
 
-<div class="phone" id="phone">
-  <!-- Cosmetic top safe-area / status bar -->
-  <div class="status-bar" aria-hidden="true">
-    <span class="sb-time">9:41</span>
-    <span class="sb-right">●●●●● · 5G · 100%</span>
+<div class="stage">
+  <div class="stage-title">
+    <span class="logo-chip">K</span>
+    <span>KChat B2B — Mobile Click-Through</span>
+  </div>
+  <div class="stage-tools">
+    <button onclick="KApp.toggleTheme()" id="theme-toggle-stage">🌙 Dark</button>
+    <button onclick="KApp.endDemo(); KApp.show('launcher')">Home</button>
   </div>
 
-  <!-- Top app bar — title and back button rendered per screen -->
-  <header class="topbar" id="topbar" role="banner"></header>
+  <div class="phone" id="phone">
+    <div class="notch"></div>
+    <div class="phone-screen">
+      <div class="status-bar">
+        <div class="time" data-clock>09:41</div>
+        <div class="icons"><span>●●●</span><span>🛜</span><span>🔋</span></div>
+      </div>
 
-  <!-- Stacked screens. Each tab stack pushes screens here; only one is visible. -->
-  <main class="content" id="content" role="main">
+      <div class="screens" id="screens">
 
-    <!-- Chat tab root: channel list -->
-    <section class="screen" data-screen="channel-list" data-tab="chat" data-root="true"></section>
-    <!-- Channel chat (pushed) -->
-    <section class="screen" data-screen="channel-chat" data-tab="chat"></section>
-    <!-- Thread detail (pushed) -->
-    <section class="screen" data-screen="thread-detail" data-tab="chat"></section>
+      <!-- =============================================
+           PHASE 1 — CORE NAVIGATION
+           ============================================= -->
 
-    <!-- AI tab root: action launcher full-screen -->
-    <section class="screen" data-screen="ai-launcher" data-tab="ai" data-root="true"></section>
-    <!-- Brief builder (pushed) -->
-    <section class="screen" data-screen="ai-brief" data-tab="ai"></section>
-    <!-- Processing (pushed) -->
-    <section class="screen" data-screen="ai-processing" data-tab="ai"></section>
-    <!-- Output review (pushed) -->
-    <section class="screen" data-screen="ai-output" data-tab="ai"></section>
+      <!-- SCREEN: launcher -->
+      <section class="screen" id="screen-launcher">
+        <div class="content launcher-bg">
+          <div class="launcher-logo" aria-hidden="true">K</div>
+          <h1 class="launcher-title">KChat B2B</h1>
+          <p class="launcher-sub">A mobile click-through of the B2B enterprise experience. Same 5-tab shell as KChat consumer · different features, same shape.</p>
 
-    <!-- Inbox tab root -->
-    <section class="screen" data-screen="inbox" data-tab="inbox" data-root="true"></section>
+          <div class="launcher-section-title">Guided demos</div>
 
-    <!-- Activity tab root -->
-    <section class="screen" data-screen="activity" data-tab="activity" data-root="true"></section>
+          <button class="path-card" onclick="KApp.startDemo('vendor-review')">
+            <div class="path-icon" style="background:#FEF3C7;">🏢</div>
+            <div class="path-info">
+              <h4>Vendor Review Week</h4>
+              <p>Chat → AI extract → thread → task → approval → notification · 8 steps</p>
+            </div>
+            <span class="arrow">›</span>
+          </button>
 
-    <!-- Me tab root -->
-    <section class="screen" data-screen="me" data-tab="me" data-root="true"></section>
+          <button class="path-card community" onclick="KApp.startDemo('draft-prd')">
+            <div class="path-icon">✦</div>
+            <div class="path-info">
+              <h4>Draft a PRD with Nina</h4>
+              <p>Channel → Action Launcher → Brief → AI draft → Workspace · 7 steps</p>
+            </div>
+            <span class="arrow">›</span>
+          </button>
 
-    <!-- KApps (pushed; reachable from any tab) -->
-    <section class="screen" data-screen="tasks" data-tab="*"></section>
-    <section class="screen" data-screen="task-detail" data-tab="*"></section>
-    <section class="screen" data-screen="approval-review" data-tab="*"></section>
-    <section class="screen" data-screen="ai-employee" data-tab="*"></section>
+          <button class="path-card family" onclick="KApp.startDemo('ai-employee')">
+            <div class="path-icon">🤖</div>
+            <div class="path-info">
+              <h4>AI Employee Check-in (Kara)</h4>
+              <p>Settings → AI Employees → Kara → her channel · 5 steps</p>
+            </div>
+            <span class="arrow">›</span>
+          </button>
 
-  </main>
+          <div class="launcher-section-title">Or explore freely</div>
+          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.show('home')">Open Acme Corp workspace →</button>
+          <div class="text-xs muted-2" style="text-align:center; margin-top:12px;">
+            Community is a tenant construct. The shell is identical to KChat consumer — the features are just B2B.
+          </div>
+        </div>
+      </section>
 
-  <!-- Bottom tab bar -->
-  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Primary"></nav>
+      <!-- SCREEN: home (workspace home — Message tab) -->
+      <section class="screen" id="screen-home">
+        <div class="topbar messages-topbar">
+          <div class="title">Acme Corp<div class="subtitle">Ken Nguyen · @ken</div></div>
+          <div class="actions">
+            <button class="btn-topbar-ai" onclick="KApp.show('search')" aria-label="Ask KChat AI"><span class="ai-star">✦</span></button>
+          </div>
+        </div>
+        <div class="content">
+          <!-- Tenant switcher -->
+          <div class="section-title">Workspaces</div>
+          <div class="suite-row" role="tablist" aria-label="Workspaces">
+            <button class="suite-tile active" role="tab"><span class="suite-icon" style="background:#E0E7FF;color:#4338CA;">AC</span><span class="suite-label">Acme</span></button>
+            <button class="suite-tile" role="tab"><span class="suite-icon" style="background:#DCFCE7;color:#065F46;">GX</span><span class="suite-label">Globex</span></button>
+            <button class="suite-tile" role="tab"><span class="suite-icon" style="background:#FEF3C7;color:#92400E;">AL</span><span class="suite-label">Labs</span></button>
+            <button class="suite-tile" role="tab"><span class="suite-icon" style="border:1px dashed var(--k-border); background:transparent; color:var(--k-text-3);">+</span><span class="suite-label">Join</span></button>
+          </div>
 
-  <!-- Bottom sheet container (overlay) -->
-  <div class="sheet-root" id="sheet-root" aria-hidden="true">
-    <div class="sheet-backdrop" data-sheet-action="close"></div>
-    <div class="sheet" role="dialog" aria-modal="true">
-      <div class="sheet-grabber" data-sheet-action="close"></div>
-      <div class="sheet-body" id="sheet-body"></div>
+          <!-- Core Intents -->
+          <div class="section-title">Core Intents</div>
+          <div class="intents-row">
+            <button class="intent-tile" id="intent-create" onclick="KApp.show('action-launcher')">
+              <div class="intent-icon">✏️</div>
+              <div class="intent-label">Create</div>
+              <div class="intent-sub">Doc · Slides · PRD · SOP</div>
+              <div class="intent-modes"><span class="intent-mode">Auto</span><span class="intent-mode inline">Inline</span></div>
+            </button>
+            <button class="intent-tile" onclick="KApp.show('action-launcher')">
+              <div class="intent-icon">🔍</div>
+              <div class="intent-label">Analyze</div>
+              <div class="intent-sub">Summarize · Extract · Report</div>
+              <div class="intent-modes"><span class="intent-mode">Auto</span><span class="intent-mode inline">Inline</span></div>
+            </button>
+            <button class="intent-tile" onclick="KApp.show('action-launcher')">
+              <div class="intent-icon">📋</div>
+              <div class="intent-label">Plan</div>
+              <div class="intent-sub">Tasks · Agenda · Risk</div>
+              <div class="intent-modes"><span class="intent-mode">Auto</span><span class="intent-mode inline">Inline</span></div>
+            </button>
+            <button class="intent-tile" onclick="KApp.show('approval-form')">
+              <div class="intent-icon">✅</div>
+              <div class="intent-label">Approve</div>
+              <div class="intent-sub">Purchase · Policy · Budget</div>
+              <div class="intent-modes"><span class="intent-mode">Auto</span></div>
+            </button>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="section-title">Quick actions</div>
+          <div class="col gap-8">
+            <div class="quick-link" onclick="KApp.show('channel-list')">🗂 Browse channels<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('ai-employee-list')">🤖 AI Employees<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('template-gallery')">📘 Templates<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('approval-list')">✅ Approvals awaiting you · 2<span class="chevron">›</span></div>
+          </div>
+
+          <!-- Recent channels -->
+          <div class="section-title">Recent channels</div>
+          <div class="col gap-4">
+            <div class="channel-row" onclick="KApp.show('channel-chat')">
+              <span class="channel-hash">#</span>
+              <div class="info"><div class="name">vendor-management</div><div class="last">Kara Ops AI: Orbix remediation summary ready</div></div>
+              <div class="col" style="align-items:flex-end; gap:4px;"><span class="time">09:46</span><span class="tab-badge" style="position:static;">4</span></div>
+            </div>
+            <div class="channel-row" onclick="KApp.show('channel-chat')">
+              <span class="channel-hash">#</span>
+              <div class="info"><div class="name">specs</div><div class="last">Nina PM AI: Drafting Vendor Portal v2 PRD</div></div>
+              <div class="col" style="align-items:flex-end; gap:4px;"><span class="time">14:33</span><span class="tab-badge" style="position:static;">3</span></div>
+            </div>
+            <div class="channel-row" onclick="KApp.show('channel-chat')">
+              <span class="channel-hash">#</span>
+              <div class="info"><div class="name">deals</div><div class="last">Mika Sales AI: QBR draft · 2 risks flagged</div></div>
+              <div class="col" style="align-items:flex-end; gap:4px;"><span class="time">11:32</span><span class="tab-badge" style="position:static;">1</span></div>
+            </div>
+            <div class="channel-row" onclick="KApp.show('channel-list')">
+              <span class="channel-hash" style="background:var(--k-surface-2);color:var(--k-text-3);">···</span>
+              <div class="info"><div class="name">All channels</div><div class="last">9 channels across 5 domains</div></div>
+              <span class="chevron">›</span>
+            </div>
+          </div>
+
+          <!-- Privacy footer -->
+          <div class="privacy-strip compact">
+            <span class="privacy-icon">🔒</span>
+            <span><strong>On-device</strong> · Acme region · 5 AI Employees across Ops, Sales, Product, HR, Finance</span>
+          </div>
+        </div>
+        <button class="fab" onclick="KApp.show('action-launcher')" aria-label="New message or action">+</button>
+      </section>
+
+      <!-- SCREEN: channel-list -->
+      <section class="screen" id="screen-channel-list">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()" aria-label="Back">‹</button>
+          <div class="title">Channels<div class="subtitle">Acme Corp · 9 channels · 5 domains</div></div>
+          <div class="actions"><button onclick="KApp.show('search')" aria-label="Search">🔎</button></div>
+        </div>
+        <div class="content">
+          <div class="domain-group">
+            <div class="domain-header"><span>Operations</span><span class="chevron">▾</span></div>
+            <div class="domain-channels">
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">vendor-management</div><div class="last">14 members · AI: Kara</div></div><span class="tab-badge" style="position:static;">4</span></div>
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">logistics</div><div class="last">9 members · AI: Kara</div></div><span class="tab-badge" style="position:static;">1</span></div>
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">compliance</div><div class="last">6 members</div></div></div>
+            </div>
+          </div>
+          <div class="domain-group">
+            <div class="domain-header"><span>Sales</span><span class="chevron">▾</span></div>
+            <div class="domain-channels">
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">pipeline</div><div class="last">11 members · AI: Mika</div></div><span class="tab-badge" style="position:static;">2</span></div>
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">deals</div><div class="last">7 members · AI: Mika</div></div><span class="tab-badge" style="position:static;">1</span></div>
+            </div>
+          </div>
+          <div class="domain-group">
+            <div class="domain-header"><span>Product</span><span class="chevron">▾</span></div>
+            <div class="domain-channels">
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">roadmap</div><div class="last">10 members · AI: Nina</div></div></div>
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">specs</div><div class="last">12 members · AI: Nina</div></div><span class="tab-badge" style="position:static;">3</span></div>
+            </div>
+          </div>
+          <div class="domain-group">
+            <div class="domain-header"><span>People</span><span class="chevron">▾</span></div>
+            <div class="domain-channels">
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">hr-people</div><div class="last">8 members · AI: Hana</div></div><span class="tab-badge" style="position:static;">1</span></div>
+            </div>
+          </div>
+          <div class="domain-group">
+            <div class="domain-header"><span>Finance</span><span class="chevron">▾</span></div>
+            <div class="domain-channels">
+              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">finance</div><div class="last">5 members · AI: Finn</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: channel-chat (#vendor-management) -->
+      <section class="screen" id="screen-channel-chat">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()" aria-label="Back">‹</button>
+          <div class="title"># vendor-management<div class="subtitle">14 members · Ops · Kara AI on</div></div>
+          <div class="actions"><button onclick="KApp.show('search')" aria-label="Search">🔎</button></div>
+        </div>
+        <div class="channel-context-bar" aria-label="Connected services">
+          <span class="channel-context-chip">📁 Drive · 12 files</span>
+          <span class="channel-context-chip">📅 Calendar · 3 upcoming</span>
+          <span class="channel-context-chip">✉ KMail · 4 threads</span>
+          <span class="channel-context-chip">🗂 Base · Vendor Register</span>
+          <span class="channel-context-chip">✦ Kara Ops AI · 3 runs today</span>
+        </div>
+        <div class="content">
+          <div class="msg-divider">Today</div>
+          <div class="chat-wrap">
+            <div class="msg-row"><div class="avatar a3">MP</div><div class="msg-bubble"><div class="sender">Mira Patel</div>Hey team — quarterly vendor reviews are due Friday. Sharing the latest contract dump from Drive.<div class="inline-card"><div class="inline-card-head"><span class="inline-card-icon">📎</span><div class="inline-card-title">vendor-contracts-q2.zip<div class="inline-card-meta">12.4 MB · 42 files</div></div></div></div><div class="time-stamp">09:12</div></div></div>
+
+            <div class="msg-row"><div class="avatar a2">KN</div><div class="msg-bubble"><div class="sender">Ken Nguyen</div>Thanks. <span class="mention">@sofia</span> can you flag any that lapse this quarter?<div class="time-stamp">09:14</div></div></div>
+
+            <div class="msg-row"><div class="avatar a4">SR</div><div class="msg-bubble"><div class="sender">Sofia Reyes</div>On it. Three vendors need renewal review — NimbusLogix, Orbix, and Paperstack.<div class="time-stamp">09:17</div></div></div>
+
+            <div class="msg-row ai"><div class="avatar a5">KA</div><div class="msg-bubble"><div class="sender">✦ Kara Ops AI</div>I can extract a renewal checklist from the contract dump. Want me to run it? <span class="ai-badge"><span class="ai-star">✦</span> On-device</span><div class="time-stamp">09:18</div></div></div>
+
+            <div class="msg-row"><div class="avatar a2">KN</div><div class="msg-bubble"><div class="sender">Ken Nguyen</div>Yes please — use the on-device recipe and surface any PII risks.<div class="time-stamp">09:19</div></div></div>
+
+            <div class="msg-row ai"><div class="avatar a5">KA</div><div class="msg-bubble" id="msg-m-v-6"><div class="sender">✦ Kara Ops AI</div>Draft ready for review. <span class="ai-badge"><span class="ai-star">✦</span> On-device</span>
+              <div class="inline-card" onclick="KApp.show('ai-output-review')" style="cursor:pointer;">
+                <div class="inline-card-head">
+                  <span class="inline-card-icon">📄</span>
+                  <div>
+                    <div class="inline-card-title">Vendor Renewal Checklist · Q2</div>
+                    <div class="inline-card-meta">SOP · 5 sections · 92% confidence</div>
+                  </div>
+                  <span class="chevron">›</span>
+                </div>
+                <div class="inline-card-body">Covers 3 renewal targets, risk flags, approvals, PII, timeline.</div>
+                <div class="inline-card-actions">
+                  <button class="chip chip-ai" onclick="event.stopPropagation(); KApp.show('ai-output-review')"><span class="ai-star">✦</span> Review</button>
+                  <button class="chip" onclick="event.stopPropagation(); KApp.show('artifact-workspace')">Open workspace</button>
+                </div>
+              </div>
+              <div class="time-stamp">09:22 · Long-press for actions</div>
+            </div></div>
+
+            <div class="msg-row"><div class="avatar a3">MP</div><div class="msg-bubble"><div class="sender">Mira Patel</div>Meanwhile I opened a task list — see the thread below.
+              <div class="msg-ai-badge" onclick="KApp.show('thread-detail')">💬 5 Tasks · Open thread →</div>
+              <div class="time-stamp">09:27</div>
+            </div></div>
+
+            <div class="msg-row"><div class="avatar a4">DK</div><div class="msg-bubble"><div class="sender">Dan Kim</div>Logistics angle: Orbix is blocking two shipments. Needs an approval to unblock payment hold.
+              <div class="inline-card" onclick="KApp.show('approval-review')" style="cursor:pointer;">
+                <div class="inline-card-head">
+                  <span class="inline-card-icon approval">✅</span>
+                  <div>
+                    <div class="inline-card-title">Approval · Orbix payment-hold release</div>
+                    <div class="inline-card-meta">$42,500 · Purchase · Exception · Pending</div>
+                  </div>
+                  <span class="chevron">›</span>
+                </div>
+              </div>
+              <div class="time-stamp">09:31</div>
+            </div></div>
+
+            <div class="msg-row"><div class="avatar a2">KN</div><div class="msg-bubble"><div class="sender">Ken Nguyen</div>Approved path — let's get a summary and formal approval filed.<div class="time-stamp">09:35</div></div></div>
+
+            <div class="msg-row"><div class="avatar a4">SR</div><div class="msg-bubble"><div class="sender">Sofia Reyes</div>Filed. Pending your review.
+              <div class="inline-card" onclick="KApp.show('approval-review')" style="cursor:pointer;">
+                <div class="inline-card-head">
+                  <span class="inline-card-icon approval">✅</span>
+                  <div>
+                    <div class="inline-card-title">Orbix payment-hold release · $42,500</div>
+                    <div class="inline-card-meta">Pending your review · SLA Today 5 PM</div>
+                  </div>
+                  <span class="chevron">›</span>
+                </div>
+              </div>
+              <div class="time-stamp">09:40</div>
+            </div></div>
+
+            <div class="msg-row system"><div class="avatar a6">·</div><div class="msg-bubble"><div class="sender" style="color:var(--k-text-3)">KChat</div>✉ Email received from contracts@orbix.io
+              <div class="inline-card" onclick="KApp.show('email-detail')" style="cursor:pointer;">
+                <div class="inline-card-head">
+                  <span class="inline-card-icon email">✉</span>
+                  <div>
+                    <div class="inline-card-title">Updated Remediation Terms · v3</div>
+                    <div class="inline-card-meta">contracts@orbix.io · Today 09:45</div>
+                  </div>
+                  <span class="chevron">›</span>
+                </div>
+                <div class="inline-card-body">New penalty clause added; requires legal review before counter-signing…</div>
+              </div>
+              <div class="time-stamp">09:45</div>
+            </div></div>
+
+            <div class="msg-row ai"><div class="avatar a5">KA</div><div class="msg-bubble"><div class="sender">✦ Kara Ops AI</div>Orbix sent updated remediation terms. AI summary: new penalty clause added; requires legal review before counter-signing. PDF is in your channel drive. <span class="ai-badge"><span class="ai-star">✦</span> Confidential server</span><div class="time-stamp">09:46</div></div></div>
+          </div>
+        </div>
+        <div class="compose-bar">
+          <div class="chip-row">
+            <button class="chip chip-ai" id="ai-sparkle" onclick="KApp.show('action-launcher')"><span class="ai-star">✦</span> Ask Kara</button>
+            <button class="chip chip-ai" onclick="KApp.show('brief-builder')"><span class="ai-star">✦</span> Summarize</button>
+            <button class="chip" onclick="KApp.show('approval-form')">✅ File approval</button>
+          </div>
+          <div class="compose-row">
+            <button class="btn-ai-composer" aria-label="Add">+</button>
+            <input class="compose-input" placeholder="Message #vendor-management…"/>
+            <button class="btn btn-primary btn-sm">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: thread-detail -->
+      <section class="screen" id="screen-thread-detail">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Vendor review · 5 tasks<div class="subtitle">Thread · Mira Patel · 09:27</div></div>
+        </div>
+        <div class="content">
+          <div class="thread-chips">
+            <button class="thread-chip" id="thread-chip-tasks" onclick="KApp.show('task-list')">📅 5 Tasks</button>
+            <button class="thread-chip" onclick="KApp.show('approval-review')">✅ 1 Approval</button>
+            <button class="thread-chip" onclick="KApp.show('artifact-workspace')">📄 SOP draft</button>
+            <button class="thread-chip" onclick="KApp.show('base-view')">🗂 Vendor Register</button>
+          </div>
+
+          <div class="chat-wrap">
+            <div class="msg-row"><div class="avatar a3">MP</div><div class="msg-bubble"><div class="sender">Mira Patel</div>Splitting this into 5 tasks so we can parallelize. Tagging owners inline.<div class="time-stamp">09:28</div></div></div>
+
+            <div class="msg-row ai"><div class="avatar a5">KA</div><div class="msg-bubble"><div class="sender">✦ Kara Ops AI</div>Extracted 5 tasks from the thread. Review and assign below. <span class="ai-badge"><span class="ai-star">✦</span> On-device</span>
+              <div class="inline-card" style="cursor:pointer;" onclick="KApp.show('task-list')">
+                <div class="inline-card-head"><span class="inline-card-icon">📋</span><div class="inline-card-title">5 extracted tasks</div></div>
+                <div class="col gap-4 text-sm" style="margin-top:4px;">
+                  <div>1. Review NimbusLogix renewal terms · <strong>Sofia</strong> · Fri</div>
+                  <div>2. Compare Orbix vs FleetOne rates · <strong>Dan</strong> · Thu</div>
+                  <div>3. Flag PII-handling clauses · <strong>Sofia</strong> · Fri</div>
+                  <div>4. Draft Paperstack SOW amendment · <strong>Mira</strong> · Fri</div>
+                  <div>5. File Orbix payment-hold approval · <strong>Sofia</strong> · Thu</div>
+                </div>
+                <div class="inline-card-actions">
+                  <button class="chip chip-ai" onclick="event.stopPropagation(); KApp.toast('5 tasks accepted')"><span class="ai-star">✦</span> Accept all</button>
+                  <button class="chip" onclick="event.stopPropagation(); KApp.show('task-list')">Open Tasks</button>
+                </div>
+              </div>
+              <div class="time-stamp">09:29</div>
+            </div></div>
+
+            <div class="msg-row"><div class="avatar a4">SR</div><div class="msg-bubble"><div class="sender">Sofia Reyes</div>Taking #1, #3, #5. Dan can you grab #2?<div class="time-stamp">09:33</div></div></div>
+            <div class="msg-row"><div class="avatar a4">DK</div><div class="msg-bubble"><div class="sender">Dan Kim</div>Yep, on it.<div class="time-stamp">09:34</div></div></div>
+          </div>
+          <div class="privacy-strip compact"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> · Thread sources stay in channel</span></div>
+        </div>
+        <div class="compose-bar">
+          <div class="compose-row">
+            <button class="btn-ai-composer">+</button>
+            <input class="compose-input" placeholder="Reply in thread…"/>
+            <button class="btn btn-primary btn-sm">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: notifications -->
+      <section class="screen" id="screen-notifications">
+        <div class="topbar">
+          <div class="title">Notifications<div class="subtitle">3 action required · 5 updates</div></div>
+          <div class="actions"><button aria-label="Mark all read">✓</button></div>
+        </div>
+        <div class="content">
+          <div class="notif-group-title action">▲ Action required</div>
+          <div class="notif-item reveal-child" onclick="KApp.show('approval-review')">
+            <div class="notif-icon" style="background:#FEF3C7;color:#92400E;">✅</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Approve · Orbix payment-hold release</strong><span class="text-xs muted-2">5m</span></div>
+              <div class="text-sm">Sofia Reyes filed the approval · $42,500</div>
+              <div class="text-xs muted mt-4">#vendor-management · SLA Today 5 PM</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('task-detail')">
+            <div class="notif-icon">📋</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Task assigned to you</strong><span class="text-xs muted-2">18m</span></div>
+              <div class="text-sm">Sign Vendor Portal v2 PRD sign-off</div>
+              <div class="text-xs muted mt-4">#specs · from Nina PM AI</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('email-detail')">
+            <div class="notif-icon" style="background:#DBEAFE;color:#1E40AF;">✉</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Legal review requested</strong><span class="text-xs muted-2">32m</span></div>
+              <div class="text-sm">Orbix remediation v3 · new penalty clause</div>
+              <div class="text-xs muted mt-4">#vendor-management · via KMail</div>
+            </div>
+          </div>
+
+          <div class="notif-group-title">▾ Updates</div>
+          <div class="notif-item reveal-child" onclick="KApp.show('ai-output-review')">
+            <div class="notif-icon ai-bg">✦</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Kara Ops AI finished · Vendor Renewal Checklist</strong><span class="text-xs muted-2">1h</span></div>
+              <div class="text-sm">5 sections · 92% confidence · on-device</div>
+              <div class="text-xs muted mt-4">#vendor-management</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('ai-output-review')">
+            <div class="notif-icon ai-bg">✦</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Nina PM AI · PRD draft ready</strong><span class="text-xs muted-2">2h</span></div>
+              <div class="text-sm">Vendor Portal v2 · 6 sections · citations linked</div>
+              <div class="text-xs muted mt-4">#specs</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('channel-chat')">
+            <div class="notif-icon">📅</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Vendor review · Thursday 10 AM</strong><span class="text-xs muted-2">3h</span></div>
+              <div class="text-sm">Calendar reminder · Ken, Mira, Sofia, Dan</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('channel-chat')">
+            <div class="notif-icon ai-bg">@</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Mira mentioned you</strong><span class="text-xs muted-2">4h</span></div>
+              <div class="text-sm">"@ken can you grab the budget gate for Q3?"</div>
+              <div class="text-xs muted mt-4">#roadmap</div>
+            </div>
+          </div>
+          <div class="notif-item reveal-child" onclick="KApp.show('thread-detail')">
+            <div class="notif-icon">💬</div>
+            <div class="notif-body">
+              <div class="row" style="justify-content:space-between;"><strong class="text-sm">Sofia replied in thread</strong><span class="text-xs muted-2">5h</span></div>
+              <div class="text-sm">"Taking #1, #3, #5. Dan grab #2?"</div>
+            </div>
+          </div>
+
+          <div class="privacy-strip compact">
+            <span class="privacy-icon">🔒</span>
+            <span><strong>On-device</strong> · Priority grouped from your activity</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: task-list -->
+      <section class="screen" id="screen-task-list">
+        <div class="topbar">
+          <div class="title">Tasks<div class="subtitle">7 open · 5 from AI · 4 approvals pending</div></div>
+          <div class="actions"><button>+</button></div>
+        </div>
+        <div class="content">
+          <div class="segmented" id="tasks-segmented">
+            <button class="active" data-seg="tasks">📋 Tasks</button>
+            <button id="tasks-seg-approvals" data-seg="approvals">✅ Approvals</button>
+          </div>
+
+          <div id="tasks-view-list">
+            <div class="task-card ai" onclick="KApp.show('task-detail')">
+              <h4>Review NimbusLogix renewal terms</h4>
+              <div class="task-meta"><span>📅 Fri Apr 26 · 5 PM</span><span>💬 #vendor-management</span><span>✦ From Kara AI</span><span class="badge warn" style="font-size:10px;">High</span></div>
+            </div>
+            <div class="task-card" onclick="KApp.show('task-detail')">
+              <h4>Compare Orbix vs FleetOne rates</h4>
+              <div class="task-meta"><span>📅 Thu Apr 25</span><span>👤 Dan</span><span>💬 #logistics</span></div>
+            </div>
+            <div class="task-card ai" onclick="KApp.show('task-detail')">
+              <h4>Flag PII-handling clauses</h4>
+              <div class="task-meta"><span>📅 Fri Apr 26</span><span>💬 #compliance</span><span>✦ AI-extracted</span></div>
+            </div>
+            <div class="task-card" onclick="KApp.show('task-detail')">
+              <h4>Draft Paperstack SOW amendment</h4>
+              <div class="task-meta"><span>📅 Fri Apr 26</span><span>👤 Mira</span><span>💬 #vendor-management</span></div>
+            </div>
+            <div class="task-card ai" onclick="KApp.show('approval-review')">
+              <h4>✅ File Orbix payment-hold approval</h4>
+              <div class="task-meta"><span>✅ Done</span><span>👤 Sofia</span><span>✦ AI-extracted</span></div>
+            </div>
+            <div class="task-card ai" onclick="KApp.show('task-detail')">
+              <h4>Vendor Portal v2 PRD sign-off</h4>
+              <div class="task-meta"><span>📅 Mon Apr 29</span><span>💬 #specs</span><span>✦ From Nina AI</span></div>
+            </div>
+            <div class="task-card ai" onclick="KApp.show('task-detail')">
+              <h4>Q2 accrual spot-check</h4>
+              <div class="task-meta"><span>📅 Wed May 1</span><span>💬 #finance</span><span>✦ From Finn AI</span></div>
+            </div>
+          </div>
+
+          <div id="tasks-view-approvals" style="display:none;">
+            <div class="task-card ai" onclick="KApp.show('approval-review')">
+              <h4>✅ Orbix payment-hold release · $42,500</h4>
+              <div class="task-meta"><span>⏳ Pending your review</span><span>👤 Sofia Reyes</span><span>💬 #vendor-management</span><span class="badge warn" style="font-size:10px;">SLA Today 5 PM</span></div>
+            </div>
+            <div class="task-card" onclick="KApp.show('approval-review')">
+              <h4>Vendor Portal v2 · PRD sign-off</h4>
+              <div class="task-meta"><span>⏳ Awaiting reviewers</span><span>👤 Nina PM AI</span><span>💬 #specs</span></div>
+            </div>
+            <div class="task-card ai" onclick="KApp.show('approval-review')">
+              <h4>Sofia Reyes · 3 days leave</h4>
+              <div class="task-meta"><span>⏳ Pending your review</span><span>👤 Hana HR AI</span><span>💬 #hr-people</span></div>
+            </div>
+            <div class="task-card" onclick="KApp.show('approval-review')">
+              <h4>✅ Q3 marketing budget · +$18K</h4>
+              <div class="task-meta"><span>Approved · Yesterday</span><span>👤 Tom Becker</span><span>💬 #deals</span></div>
+            </div>
+          </div>
+
+          <div class="privacy-strip compact"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> · Extracted from channels + approvals</span></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: settings -->
+      <section class="screen" id="screen-settings">
+        <div class="topbar">
+          <div class="title">Settings<div class="subtitle">Acme Corp · @ken</div></div>
+          <div class="actions"><button onclick="KApp.show('search')" aria-label="Search settings">🔎</button></div>
+        </div>
+        <div class="content">
+          <div class="settings-profile">
+            <div class="avatar a2" style="width:64px;height:64px;font-size:22px;">KN</div>
+            <div class="settings-profile-info">
+              <div class="settings-profile-name">Ken Nguyen</div>
+              <div class="text-xs muted-2">Head of Ops · @ken · Acme Corp</div>
+            </div>
+            <span class="chevron">›</span>
+          </div>
+
+          <!-- AI Employees (prominent B2B section) -->
+          <div class="section-title" id="settings-ai-employees">✦ AI Employees</div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a5">KA</div>
+            <div class="aie-info"><div class="aie-name">Kara Ops AI</div><div class="aie-sub">Ops Coordinator · Running · $182 / $250 budget</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-list')">
+            <div class="avatar a3">MI</div>
+            <div class="aie-info"><div class="aie-name">Mika Sales AI</div><div class="aie-sub">Sales Assist · Cooling down · 98% budget used</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-list')">
+            <div class="avatar a4">NI</div>
+            <div class="aie-info"><div class="aie-name">Nina PM AI</div><div class="aie-sub">Product Co-Pilot · Drafting PRD</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <button class="btn btn-outline btn-full" onclick="KApp.show('ai-employee-list')">See all 5 AI Employees →</button>
+
+          <div class="section-title">AI &amp; Privacy</div>
+          <div class="settings-group">
+            <div class="settings-item" onclick="KApp.show('ai-memory')">
+              <div class="icon">🧠</div>
+              <div class="text"><div class="t1">AI Memory</div><div class="t2">24 facts · workspace-scoped</div></div>
+              <div class="chevron">›</div>
+            </div>
+            <div class="settings-item" onclick="KApp.show('compute-transparency')">
+              <div class="icon">🔒</div>
+              <div class="text"><div class="t1">Compute Transparency</div><div class="t2">On-device / Confidential / Frontier</div></div>
+              <div class="chevron">›</div>
+            </div>
+            <div class="settings-item" onclick="KApp.show('connectors')">
+              <div class="icon">🔌</div>
+              <div class="text"><div class="t1">Connectors</div><div class="t2">Drive, Mail, Calendar, CRM, ERP</div></div>
+              <div class="chevron">›</div>
+            </div>
+          </div>
+
+          <div class="section-title">Workspace</div>
+          <div class="settings-group">
+            <div class="settings-item"><div class="icon">🏢</div><div class="text"><div class="t1">Acme Corp</div><div class="t2">248 members · Business plan</div></div><div class="chevron">›</div></div>
+            <div class="settings-item"><div class="icon">🛡</div><div class="text"><div class="t1">Data residency</div><div class="t2">US-East · CMK enabled</div></div><div class="chevron">›</div></div>
+            <div class="settings-item"><div class="icon">📋</div><div class="text"><div class="t1">Audit log</div><div class="t2">SOC2-ready export</div></div><div class="chevron">›</div></div>
+          </div>
+
+          <div class="section-title">Preferences</div>
+          <div class="settings-group">
+            <div class="settings-item" onclick="KApp.toggleTheme()">
+              <div class="icon">🎨</div>
+              <div class="text"><div class="t1">Theme</div><div class="t2">Light · Dark · System</div></div>
+              <button id="theme-toggle" class="btn btn-ghost btn-sm">🌙 Dark</button>
+            </div>
+            <div class="settings-item"><div class="icon">🔔</div><div class="text"><div class="t1">Notifications</div><div class="t2">Priority only · Do Not Disturb 7 PM–8 AM</div></div><div class="switch on"></div></div>
+            <div class="settings-item"><div class="icon">🌐</div><div class="text"><div class="t1">Language</div><div class="t2">English (US)</div></div><div class="chevron">›</div></div>
+          </div>
+
+          <div class="section-title">About</div>
+          <div class="settings-group">
+            <div class="settings-item"><div class="icon">ℹ️</div><div class="text"><div class="t1">Version</div><div class="t2">KChat B2B · Mobile 1.0 · prototype build</div></div></div>
+            <div class="settings-item"><div class="icon">❓</div><div class="text"><div class="t1">Help &amp; Support</div><div class="t2">docs.kchat / contact ops</div></div><div class="chevron">›</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================
+           PHASE 2 — AI & ENTERPRISE FLOWS
+           ============================================= -->
+
+      <!-- SCREEN: action-launcher (bottom sheet) -->
+      <section class="screen" id="screen-action-launcher">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">✦ Action Launcher<div class="subtitle">From #vendor-management</div></div>
+        </div>
+        <div class="content" style="padding:0;">
+          <div style="padding:12px 16px; flex-shrink:0;">
+            <div class="ai-context-card">
+              <div class="ai-context-head">
+                <span class="ai-star">✦</span>
+                <span>Reading <strong>this channel + thread</strong>…</span>
+                <span class="privacy-pill"><span class="privacy-icon">🔒</span>On-device</span>
+              </div>
+              <div class="ai-context-chips">
+                <span class="chip">12 messages</span>
+                <span class="chip">4 files</span>
+                <span class="chip">Vendor Register</span>
+              </div>
+            </div>
+          </div>
+          <div class="backdrop" style="position:relative; flex:1;">
+            <div class="spacer"></div>
+            <div class="context-menu" style="max-height: 70vh; overflow-y:auto;">
+              <div class="sheet-handle"></div>
+              <div class="sheet-title"><span class="ai-star">✦</span> Core Intents</div>
+              <button class="menu-item ai" onclick="KApp.pickIntent('create')">
+                <div class="menu-icon">✏️</div>
+                <div><strong>Create</strong>
+                  <div class="text-xs muted-2">Doc · Slides · Sheet · PRD · SOP <span class="intent-mode">Auto</span> <span class="intent-mode inline">Inline</span></div>
+                </div>
+              </button>
+              <button class="menu-item" onclick="KApp.pickIntent('analyze')">
+                <div class="menu-icon">🔍</div>
+                <div><strong>Analyze</strong>
+                  <div class="text-xs muted-2">Summarize thread · Extract tasks · Compare <span class="intent-mode">Auto</span></div>
+                </div>
+              </button>
+              <button class="menu-item" onclick="KApp.pickIntent('plan')">
+                <div class="menu-icon">📋</div>
+                <div><strong>Plan</strong>
+                  <div class="text-xs muted-2">Agenda · Risk register · Retro <span class="intent-mode">Auto</span></div>
+                </div>
+              </button>
+              <button class="menu-item" onclick="KApp.pickIntent('approve')">
+                <div class="menu-icon">✅</div>
+                <div><strong>Approve</strong>
+                  <div class="text-xs muted-2">Purchase · Policy · Budget <span class="intent-mode">Auto</span></div>
+                </div>
+              </button>
+              <div class="sheet-title" style="margin-top:8px;">Recipes</div>
+              <button class="menu-item" onclick="KApp.show('template-gallery')"><div class="menu-icon">📘</div>Template gallery…</button>
+              <button class="menu-item" onclick="KApp.show('brief-builder')"><div class="menu-icon">✦</div>Draft PRD from thread</button>
+              <button class="menu-item" onclick="KApp.show('brief-builder')"><div class="menu-icon">✦</div>Summarize last 50 messages</button>
+              <button class="menu-item"><div class="menu-icon">⚙</div>Configure AI Employee runs…</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: brief-builder -->
+      <section class="screen" id="screen-brief-builder">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Brief · PRD<div class="subtitle">Vendor Portal v2 · Nina PM AI</div></div>
+        </div>
+        <div class="content">
+          <div class="card card-ai">
+            <div class="card-header">
+              <div class="icon-box">✦</div>
+              <div class="title">Ready to draft<div class="text-xs muted-2">Nina pre-filled every field from #specs</div></div>
+            </div>
+            <div class="row gap-4 mt-8"><span class="ai-badge"><span class="ai-star">✦</span> On-device</span><span class="badge neutral">Est. 4 min</span></div>
+          </div>
+
+          <div class="form-field"><label>Goal</label><div class="value">Let vendors self-serve onboarding, contract lookup, and payment status.</div></div>
+          <div class="form-field"><label>Audience</label><div class="value">External vendors (Acme Corp + Globex partner network).</div></div>
+          <div class="form-field"><label>Sources</label><div class="value">#specs thread · research folder · competitor compare · last QBR notes</div></div>
+          <div class="form-field"><label>Tone</label><div class="value">Concise, decision-oriented. One-page exec summary up top.</div></div>
+          <div class="form-field"><label>Output format</label><div class="value">Long-form doc · 6 sections · exec summary · citations</div></div>
+          <div class="form-field"><label>Compute mode</label><div class="value">On-device (sources stay local)</div></div>
+
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> <span class="privacy-dot">·</span> Sources stay in workspace <span class="privacy-dot">·</span> No data leaves Acme region</span></div>
+
+          <div class="col gap-8 mt-16">
+            <button id="brief-generate" class="btn btn-primary btn-lg btn-full" onclick="KApp.show('ai-processing')"><span class="ai-star">✦</span> Generate draft</button>
+            <button class="btn btn-outline btn-full" onclick="KApp.show('template-gallery')">Choose a different template</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: ai-processing -->
+      <section class="screen" id="screen-ai-processing">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Nina is drafting…<div class="subtitle">On-device · 4 steps</div></div>
+        </div>
+        <div class="content">
+          <div class="card card-ai" style="align-items:center; text-align:center;">
+            <div class="icon-box" style="background:var(--k-ai-gradient); color:white; width:56px; height:56px; font-size:24px; border-radius:16px;">✦</div>
+            <div class="title mt-8" style="font-size:16px;">Nina PM AI</div>
+            <div class="text-xs muted-2">Product Co-Pilot · Vendor Portal v2 PRD</div>
+          </div>
+          <div data-ai-slot="processing" data-ai-reset="always"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: ai-output-review -->
+      <section class="screen" id="screen-ai-output-review">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Review draft<div class="subtitle">Per-section confidence · citations</div></div>
+          <div class="actions"><button aria-label="Share">↗</button></div>
+        </div>
+        <div class="content">
+          <div data-ai-slot="ai-output" data-ai-reset="always"></div>
+          <div class="col gap-8 mt-12">
+            <button id="output-edit" class="btn btn-primary btn-full btn-lg" onclick="KApp.show('artifact-workspace')">Edit in Workspace →</button>
+            <button class="btn btn-outline btn-full" onclick="KApp.toast('Draft shared to #vendor-management')">Share to channel</button>
+            <button class="btn btn-ghost btn-full" onclick="KApp.toast('Kara is re-drafting…'); KApp.show('ai-processing')">Regenerate with more sources</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: artifact-workspace -->
+      <section class="screen" id="screen-artifact-workspace">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Vendor Renewal Checklist<div class="subtitle">SOP · Kara Ops AI · draft</div></div>
+          <div class="actions"><button onclick="KApp.toast('Shared to channel')" aria-label="Share">↗</button></div>
+        </div>
+        <div class="artifact-toolbar">
+          <button class="btn btn-outline btn-sm">B</button>
+          <button class="btn btn-outline btn-sm"><em>I</em></button>
+          <button class="btn btn-outline btn-sm">H</button>
+          <button class="btn btn-outline btn-sm">• List</button>
+          <button class="btn btn-ai btn-sm"><span class="ai-star">✦</span> Refine</button>
+          <button class="btn btn-outline btn-sm">📎</button>
+        </div>
+        <div class="content" style="padding:0;">
+          <div class="artifact-section">
+            <h3>1 · Renewal targets</h3>
+            <p>NimbusLogix, Orbix, Paperstack — all lapsing before Jul 1. NimbusLogix handles EU customer data; DPA refresh required before renewal.</p>
+            <div class="artifact-section-chat" onclick="KApp.toast('Section chat open · ask Kara')"><span class="ai-star">✦</span> Chat with Kara about this section</div>
+          </div>
+          <div class="artifact-section">
+            <h3>2 · Risk flags</h3>
+            <p>Orbix has 2 blocked shipments (logistics hold). NimbusLogix SOC2 report is 9 months stale; request updated before counter-signing.</p>
+            <div class="artifact-section-chat"><span class="ai-star">✦</span> Ask Kara to compare risk profiles</div>
+          </div>
+          <div class="artifact-section">
+            <h3>3 · Required approvals</h3>
+            <p>Orbix payment-hold release ($42.5K) → Ken. Paperstack SOW amendment → Legal + Mira. NimbusLogix renewal → Legal (DPA refresh).</p>
+            <div class="artifact-section-chat"><span class="ai-star">✦</span> Draft approval form for Orbix</div>
+          </div>
+          <div class="artifact-section">
+            <h3>4 · PII &amp; data handling</h3>
+            <p>NimbusLogix processes EU customer records. Standard clauses 4.1–4.4 must reference DPA v2.1 (not v1.8 as currently written).</p>
+          </div>
+          <div class="artifact-section">
+            <h3>5 · Timeline</h3>
+            <p>File all three by Fri Apr 26, 5 PM. Orbix unblocks Thu once approval closes. NimbusLogix renewal date Jun 30 — legal has 60 days.</p>
+          </div>
+        </div>
+        <div class="compose-bar">
+          <div class="chip-row">
+            <button class="chip chip-ai"><span class="ai-star">✦</span> Expand section</button>
+            <button class="chip chip-ai"><span class="ai-star">✦</span> Tighten</button>
+            <button class="chip">Add section</button>
+          </div>
+          <div class="compose-row">
+            <button class="btn btn-primary btn-full" onclick="KApp.toast('Draft published · v1.0'); KApp.show('channel-chat', { replace: true });">Publish to #vendor-management</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: approval-form -->
+      <section class="screen" id="screen-approval-form">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">File approval<div class="subtitle">Purchase · Exception</div></div>
+        </div>
+        <div class="content">
+          <div class="card card-ai">
+            <div class="card-header"><div class="icon-box">✦</div><div class="title">Kara pre-filled this form<div class="text-xs muted-2">from #vendor-management thread</div></div></div>
+          </div>
+
+          <div class="form-field"><label>Title</label><div class="value">Orbix payment-hold release</div></div>
+          <div class="form-field"><label>Amount</label><div class="value">$42,500</div></div>
+          <div class="form-field"><label>Kind</label><div class="value">Purchase · Exception</div></div>
+          <div class="form-field"><label>Requester</label><div class="value">Sofia Reyes · Compliance</div></div>
+          <div class="form-field"><label>Approvers (routed)</label><div class="value">Ken Nguyen (L1) · Mira Patel (L2, if > $50K)</div></div>
+          <div class="form-field"><label>Justification</label><div class="value">Unblocks 2 shipments · SLA impact · remediation terms v3 resolves prior dispute</div></div>
+          <div class="form-field"><label>Source evidence</label><div class="value">#vendor-management thread · Orbix remediation v3 PDF · Vendor Register</div></div>
+          <div class="form-field"><label>SLA</label><div class="value">Today 5 PM</div></div>
+
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>Confidential server</strong> <span class="privacy-dot">·</span> Enclave-bound · audit-logged · no egress</span></div>
+
+          <div class="col gap-8 mt-16">
+            <button id="approval-review-cta" class="btn btn-primary btn-full btn-lg" onclick="KApp.show('approval-review')">Review →</button>
+            <button class="btn btn-outline btn-full">Save as draft</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: approval-review -->
+      <section class="screen" id="screen-approval-review">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Approval · Review<div class="subtitle">Audit trail · compute transparency</div></div>
+        </div>
+        <div class="content">
+          <div data-ai-slot="approval-review" data-ai-reset="always"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: approval-list -->
+      <section class="screen" id="screen-approval-list">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Approvals<div class="subtitle">4 open · 2 pending your review</div></div>
+        </div>
+        <div class="content">
+          <div class="task-card ai" onclick="KApp.show('approval-review')">
+            <h4>✅ Orbix payment-hold release · $42,500</h4>
+            <div class="task-meta"><span>⏳ Pending your review</span><span>👤 Sofia Reyes</span><span class="badge warn" style="font-size:10px;">SLA Today 5 PM</span></div>
+          </div>
+          <div class="task-card" onclick="KApp.show('approval-review')">
+            <h4>Vendor Portal v2 · PRD sign-off</h4>
+            <div class="task-meta"><span>⏳ Awaiting reviewers</span><span>👤 Nina PM AI</span></div>
+          </div>
+          <div class="task-card ai" onclick="KApp.show('approval-review')">
+            <h4>Sofia Reyes · 3 days leave</h4>
+            <div class="task-meta"><span>⏳ Pending your review</span><span>👤 Hana HR AI</span></div>
+          </div>
+          <div class="task-card" onclick="KApp.show('approval-review')">
+            <h4>✅ Q3 marketing budget · +$18K</h4>
+            <div class="task-meta"><span>Approved · Yesterday</span><span>👤 Tom Becker</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: ai-employee-list -->
+      <section class="screen" id="screen-ai-employee-list">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">AI Employees<div class="subtitle">5 active · Acme Corp</div></div>
+          <div class="actions"><button>+</button></div>
+        </div>
+        <div class="content">
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a5" style="width:48px;height:48px;">KA</div>
+            <div class="aie-info"><div class="aie-name">Kara Ops AI</div><div class="aie-sub">Ops Coordinator · Running vendor risk summary</div><div class="text-xs muted-2 mt-4">3 channels · $182 / $250 budget · On-device</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a3" style="width:48px;height:48px;">MI</div>
+            <div class="aie-info"><div class="aie-name">Mika Sales AI</div><div class="aie-sub">Sales Assist · Cooling down · budget cap</div><div class="text-xs muted-2 mt-4">3 channels · 98% spent · Confidential server</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a4" style="width:48px;height:48px;">NI</div>
+            <div class="aie-info"><div class="aie-name">Nina PM AI</div><div class="aie-sub">Product Co-Pilot · Drafting Vendor Portal v2</div><div class="text-xs muted-2 mt-4">2 channels · $96 / $300 budget · On-device</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a5" style="width:48px;height:48px;">HA</div>
+            <div class="aie-info"><div class="aie-name">Hana HR AI</div><div class="aie-sub">HR Assistant · Monitoring leave requests</div><div class="text-xs muted-2 mt-4">2 channels · $42 / $150 budget · Confidential server</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="ai-employee-card" onclick="KApp.show('ai-employee-detail')">
+            <div class="avatar a2" style="width:48px;height:48px;">FI</div>
+            <div class="aie-info"><div class="aie-name">Finn Finance AI</div><div class="aie-sub">Finance Assist · Reconciling Q2 accruals</div><div class="text-xs muted-2 mt-4">1 channel · $88 / $200 budget · Frontier · redacted</div></div>
+            <span class="chevron">›</span>
+          </div>
+          <div class="privacy-strip compact"><span class="privacy-icon">🔒</span><span><strong>Workspace-scoped</strong> · Each AI Employee has a per-channel allowlist and spend cap</span></div>
+          <button class="btn btn-outline btn-full">+ Hire a new AI Employee</button>
+        </div>
+      </section>
+
+      <!-- SCREEN: ai-employee-detail -->
+      <section class="screen" id="screen-ai-employee-detail">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Kara Ops AI<div class="subtitle">Ops Coordinator · Running</div></div>
+          <div class="actions"><button>⋯</button></div>
+        </div>
+        <div class="content">
+          <div data-ai-slot="ai-employee-detail" data-ai-reset="always"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: long-press-menu -->
+      <section class="screen" id="screen-long-press-menu">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title"># vendor-management<div class="subtitle">On-device actions</div></div>
+        </div>
+        <div class="content" style="padding:0;">
+          <div style="padding:12px 16px; flex-shrink:0;">
+            <div class="chat-wrap">
+              <div class="msg-row ai"><div class="avatar a5">KA</div><div class="msg-bubble highlight"><div class="sender">✦ Kara Ops AI</div>Draft ready for review. <span class="ai-badge"><span class="ai-star">✦</span> On-device</span><div class="time-stamp">09:22</div></div></div>
+            </div>
+          </div>
+          <div class="backdrop" style="position:relative; flex:1;">
+            <div class="spacer"></div>
+            <div class="context-menu">
+              <div class="sheet-handle"></div>
+              <div class="sheet-title"><span class="ai-star">✦</span> KChat AI suggested action</div>
+              <button class="menu-item ai" id="menu-thread" onclick="KApp.menuAction('thread')"><div class="menu-icon">✦</div><div><strong>Open thread</strong><div class="text-xs muted-2">5 tasks extracted · vendor review</div></div></button>
+              <button class="menu-item" onclick="KApp.menuAction('extract-tasks')"><div class="menu-icon">📋</div>Re-extract tasks</button>
+              <button class="menu-item" onclick="KApp.menuAction('summarize')"><div class="menu-icon">📝</div>Summarize thread to channel</button>
+              <button class="menu-item" onclick="KApp.menuAction('create-task')"><div class="menu-icon">✅</div>Create task from this message</button>
+              <button class="menu-item" onclick="KApp.menuAction('translate')"><div class="menu-icon">🌐</div>Translate</button>
+              <button class="menu-item" onclick="KApp.menuAction('remind')"><div class="menu-icon">⏰</div>Remind me Friday 4 PM</button>
+              <button class="menu-item"><div class="menu-icon">⭐</div>Star message</button>
+              <button class="menu-item"><div class="menu-icon">📋</div>Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================
+           PHASE 3 — KAPPS & MORE
+           ============================================= -->
+
+      <!-- SCREEN: task-detail -->
+      <section class="screen" id="screen-task-detail">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Task<div class="subtitle">AI-extracted · #vendor-management</div></div>
+        </div>
+        <div class="content">
+          <div data-ai-slot="task-detail" data-ai-reset="always"></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: form-view (KApp Form) -->
+      <section class="screen" id="screen-form-view">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Vendor Onboarding<div class="subtitle">NimbusLogix · KApp Form</div></div>
+        </div>
+        <div class="content">
+          <div class="card"><div class="card-header"><div class="icon-box">📝</div><div class="title">Onboarding form<div class="text-xs muted-2">Autofill from Vendor Register</div></div></div></div>
+          <div class="form-field"><label>Legal entity</label><div class="value">NimbusLogix Ltd.</div></div>
+          <div class="form-field"><label>Primary contact</label><div class="value">Maria Chen · maria@nimbuslogix.com</div></div>
+          <div class="form-field warn"><label>SOC2 report</label><div class="value">Stale · 9 months <span style="color:var(--k-warn); font-size:11px;">⚠ Request updated</span></div></div>
+          <div class="form-field warn"><label>DPA version</label><div class="value">v2.0 · needs refresh <span style="color:var(--k-warn); font-size:11px;">⚠ EU customer data</span></div></div>
+          <div class="form-field"><label>Payment terms</label><div class="value">Net-45</div></div>
+          <div class="form-field"><label>Renewal date</label><div class="value">Jun 30 · Q2</div></div>
+          <div class="privacy-strip compact"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> · Form autofilled from connected Drive</span></div>
+          <div class="col gap-8 mt-16">
+            <button class="btn btn-primary btn-full btn-lg" onclick="KApp.toast('Form submitted to #compliance')">Submit for review</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: base-view (KApp Base table) -->
+      <section class="screen" id="screen-base-view">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Vendor Register<div class="subtitle">5 rows · KApp Base</div></div>
+          <div class="actions"><button>+</button></div>
+        </div>
+        <div class="content">
+          <div class="chip-row">
+            <button class="chip active">All</button>
+            <button class="chip">Renewal review</button>
+            <button class="chip">Active</button>
+          </div>
+          <div class="col gap-4">
+            <div class="base-row"><div class="row" style="justify-content:space-between;"><div class="base-name">NimbusLogix</div><span class="badge warn" style="font-size:10px;">Med risk</span></div><div class="base-meta">Renewal review · Sofia · lapses Jun 30</div></div>
+            <div class="base-row"><div class="row" style="justify-content:space-between;"><div class="base-name">Orbix</div><span class="badge danger" style="font-size:10px;">High risk</span></div><div class="base-meta">Approval open · Sofia · lapses Apr 25</div></div>
+            <div class="base-row"><div class="row" style="justify-content:space-between;"><div class="base-name">Paperstack</div><span class="badge warn" style="font-size:10px;">Med risk</span></div><div class="base-meta">SOW amendment · Mira · lapses May 15</div></div>
+            <div class="base-row"><div class="row" style="justify-content:space-between;"><div class="base-name">FleetOne</div><span class="badge success" style="font-size:10px;">Low risk</span></div><div class="base-meta">Active · Dan · lapses Jan 12 '27</div></div>
+            <div class="base-row"><div class="row" style="justify-content:space-between;"><div class="base-name">Briarwood</div><span class="badge success" style="font-size:10px;">Low risk</span></div><div class="base-meta">Active · Dan · lapses Oct 04</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: sheet-view (KApp Sheet) -->
+      <section class="screen" id="screen-sheet-view">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Q2 Vendor Spend<div class="subtitle">KApp Sheet · 5 rows</div></div>
+        </div>
+        <div class="content">
+          <div style="overflow-x:auto;">
+            <table class="sheet-table">
+              <thead><tr><th>Vendor</th><th>Q1</th><th>Q2</th><th>Trend</th></tr></thead>
+              <tbody>
+                <tr><td>NimbusLogix</td><td>$42,100</td><td>$44,300</td><td style="color:var(--k-warn);">+5%</td></tr>
+                <tr><td>Orbix</td><td>$38,900</td><td>$42,500</td><td style="color:var(--k-warn);">+9%</td></tr>
+                <tr><td>Paperstack</td><td>$12,400</td><td>$11,200</td><td style="color:var(--k-success);">-10%</td></tr>
+                <tr><td>FleetOne</td><td>$22,600</td><td>$23,100</td><td style="color:var(--k-text-3);">+2%</td></tr>
+                <tr><td>Briarwood</td><td>$9,800</td><td>$10,100</td><td style="color:var(--k-text-3);">+3%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="privacy-strip compact mt-12"><span class="privacy-icon">🔒</span><span><strong>Confidential server</strong> · Finance figures · enclave-bound</span></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: search -->
+      <section class="screen" id="screen-search">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Ask KChat AI<div class="subtitle">Natural language · workspace-scoped</div></div>
+        </div>
+        <div class="content">
+          <div class="search-input">
+            <span>🔎</span>
+            <input placeholder="Ask across channels, docs, tasks, contracts…"/>
+            <span class="mic">🎙</span>
+          </div>
+          <div class="section-title">Try</div>
+          <div class="col gap-8">
+            <div class="quick-link">"What's the status of the <strong>Orbix approval</strong>?"<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('ai-output-review')">"Summarize <strong>Vendor Portal v2 PRD</strong>"<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('base-view')">"Which vendors have <strong>stale SOC2 reports</strong>?"<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('approval-list')">"Show all <strong>approvals over $25k</strong> this quarter"<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('brief-builder')">"Draft a <strong>QBR for Globex</strong> from the last 4 quarters"<span class="chevron">›</span></div>
+          </div>
+          <div class="section-title">Recent</div>
+          <div class="col gap-8">
+            <div class="quick-link">"Orbix remediation terms"<span class="chevron">›</span></div>
+            <div class="quick-link">"QBR deck template"<span class="chevron">›</span></div>
+            <div class="quick-link">"Q2 vendor spend"<span class="chevron">›</span></div>
+          </div>
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> <span class="privacy-dot">·</span> Sources: chats · docs · tasks · contracts <span class="privacy-dot">·</span> Never leaves Acme region</span></div>
+        </div>
+      </section>
+
+      <!-- SCREEN: email-detail -->
+      <section class="screen" id="screen-email-detail">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Updated Remediation · v3<div class="subtitle">contracts@orbix.io · Today 09:45</div></div>
+          <div class="actions"><button aria-label="More">⋯</button></div>
+        </div>
+        <div class="content">
+          <div class="card card-ai">
+            <div class="card-header"><div class="icon-box">✦</div><div class="title">Kara's summary<div class="text-xs muted-2">On-device · 4 bullets</div></div></div>
+            <ul class="card-body" style="padding-left:18px; margin-top:4px;">
+              <li>New penalty clause 4.3 adds a 2%/week late-delivery fee.</li>
+              <li>SLA response tightened to 24h for P1 — matches our internal standard.</li>
+              <li>Data-handling rider closes the SOC2 gap flagged on Monday.</li>
+              <li>Action: route to Legal for review before counter-signing.</li>
+            </ul>
+          </div>
+
+          <div class="section-title">Email</div>
+          <div class="card">
+            <div class="card-header"><div class="icon-box email" style="background:#DBEAFE;color:#1E40AF;">✉</div><div class="title">From Diana Lau, Orbix<div class="text-xs muted-2">to vendors@acme.com</div></div></div>
+            <div class="card-body" style="white-space:pre-line;">Ken,
+
+Per our call this morning, attached is v3 of the remediation plan with the revised penalty clause and updated SLA schedule.
+
+Key deltas vs v2:
+  • New clause 4.3 — late-delivery penalty raised to 2% of invoice value per week
+  • SLA response window tightened from 48h to 24h for P1 incidents
+  • Added data-handling rider to match your SOC2 requirements
+
+We are happy to counter-sign once your legal team approves.
+
+— Diana Lau, Orbix</div>
+            <div class="inline-card-actions mt-8">
+              <button class="chip">📎 Orbix-Remediation-v3.pdf · 680 KB</button>
+            </div>
+          </div>
+
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>Confidential server</strong> <span class="privacy-dot">·</span> External email · enclave-bound summary</span></div>
+
+          <div class="col gap-8 mt-16">
+            <button class="btn btn-primary btn-full" onclick="KApp.toast('Routed to Legal'); KApp.show('notifications', { replace: true });">Route to Legal</button>
+            <button class="btn btn-outline btn-full" onclick="KApp.show('channel-chat')">Reply in #vendor-management</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: more -->
+      <section class="screen" id="screen-more">
+        <div class="topbar">
+          <div class="title">More<div class="subtitle">Shortcuts &amp; apps</div></div>
+        </div>
+        <div class="content">
+          <div class="card card-ai" onclick="KApp.show('search')" style="cursor:pointer;">
+            <div class="card-header">
+              <div class="icon-box" style="font-size:18px;">✦</div>
+              <div class="title"><strong>Ask KChat AI</strong></div>
+            </div>
+            <div class="card-body text-sm muted">Find anything across channels, docs, tasks, contracts, approvals — workspace-scoped, enclave-bound.</div>
+            <div class="row" style="gap:6px; margin-top:8px;">
+              <button class="chip chip-ai" onclick="event.stopPropagation(); KApp.show('search')"><span class="ai-star">✦</span> Search</button>
+              <button class="chip chip-ai" onclick="event.stopPropagation(); KApp.toast('Voice capture not wired in this prototype')"><span class="ai-star">✦</span> Voice</button>
+            </div>
+          </div>
+
+          <div class="section-title">Shortcuts</div>
+          <div class="settings-group">
+            <div class="settings-item" onclick="KApp.show('ai-insights')"><div class="icon">✨</div><div class="text"><div class="t1">AI Insights</div><div class="t2">Cross-channel patterns this week</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('metrics-dashboard')"><div class="icon">📊</div><div class="text"><div class="t1">Metrics Dashboard</div><div class="t2">AI runs · compute mix · hours saved</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('template-gallery')"><div class="icon">📘</div><div class="text"><div class="t1">Template gallery</div><div class="t2">PRD · QBR · SOP · Risk · Proposal…</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('packaging-tiers')"><div class="icon">💎</div><div class="text"><div class="t1">Packaging &amp; Tiers</div><div class="t2">Core · Business · Enterprise</div></div><div class="chevron">›</div></div>
+          </div>
+
+          <div class="connected-apps-header">
+            <span class="text-xs muted-2" style="text-transform:uppercase; letter-spacing:0.6px;">Connected apps</span>
+            <span class="text-xs muted-2">Business plan</span>
+          </div>
+          <div class="settings-group">
+            <div class="settings-item" onclick="KApp.show('form-view')"><div class="icon">📝</div><div class="text"><div class="t1">KApp Form</div><div class="t2">Vendor onboarding · NimbusLogix</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('base-view')"><div class="icon">🗂</div><div class="text"><div class="t1">KApp Base</div><div class="t2">Vendor Register · 5 rows</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('sheet-view')"><div class="icon">📈</div><div class="text"><div class="t1">KApp Sheet</div><div class="t2">Q2 Vendor Spend</div></div><div class="chevron">›</div></div>
+            <div class="settings-item" onclick="KApp.show('connectors')"><div class="icon">🔌</div><div class="text"><div class="t1">Connectors</div><div class="t2">Drive, Mail, Calendar, CRM, ERP</div></div><div class="chevron">›</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Secondary screens reachable from Settings / More -->
+
+      <section class="screen" id="screen-ai-memory">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">AI Memory<div class="subtitle">24 facts · workspace-scoped</div></div>
+        </div>
+        <div class="content">
+          <div class="settings-group">
+            <div class="settings-item"><div class="icon">🏢</div><div class="text"><div class="t1">Vendors at risk of lapse</div><div class="t2">NimbusLogix, Orbix, Paperstack · from #vendor-management</div></div><div class="chevron">›</div></div>
+            <div class="settings-item"><div class="icon">📅</div><div class="text"><div class="t1">Vendor review cadence</div><div class="t2">Quarterly · Thursdays 10 AM</div></div><div class="chevron">›</div></div>
+            <div class="settings-item"><div class="icon">🛡</div><div class="text"><div class="t1">SOC2 evidence cadence</div><div class="t2">Monthly · Sofia owns</div></div><div class="chevron">›</div></div>
+            <div class="settings-item"><div class="icon">💲</div><div class="text"><div class="t1">Approval thresholds</div><div class="t2">> $50K → 2 approvers</div></div><div class="chevron">›</div></div>
+          </div>
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> · Per-user memory · visible to you only</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-compute-transparency">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Compute Transparency<div class="subtitle">Where your AI runs</div></div>
+        </div>
+        <div class="content">
+          <div class="insight-card">
+            <div class="insight-head"><span class="ai-star">✦</span> On-device · 72%</div>
+            <div class="insight-body">Summaries, extraction, drafting. Sources stay on your phone.</div>
+            <div class="insight-connection">🔒 No egress <span class="arrow">→</span> No admin logging</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-head"><span class="ai-star">✦</span> Confidential server · 24%</div>
+            <div class="insight-body">Large docs, cross-channel synthesis, approvals with audit trails. Runs in an Acme enclave.</div>
+            <div class="insight-connection">🛡 Enclave-bound <span class="arrow">→</span> Audit-logged, never trained on</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-head"><span class="ai-star">✦</span> Frontier · 4%</div>
+            <div class="insight-body">Only redacted snippets. Used for high-end drafting (competitor compare, QBR).</div>
+            <div class="insight-connection">🌐 Redacted egress <span class="arrow">→</span> Per-row egress policy</div>
+          </div>
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>All three tiers</strong> · Admin can restrict by channel or AI Employee</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-connectors">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Connectors<div class="subtitle">5 connected · 1 pending</div></div>
+          <div class="actions"><button>+</button></div>
+        </div>
+        <div class="content">
+          <div class="settings-group">
+            <div class="settings-item"><div class="icon">📁</div><div class="text"><div class="t1">Drive</div><div class="t2">12 folders indexed</div></div><span class="badge success" style="font-size:10px;">Connected</span></div>
+            <div class="settings-item"><div class="icon">✉</div><div class="text"><div class="t1">KMail</div><div class="t2">Inbox scan on-device</div></div><span class="badge success" style="font-size:10px;">Connected</span></div>
+            <div class="settings-item"><div class="icon">📅</div><div class="text"><div class="t1">Calendar</div><div class="t2">Acme + Globex shared</div></div><span class="badge success" style="font-size:10px;">Connected</span></div>
+            <div class="settings-item"><div class="icon">🤝</div><div class="text"><div class="t1">CRM</div><div class="t2">1,248 deals · Mika reads</div></div><span class="badge success" style="font-size:10px;">Connected</span></div>
+            <div class="settings-item"><div class="icon">🏭</div><div class="text"><div class="t1">ERP (Kapp)</div><div class="t2">Inventory, finance</div></div><span class="badge success" style="font-size:10px;">Connected</span></div>
+            <div class="settings-item"><div class="icon">🧭</div><div class="text"><div class="t1">Jira</div><div class="t2">Awaiting admin SSO</div></div><span class="badge warn" style="font-size:10px;">Pending</span></div>
+            <div class="settings-item"><div class="icon">🐙</div><div class="text"><div class="t1">GitHub</div><div class="t2">Connect to enable code search</div></div><button class="btn btn-outline btn-sm">Connect</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-metrics-dashboard">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Metrics<div class="subtitle">This week · across Acme Corp</div></div>
+        </div>
+        <div class="content">
+          <div class="row gap-8" style="flex-wrap:wrap;">
+            <div class="card" style="flex:1; min-width:120px;"><div class="text-xs muted-2">AI runs</div><div style="font-size:24px; font-weight:800;">324</div></div>
+            <div class="card" style="flex:1; min-width:120px;"><div class="text-xs muted-2">Hours saved</div><div style="font-size:24px; font-weight:800;">18.6</div></div>
+          </div>
+          <div class="section-title">Compute mix</div>
+          <div class="card">
+            <div class="row" style="justify-content:space-between; margin-bottom:4px;"><span>🔒 On-device</span><strong>72%</strong></div>
+            <div class="budget-bar"><div class="budget-fill" style="width:72%;"></div></div>
+            <div class="row mt-8" style="justify-content:space-between; margin-bottom:4px;"><span>🛡 Confidential</span><strong>24%</strong></div>
+            <div class="budget-bar"><div class="budget-fill" style="width:24%; background:var(--k-accent);"></div></div>
+            <div class="row mt-8" style="justify-content:space-between; margin-bottom:4px;"><span>🌐 Frontier</span><strong>4%</strong></div>
+            <div class="budget-bar"><div class="budget-fill" style="width:4%; background:var(--k-warn);"></div></div>
+          </div>
+          <div class="section-title">Top recipes</div>
+          <div class="settings-group">
+            <div class="settings-item"><div class="icon">📝</div><div class="text"><div class="t1">summarize</div></div><strong>112</strong></div>
+            <div class="settings-item"><div class="icon">🔍</div><div class="text"><div class="t1">extract</div></div><strong>78</strong></div>
+            <div class="settings-item"><div class="icon">📘</div><div class="text"><div class="t1">draft-prd</div></div><strong>21</strong></div>
+            <div class="settings-item"><div class="icon">📄</div><div class="text"><div class="t1">draft-sop</div></div><strong>18</strong></div>
+            <div class="settings-item"><div class="icon">⚖</div><div class="text"><div class="t1">compare</div></div><strong>12</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-ai-insights">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">AI Insights<div class="subtitle">Cross-channel patterns</div></div>
+        </div>
+        <div class="content">
+          <div class="insight-card"><div class="insight-head"><span class="ai-star">✦</span> Vendor ↔ Compliance</div><div class="insight-body">PII-handling clauses appear in 3 of 4 open contracts.</div><div class="insight-connection">🛡 Flagged by Kara <span class="arrow">→</span> Routed to #compliance · Sofia reviewing</div></div>
+          <div class="insight-card"><div class="insight-head"><span class="ai-star">✦</span> Sales ↔ Finance</div><div class="insight-body">QBR slippage correlates with late Q1 accrual postings.</div><div class="insight-connection">📊 Detected by Mika + Finn <span class="arrow">→</span> Surfaced in metrics dashboard</div></div>
+          <div class="insight-card"><div class="insight-head"><span class="ai-star">✦</span> Product ↔ Ops</div><div class="insight-body">Vendor Portal v2 would eliminate 62% of manual onboarding tickets.</div><div class="insight-connection">🧭 Nina cited 8 tickets from #vendor-management</div></div>
+          <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>Workspace-scoped</strong> · Insights derived from your channels only</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-template-gallery">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Template gallery<div class="subtitle">8 templates · Acme Corp</div></div>
+        </div>
+        <div class="content">
+          <div class="col gap-8">
+            <div class="quick-link" onclick="KApp.show('brief-builder')">📘 <strong>PRD</strong> · 6 sections<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('brief-builder')">📊 <strong>QBR</strong> · Quarterly Business Review<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('brief-builder')">📄 <strong>SOP</strong> · Standard Operating Procedure<span class="chevron">›</span></div>
+            <div class="quick-link">📑 <strong>Proposal</strong> · Sales proposal · 5 sections<span class="chevron">›</span></div>
+            <div class="quick-link">🗓 <strong>Agenda</strong> · AI pre-fill<span class="chevron">›</span></div>
+            <div class="quick-link">⚠️ <strong>Risk Register</strong> · Top risks · owners<span class="chevron">›</span></div>
+            <div class="quick-link">💰 <strong>Budget</strong> · Variance tracker<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('form-view')">📝 <strong>Form</strong> · Custom intake<span class="chevron">›</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-packaging-tiers">
+        <div class="topbar">
+          <button class="back-btn" onclick="KApp.back()">‹</button>
+          <div class="title">Packaging &amp; Tiers<div class="subtitle">Core · Business · Enterprise</div></div>
+        </div>
+        <div class="content">
+          <div class="card"><div class="card-header"><div class="icon-box">🟦</div><div class="title">Core · <span class="text-xs muted-2">$12 / seat / mo</span></div></div><ul class="card-body" style="padding-left:18px;"><li>Messaging + channels</li><li>Basic tasks &amp; approvals</li><li>On-device AI · 100 runs/mo</li></ul></div>
+          <div class="card card-ai"><div class="card-header"><div class="icon-box">✦</div><div class="title">Business · <span class="text-xs muted-2">$24 / seat / mo</span><span class="badge ai" style="font-size:10px; margin-left:6px;">Most popular</span></div></div><ul class="card-body" style="padding-left:18px;"><li>Everything in Core</li><li>Up to 5 AI Employees</li><li>Confidential server runs</li><li>Audit log + retention</li></ul></div>
+          <div class="card"><div class="card-header"><div class="icon-box" style="background:#FEF3C7; color:#92400E;">💎</div><div class="title">Enterprise · <span class="text-xs muted-2">Custom</span></div></div><ul class="card-body" style="padding-left:18px;"><li>Everything in Business</li><li>Unlimited AI Employees</li><li>Frontier compute w/ egress policy</li><li>Dedicated region + CMK</li></ul></div>
+          <div class="privacy-strip compact"><span class="privacy-icon">🔒</span><span>Current plan: <strong>Business</strong> · 248 seats</span></div>
+        </div>
+      </section>
+
     </div>
-  </div>
-</div>
 
-<script type="module" src="js/app.js"></script>
+    <div id="toast-host"></div>
 
+    <!-- Bottom tab bar — EXACT B2C structure + labels + icons + badges -->
+    <div class="tabbar" id="tabbar" role="navigation" aria-label="Main navigation">
+      <button class="tab" data-tab="chats" onclick="KApp.onTabClick('chats')" aria-label="Messages, 19 unread"><span class="icon">💬</span>Message<span class="tab-badge" aria-hidden="true">19</span></button>
+      <button class="tab" data-tab="notifications" onclick="KApp.onTabClick('notifications')" aria-label="Notifications, 6 new"><span class="icon">🔔</span>Notification<span class="tab-badge" aria-hidden="true">6</span></button>
+      <button class="tab" data-tab="tasks" onclick="KApp.onTabClick('tasks')" aria-label="Tasks"><span class="icon">📅</span>Tasks</button>
+      <button class="tab" data-tab="settings" onclick="KApp.onTabClick('settings')" aria-label="Settings"><span class="icon">⚙</span>Settings</button>
+      <button class="tab" data-tab="more" onclick="KApp.onTabClick('more')" aria-label="More"><span class="icon">···</span>More</button>
+    </div>
+    </div><!-- /.phone-screen -->
+  </div><!-- /.phone -->
+</div><!-- /.stage -->
+
+<script src="js/data.js"></script>
+<script src="js/simulate-ai.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

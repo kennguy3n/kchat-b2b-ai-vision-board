@@ -1,247 +1,551 @@
-// Mobile state machine + router. One state object, per-tab navigation
-// stacks, screen switching via [data-screen] and [data-tab] attributes.
+/* KChat B2B mobile — navigation, screen lifecycle, AI simulation wiring.
+ * Mirrors prototype/js/app.js from the B2C vision board (same history
+ * stack, same showScreen/goBack/updateTabs/DEMO pattern) with the
+ * screen map pointed at B2B-specific screens. */
 
-import * as D from "../../desktop/js/demo-data.js";
-import { renderTopbar, renderTabbar } from "./navigation.js";
-import { renderChannelList, wireChannelList, renderChannelChat, wireChannelChat } from "./channels.js";
-import { renderThreadDetail, wireThreadDetail } from "./thread.js";
-import {
-  renderAILauncher, wireAILauncher,
-  renderBrief, wireBrief,
-  renderProcessing,
-  renderOutput, wireOutput,
-} from "./ai-actions.js";
-import { renderInbox, wireInbox } from "./inbox.js";
-import { renderActivity, wireActivity } from "./activity.js";
-import { renderMe, wireMe } from "./profile.js";
-import {
-  renderTasks, wireTasks,
-  renderTaskDetail, wireTaskDetail,
-  renderApprovalReview, wireApprovalReview,
-  renderAIEmployee,
-} from "./kapps.js";
-import { initSheet, closeSheet } from "./sheets.js";
-import { pushAnim } from "./transitions.js";
+(function() {
+  'use strict';
 
-/* ---------- State ---------- */
-const TAB_ROOTS = {
-  chat:     "channel-list",
-  ai:       "ai-launcher",
-  inbox:    "inbox",
-  activity: "activity",
-  me:       "me",
-};
-
-const state = {
-  tab: "chat",
-  screen: "channel-list",
-  tabStacks: {
-    chat:     [{ screen: "channel-list", params: {} }],
-    ai:       [{ screen: "ai-launcher",  params: {} }],
-    inbox:    [{ screen: "inbox",        params: {} }],
-    activity: [{ screen: "activity",     params: {} }],
-    me:       [{ screen: "me",           params: {} }],
-  },
-  // Domain-level state (mirrors desktop fields).
-  tenantId: D.primaryTenantId(),
-  channelId: null,
-  threadId: null,
-  taskId: null,
-  approvalId: null,
-  artifactId: null,
-  aiEmployeeId: null,
-  briefTemplate: null,
-  aiIntent: null,
-  inboxFilter: "all",
-  taskFilter: "all",
-  collapsed: new Set(),
-  approvalDecision: null,
-};
-
-window.app = {
-  state,
-  navigate,
-  back,
-  switchTab,
-  replaceCurrent,
-  refreshAll,
-};
-
-/* ---------- Init ---------- */
-
-document.addEventListener("DOMContentLoaded", init);
-
-function init() {
-  initSheet();
-  wireGlobal();
-
-  // Wire every screen once. Render-on-demand happens in render().
-  wireChannelList();
-  wireChannelChat();
-  wireThreadDetail();
-  wireAILauncher();
-  wireBrief();
-  wireOutput();
-  wireInbox();
-  wireActivity();
-  wireMe();
-  wireTasks();
-  wireTaskDetail();
-  wireApprovalReview();
-
-  // Restore last screen if reasonable
-  const saved = safeGetLastScreen();
-  if (saved && saved.tab && TAB_ROOTS[saved.tab]) {
-    state.tab = saved.tab;
-    if (saved.tabStacks) state.tabStacks = saved.tabStacks;
-    if (typeof saved.tenantId === "string") state.tenantId = saved.tenantId;
+  // ---- Clock ----
+  function updateClock() {
+    const t = new Date();
+    const hh = String(t.getHours()).padStart(2, '0');
+    const mm = String(t.getMinutes()).padStart(2, '0');
+    document.querySelectorAll('[data-clock]').forEach(el => el.textContent = hh + ':' + mm);
   }
-  // Always start at the root of the active tab — no half-states.
-  const top = currentEntry();
-  applyEntryState(top);
-  renderActiveScreen();
-  renderTopbar(state);
-  renderTabbar(state);
-}
+  setInterval(updateClock, 30000);
 
-function wireGlobal() {
-  // Tab bar
-  document.getElementById("tabbar").addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab]")?.dataset.tab;
-    if (t) switchTab(t);
-  });
-  // Top bar back / right action
-  document.getElementById("topbar").addEventListener("click", (e) => {
-    const action = e.target.closest("[data-nav-action]")?.dataset.navAction;
-    if (action === "back") back();
-    if (action === "compose-new") { /* compose new message — demo only */ }
-  });
-}
+  // ---- Navigation ----
+  const history = [];
+  let currentScreen = null;
 
-/* ---------- Persistence ---------- */
-function safeGetLastScreen() {
-  try {
-    const raw = localStorage.getItem("kchat.mobile.lastScreen");
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch { return null; }
-}
-function persist() {
-  try {
-    localStorage.setItem("kchat.mobile.lastScreen", JSON.stringify({
-      tab: state.tab,
-      tabStacks: state.tabStacks,
-      tenantId: state.tenantId,
-    }));
-  } catch {}
-}
+  function showScreen(id, opts) {
+    opts = opts || {};
+    const target = document.getElementById('screen-' + id);
+    if (!target) { console.warn('Screen not found:', id); return; }
 
-/* ---------- Navigation ---------- */
-function currentEntry() {
-  const stack = state.tabStacks[state.tab];
-  return stack[stack.length - 1];
-}
-function applyEntryState(entry) {
-  const p = entry.params || {};
-  state.screen = entry.screen;
-  if ("channelId" in p)     state.channelId = p.channelId;
-  if ("threadId" in p)      state.threadId = p.threadId;
-  if ("taskId" in p)        state.taskId = p.taskId;
-  if ("approvalId" in p)    state.approvalId = p.approvalId;
-  if ("artifactId" in p)    state.artifactId = p.artifactId;
-  if ("aiEmployeeId" in p)  state.aiEmployeeId = p.aiEmployeeId;
-  if ("briefTemplate" in p) state.briefTemplate = p.briefTemplate;
-}
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active', 'back-in');
+    });
 
-function navigate(screen, params = {}) {
-  // Pushed views inherit params from previous state.
-  const stack = state.tabStacks[state.tab];
-  stack.push({ screen, params });
-  applyEntryState({ screen, params });
-  state.approvalDecision = null;
-  closeSheet();
-  renderActiveScreen({ animate: true });
-  renderTopbar(state);
-  renderTabbar(state);
-  persist();
-}
+    // Reset any AI simulation state that should replay on re-entry
+    target.querySelectorAll('[data-ai-slot]').forEach(el => {
+      if (el.dataset.aiReset === 'always') {
+        el.dataset.aiState = '';
+        el.innerHTML = '';
+      }
+    });
 
-function replaceCurrent(screen, params = {}) {
-  const stack = state.tabStacks[state.tab];
-  if (stack.length > 0) stack.pop();
-  stack.push({ screen, params });
-  applyEntryState({ screen, params });
-  renderActiveScreen({ animate: true });
-  renderTopbar(state);
-  renderTabbar(state);
-  persist();
-}
+    target.classList.add('active');
+    if (opts.back) target.classList.add('back-in');
+    currentScreen = id;
 
-function back() {
-  const stack = state.tabStacks[state.tab];
-  if (stack.length <= 1) return;
-  stack.pop();
-  const top = stack[stack.length - 1];
-  applyEntryState(top);
-  renderActiveScreen();
-  renderTopbar(state);
-  renderTabbar(state);
-  persist();
-}
+    // A11y: move focus to the topbar title or back button so screen
+    // readers announce the new screen
+    setTimeout(() => {
+      const focusTarget = target.querySelector('.topbar .back-btn, .topbar .title, .launcher-title');
+      if (!focusTarget) return;
+      if (!focusTarget.matches('button, a, input, textarea, select, [tabindex]')) {
+        focusTarget.setAttribute('tabindex', '-1');
+      }
+      focusTarget.focus({ preventScroll: true });
+    }, 300);
 
-function switchTab(tabId) {
-  if (!TAB_ROOTS[tabId]) return;
-  state.tab = tabId;
-  const top = currentEntry();
-  applyEntryState(top);
-  renderActiveScreen();
-  renderTopbar(state);
-  renderTabbar(state);
-  persist();
-}
+    if (!opts.replace && !opts.back) history.push(id);
 
-/* ---------- Screen rendering ---------- */
+    updateTabs(id);
 
-const RENDERERS = {
-  "channel-list":  renderChannelList,
-  "channel-chat":  renderChannelChat,
-  "thread-detail": renderThreadDetail,
-  "ai-launcher":   renderAILauncher,
-  "ai-brief":      renderBrief,
-  "ai-processing": renderProcessing,
-  "ai-output":     renderOutput,
-  "inbox":         renderInbox,
-  "activity":      renderActivity,
-  "me":            renderMe,
-  "tasks":         renderTasks,
-  "task-detail":   renderTaskDetail,
-  "approval-review": renderApprovalReview,
-  "ai-employee":   renderAIEmployee,
-};
+    if (typeof SCREEN_ENTER[id] === 'function') {
+      SCREEN_ENTER[id](target);
+    }
 
-function renderActiveScreen({ animate = false } = {}) {
-  const screens = document.querySelectorAll(".screen");
-  screens.forEach(s => s.classList.remove("active"));
+    const content = target.querySelector('.content');
+    if (content) content.scrollTop = 0;
 
-  const target = document.querySelector(`.screen[data-screen="${state.screen}"]`);
-  if (!target) return;
-  const renderer = RENDERERS[state.screen];
-  if (renderer) renderer(state);
-  target.classList.add("active");
-  if (animate) pushAnim(target);
-}
-
-function refreshAll() {
-  // Re-render the currently active screen and topbar (used after tenant
-  // switches to refresh content scoped by tenant). Reset every tab stack
-  // to its root so stale entries scoped to the previous tenant cannot
-  // resurface when the user switches tabs.
-  for (const tabId of Object.keys(TAB_ROOTS)) {
-    state.tabStacks[tabId] = [{ screen: TAB_ROOTS[tabId], params: {} }];
+    DEMO.onScreen(id);
   }
-  applyEntryState(currentEntry());
-  renderActiveScreen();
-  renderTopbar(state);
-  renderTabbar(state);
-  persist();
-}
+
+  function goBack() {
+    if (history.length <= 1) { showScreen('launcher', { replace: true }); return; }
+    history.pop();
+    const prev = history[history.length - 1] || 'launcher';
+    showScreen(prev, { back: true });
+  }
+
+  // Map B2B screens to one of the 5 B2C tabs:
+  //   chats · notifications · tasks · settings · more
+  function updateTabs(screenId) {
+    const map = {
+      // Message tab (workspace home + channel flows + AI flows + email)
+      home: 'chats',
+      'channel-list':       'chats',
+      'channel-chat':       'chats',
+      'thread-detail':      'chats',
+      'action-launcher':    'chats',
+      'brief-builder':      'chats',
+      'ai-processing':      'chats',
+      'ai-output-review':   'chats',
+      'artifact-workspace': 'chats',
+      'email-detail':       'chats',
+      'long-press-menu':    'chats',
+      'template-gallery':   'chats',
+
+      // Notification tab
+      notifications: 'notifications',
+
+      // Tasks tab (Tasks segment + Approvals segment + details)
+      'task-list':      'tasks',
+      'task-detail':    'tasks',
+      'approval-list':  'tasks',
+      'approval-form':  'tasks',
+      'approval-review':'tasks',
+      'form-view':      'tasks',
+      'base-view':      'tasks',
+      'sheet-view':     'tasks',
+
+      // Settings tab (AI Employees front-and-centre)
+      settings: 'settings',
+      'ai-employee-list':    'settings',
+      'ai-employee-detail':  'settings',
+      'ai-memory':           'settings',
+      'compute-transparency':'settings',
+      'connectors':          'settings',
+
+      // More tab
+      more: 'more',
+      'search':            'more',
+      'metrics-dashboard': 'more',
+      'ai-insights':       'more',
+      'packaging-tiers':   'more',
+      'voice-capture':     'more',
+    };
+
+    const tab = map[screenId];
+    document.querySelectorAll('.tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+
+    // Tab bar visibility — show on primary screens only, hide on deep
+    // flows (same pattern as B2C)
+    const tabbar = document.getElementById('tabbar');
+    if (tabbar) {
+      const showOn = [
+        'home', 'channel-list', 'channel-chat',
+        'notifications',
+        'task-list', 'approval-list',
+        'settings', 'ai-employee-list',
+        'connectors', 'ai-memory', 'compute-transparency',
+        'more', 'search', 'metrics-dashboard', 'ai-insights', 'packaging-tiers',
+      ];
+      tabbar.style.display = showOn.indexOf(screenId) >= 0 ? '' : 'none';
+    }
+  }
+
+  function onTabClick(tab) {
+    switch (tab) {
+      case 'chats':         showScreen('home'); break;
+      case 'notifications': showScreen('notifications'); break;
+      case 'tasks':         showScreen('task-list'); break;
+      case 'settings':      showScreen('settings'); break;
+      case 'more':          showScreen('more'); break;
+    }
+  }
+
+  // ---- Toast ----
+  function toast(msg, ms) {
+    const host = document.getElementById('toast-host');
+    if (!host) return;
+    const t = document.createElement('div');
+    t.className = 'demo-toast';
+    t.innerHTML = `<div class="demo-dot"></div><div>${msg}</div>`;
+    host.appendChild(t);
+    setTimeout(() => { t.remove(); }, ms || 2400);
+  }
+
+  // ---- Privacy strip helper (matches B2C) ----
+  function privacyStrip(variant) {
+    const data = (window.KDATA && window.KDATA.privacyStrips[variant]) || window.KDATA.privacyStrips.local;
+    const icon = data.remote ? '🌐' : '🔒';
+    return `<div class="privacy-strip">
+      <span class="privacy-icon">${icon}</span>
+      <span><strong>${data.label}</strong> <span class="privacy-dot">·</span> Sources: ${data.sources} <span class="privacy-dot">·</span> ${data.note}</span>
+    </div>`;
+  }
+
+  // ---- Tasks/Approvals segmented control ----
+  function wireTasksSegmented() {
+    const seg = document.getElementById('tasks-segmented');
+    if (!seg || seg.dataset.wired) return;
+    seg.dataset.wired = '1';
+    const listView = document.getElementById('tasks-view-list');
+    const apprView = document.getElementById('tasks-view-approvals');
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        seg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const which = btn.dataset.seg;
+        if (!listView || !apprView) return;
+        if (which === 'approvals') { listView.style.display = 'none'; apprView.style.display = ''; }
+        else                         { listView.style.display = '';     apprView.style.display = 'none'; }
+      });
+    });
+  }
+
+  // ---- Long press on AI message in #vendor-management ----
+  function wireLongPresses() {
+    const msg = document.getElementById('msg-m-v-6');
+    if (msg && !msg.dataset.lpWired) {
+      msg.dataset.lpWired = '1';
+      KAI.attachLongPress(msg, () => showScreen('long-press-menu'));
+      if (!msg.hasAttribute('tabindex')) msg.setAttribute('tabindex', '0');
+      if (!msg.hasAttribute('role')) msg.setAttribute('role', 'button');
+      if (!msg.hasAttribute('aria-label')) {
+        msg.setAttribute('aria-label', 'Message from Kara Ops AI. Press Enter for AI actions.');
+      }
+      msg.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showScreen('long-press-menu'); }
+      });
+    }
+  }
+
+  // ---- Theme toggle ----
+  function toggleTheme() {
+    const body = document.body;
+    const current = body.dataset.theme === 'dark' ? 'light' : 'dark';
+    body.dataset.theme = current;
+    localStorage.setItem('kchat-b2b-theme', current);
+    updateThemeButton();
+  }
+  function updateThemeButton() {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = (document.body.dataset.theme === 'dark' ? '☀️ Light' : '🌙 Dark');
+  }
+
+  // ---- Screen enter hooks (AI simulations) ----
+  const SCREEN_ENTER = {
+    'ai-processing'(root) {
+      // Auto-advance to output review after a brief animation
+      const slot = root.querySelector('[data-ai-slot="processing"]');
+      if (!slot || slot.dataset.aiState === 'done') return;
+      const steps = [
+        'Reading #specs thread + research folder…',
+        'Synthesizing exec summary and 6 sections…',
+        'Citing sources and computing per-section confidence…',
+        'Formatting draft for review…',
+      ];
+      const html = `
+        <div class="ai-processing-steps">
+          ${steps.map((s, i) => `<div class="ai-step" data-i="${i}"><span class="ai-step-dot"></span>${s}</div>`).join('')}
+        </div>
+        <div class="privacy-strip"><span class="privacy-icon">🔒</span><span><strong>On-device</strong> <span class="privacy-dot">·</span> Sources stay in workspace</span></div>
+      `;
+      slot.innerHTML = html;
+      slot.dataset.aiState = 'running';
+      const stepEls = slot.querySelectorAll('.ai-step');
+      let i = 0;
+      const tick = () => {
+        if (i < stepEls.length) {
+          stepEls[i].classList.add('active');
+          i++;
+          setTimeout(tick, 700);
+        } else {
+          slot.dataset.aiState = 'done';
+          setTimeout(() => {
+            if (currentScreen === 'ai-processing') showScreen('ai-output-review');
+          }, 600);
+        }
+      };
+      setTimeout(tick, 400);
+    },
+
+    'ai-output-review'(root) {
+      const slot = root.querySelector('[data-ai-slot="ai-output"]');
+      if (!slot || slot.dataset.aiState === 'done') return;
+      const art = window.KDATA.artifact;
+      const sectionsHTML = art.sections.map((s, i) => `
+        <div class="ai-output-section reveal-child">
+          <div class="ai-output-head">
+            <span class="ai-output-num">${i + 1}</span>
+            <strong>${s.h}</strong>
+            <span class="confidence">${s.conf}%</span>
+          </div>
+          <div class="ai-output-body">${s.body}</div>
+          <div class="ai-output-foot">
+            <span class="source-pin">📎 ${s.citations} citations</span>
+            <button class="chip chip-ai" onclick="KApp.toast('Section chat · Kara is listening')"><span class="ai-star">✦</span> Refine</button>
+          </div>
+        </div>`).join('');
+      const finalHTML = `
+        <div class="card card-ai">
+          <div class="card-header">
+            <div class="icon-box">✦</div>
+            <div class="title">${art.title}<div class="text-xs muted-2">by ${art.owner} · ${art.kind} · ${art.confidence}% confidence</div></div>
+          </div>
+          <div class="row gap-4 mt-8"><span class="ai-badge"><span class="ai-star">✦</span> ${art.compute}</span><span class="badge ai">${art.sections.length} sections</span></div>
+        </div>
+        ${sectionsHTML}
+        ${privacyStrip('local')}
+      `;
+      KAI.processInto(slot, finalHTML, 900, 'Kara is finalizing…');
+    },
+
+    'task-detail'(root) {
+      const slot = root.querySelector('[data-ai-slot="task-detail"]');
+      if (!slot || slot.dataset.aiState === 'done') return;
+      const finalHTML = `
+        <div class="task-detail-card reveal-child">
+          <h3>Review NimbusLogix renewal terms</h3>
+          <div class="task-meta"><span>📅 Fri Apr 26 · 5 PM</span><span>💬 #vendor-management</span><span class="ai-chip-label"><span class="ai-star">✦</span> AI-extracted</span></div>
+          <div class="mt-12 text-sm">Kara Ops AI flagged 2 clauses in the NimbusLogix renewal that need legal review before Friday:</div>
+          <ul class="mt-8 text-sm" style="padding-left:18px;">
+            <li>Clause 8.2 — data processing addendum references a superseded DPA version.</li>
+            <li>Clause 12.1 — auto-renewal window shortened from 90 to 30 days.</li>
+          </ul>
+        </div>
+        <div class="card reveal-child">
+          <div class="card-header"><div class="icon-box" style="background:#DBEAFE;color:#1E40AF;">🔗</div><div class="title">Linked objects</div></div>
+          <div class="col gap-8 text-sm">
+            <div class="quick-link" onclick="KApp.show('email-detail')">✉ Orbix remediation v3 email<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('base-view')">🗂 Vendor Register entry<span class="chevron">›</span></div>
+            <div class="quick-link" onclick="KApp.show('thread-detail')">💬 Vendor review thread<span class="chevron">›</span></div>
+          </div>
+        </div>
+        ${privacyStrip('local')}
+        <div class="col gap-8 mt-12">
+          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.toast('Task marked complete'); KApp.show('task-list', { replace: true });">Mark complete</button>
+          <button class="btn btn-outline btn-full" onclick="KApp.toast('Snoozed until Monday')">Snooze to Mon 9 AM</button>
+        </div>
+      `;
+      KAI.processInto(slot, finalHTML, 650, 'Loading task…');
+    },
+
+    'approval-review'(root) {
+      const slot = root.querySelector('[data-ai-slot="approval-review"]');
+      if (!slot || slot.dataset.aiState === 'done') return;
+      const a = window.KDATA.approvals[0]; // ap-orbix
+      const auditHTML = a.audit.map(e => `
+        <div class="audit-row reveal-child">
+          <span class="audit-time">${e.t}</span>
+          <div class="audit-body"><strong>${e.who}</strong><div class="text-xs muted-2">${e.action}</div></div>
+        </div>`).join('');
+      const finalHTML = `
+        <div class="approval-hero reveal-child">
+          <div class="approval-amount">${a.amount}</div>
+          <div class="approval-title">${a.title}</div>
+          <div class="approval-meta">${a.kind}</div>
+          <div class="row gap-4 mt-8" style="justify-content:center;">
+            <span class="badge warn">${a.status}</span>
+            <span class="badge neutral">SLA ${a.slaDue}</span>
+          </div>
+        </div>
+        <div class="card reveal-child">
+          <div class="card-header"><div class="icon-box">👤</div><div class="title">Request<div class="text-xs muted-2">by ${a.requester} · ${a.channel} · ${a.filed}</div></div></div>
+          <div class="card-body text-sm">Two Orbix shipments are blocked on a payment hold from the prior remediation dispute. Releasing this hold lets Logistics resume service by Thursday. Kara flagged an on-device risk review — no PII exposure.</div>
+        </div>
+        <div class="section-title reveal-child">Audit trail</div>
+        <div class="audit-trail">${auditHTML}</div>
+        ${privacyStrip('confidential')}
+        <div class="col gap-8 mt-12">
+          <button id="approve-btn" class="btn btn-primary btn-full btn-lg" onclick="KApp.confirmApprove()">Approve ${a.amount}</button>
+          <button class="btn btn-outline btn-full" onclick="KApp.toast('Sent back with comments')">Request changes</button>
+          <button class="btn btn-ghost btn-full" onclick="KApp.toast('Approval denied'); KApp.show('approval-list', { replace: true });">Deny</button>
+        </div>
+      `;
+      KAI.processInto(slot, finalHTML, 700, 'Loading approval…');
+    },
+
+    'ai-employee-detail'(root) {
+      const slot = root.querySelector('[data-ai-slot="ai-employee-detail"]');
+      if (!slot || slot.dataset.aiState === 'done') return;
+      const kara = window.KDATA.aiEmployees[0];
+      const pct = Math.round((kara.budget.spent / kara.budget.cap) * 100);
+      const queueHTML = kara.queue.map(q => {
+        const dot = q.state === 'running' ? 'running' : q.state === 'blocked' ? 'blocked' : q.state === 'done' ? 'done' : 'queued';
+        return `<div class="queue-row reveal-child">
+          <span class="queue-dot ${dot}"></span>
+          <div class="queue-body">
+            <div class="text-sm"><strong>${q.title}</strong></div>
+            <div class="text-xs muted-2">${q.state}${q.reason ? ' · ' + q.reason : ''} · ${q.ts}</div>
+          </div>
+        </div>`;
+      }).join('');
+      const finalHTML = `
+        <div class="ai-employee-hero reveal-child">
+          <div class="avatar ${kara.color}" style="width:72px;height:72px;font-size:24px;">${kara.avatar}</div>
+          <div>
+            <div class="ai-employee-name">${kara.name}</div>
+            <div class="text-sm muted">${kara.role}</div>
+            <div class="row gap-4 mt-8"><span class="ai-badge"><span class="ai-star">✦</span> ${kara.compute}</span><span class="badge success">Ready</span></div>
+          </div>
+        </div>
+        <div class="section-title reveal-child">Monthly AI budget</div>
+        <div class="budget-card reveal-child">
+          <div class="row" style="justify-content:space-between;"><strong>$${kara.budget.spent.toFixed(2)}</strong><span class="text-xs muted-2">of $${kara.budget.cap.toFixed(0)} · ${pct}%</span></div>
+          <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;"></div></div>
+          <div class="text-xs muted-2 mt-8">Resets Fri May 1 · Admin can raise the cap in Settings → Billing</div>
+        </div>
+        <div class="section-title reveal-child">Allowed channels</div>
+        <div class="chip-row reveal-child">
+          ${kara.channels.map(c => `<span class="chip">#${c}</span>`).join('')}
+          <span class="chip" style="border-style:dashed;">+ Add</span>
+        </div>
+        <div class="section-title reveal-child">Queue</div>
+        <div class="queue-list">${queueHTML}</div>
+        ${privacyStrip('local')}
+        <div class="col gap-8 mt-12">
+          <button class="btn btn-primary btn-full" onclick="KApp.show('channel-chat')">Open Kara's channel</button>
+          <button class="btn btn-outline btn-full" onclick="KApp.toast('Kara paused until you re-enable her')">Pause Kara</button>
+        </div>`;
+      KAI.processInto(slot, finalHTML, 800, 'Loading profile…');
+    },
+
+    notifications(root) {
+      // Nothing to animate — static lists are in the markup.
+      root.querySelectorAll('.reveal-child').forEach((el, i) => {
+        el.classList.add('reveal');
+        el.style.animationDelay = (i * 60) + 'ms';
+      });
+    },
+  };
+
+  // ---- Approval confirm (two-step per mobile UX principles) ----
+  let pendingApprove = false;
+  function confirmApprove() {
+    const btn = document.getElementById('approve-btn');
+    if (!btn) return;
+    if (!pendingApprove) {
+      pendingApprove = true;
+      btn.classList.add('btn-danger');
+      btn.classList.remove('btn-primary');
+      btn.textContent = 'Tap again to confirm · $42,500';
+      setTimeout(() => {
+        pendingApprove = false;
+        if (document.getElementById('approve-btn')) {
+          btn.classList.remove('btn-danger');
+          btn.classList.add('btn-primary');
+          btn.textContent = 'Approve $42,500';
+        }
+      }, 2500);
+      return;
+    }
+    pendingApprove = false;
+    toast('Approved · $42,500 released to Orbix');
+    setTimeout(() => showScreen('notifications', { replace: true }), 800);
+  }
+
+  // ---- Long-press menu actions ----
+  function menuAction(action) {
+    switch (action) {
+      case 'thread':        showScreen('thread-detail'); break;
+      case 'extract-tasks': toast('Kara extracted 5 tasks'); showScreen('task-list'); break;
+      case 'summarize':     toast('Thread summary posted inline'); showScreen('channel-chat', { replace: true }); break;
+      case 'create-task':   showScreen('task-detail'); break;
+      case 'translate':     toast('Translated to English'); showScreen('channel-chat', { replace: true }); break;
+      case 'remind':        toast('Reminder set · Fri 4 PM'); showScreen('channel-chat', { replace: true }); break;
+    }
+  }
+
+  // ---- Action launcher intent handler ----
+  function pickIntent(intent) {
+    if (intent === 'create' || intent === 'plan') { showScreen('brief-builder'); return; }
+    if (intent === 'analyze') { toast('Kara drafting summary of this channel'); showScreen('ai-processing'); return; }
+    if (intent === 'approve') { showScreen('approval-form'); return; }
+    showScreen('brief-builder');
+  }
+
+  // ---- Guided demo runner ----
+  const DEMO = {
+    path: null,
+    idx: 0,
+    start(pathId) {
+      this.path = pathId;
+      this.idx = 0;
+      const steps = window.KDATA.demoSteps[pathId];
+      if (!steps || !steps.length) return;
+      showScreen(steps[0].screen, { replace: true });
+      setTimeout(() => this.renderHint(), 300);
+    },
+    onScreen(screenId) {
+      if (!this.path) return;
+      const steps = window.KDATA.demoSteps[this.path];
+      if (!steps) return;
+      for (let i = this.idx; i < steps.length; i++) {
+        if (steps[i].screen === screenId) { this.idx = i; break; }
+      }
+      this.renderHint();
+    },
+    renderHint() {
+      if (!this.path) return;
+      const steps = window.KDATA.demoSteps[this.path];
+      const step = steps[this.idx];
+      if (!step) { this.end(); return; }
+      this.clearHint();
+      if (step.target) {
+        const el = document.querySelector(step.target);
+        if (el) el.classList.add('demo-pulse');
+      }
+      const host = document.getElementById('toast-host');
+      host.innerHTML = '';
+      const t = document.createElement('div');
+      t.className = 'demo-toast';
+      const remaining = steps.length - this.idx - 1;
+      t.innerHTML = `<div class="demo-dot"></div><div><strong style="color:#A5B4FC;">Demo · step ${this.idx + 1}/${steps.length}</strong><br>${step.hint}</div><button class="btn btn-sm btn-ghost" style="color:white; margin-left:auto;" onclick="KApp.endDemo()">${remaining === 0 ? 'Finish' : 'Skip'}</button>`;
+      host.appendChild(t);
+    },
+    clearHint() {
+      document.querySelectorAll('.demo-pulse').forEach(el => el.classList.remove('demo-pulse'));
+      const host = document.getElementById('toast-host');
+      if (host) host.innerHTML = '';
+    },
+    end() {
+      this.path = null;
+      this.idx = 0;
+      this.clearHint();
+      showScreen('launcher', { replace: true });
+    },
+  };
+
+  // ---- Public API ----
+  window.KApp = {
+    show: showScreen,
+    back: goBack,
+    toast: toast,
+    onTabClick,
+    menuAction,
+    pickIntent,
+    confirmApprove,
+    toggleTheme,
+    privacyStrip,
+    wireLongPresses,
+    startDemo: (p) => DEMO.start(p),
+    endDemo: () => DEMO.end(),
+  };
+
+  // ---- Init ----
+  function init() {
+    const saved = localStorage.getItem('kchat-b2b-theme');
+    if (saved) document.body.dataset.theme = saved;
+    updateThemeButton();
+    updateClock();
+    wireLongPresses();
+    wireTasksSegmented();
+
+    const hash = window.location.hash.replace(/^#/, '');
+    if (hash && document.getElementById('screen-' + hash)) {
+      showScreen(hash, { replace: true });
+    } else {
+      showScreen('launcher', { replace: true });
+    }
+
+    window.addEventListener('hashchange', () => {
+      const h = window.location.hash.replace(/^#/, '');
+      if (h && document.getElementById('screen-' + h)) showScreen(h, { replace: true });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
