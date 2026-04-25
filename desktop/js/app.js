@@ -18,6 +18,7 @@ import { renderKnowledge } from "./knowledge.js";
 import { renderConnectors } from "./connectors.js";
 import { renderNotifications } from "./notifications.js";
 import { renderEmailPanel, renderCalendarPanel, renderDrivePanel, renderBusinessPanel } from "./integrations.js";
+import { renderMailApp, renderCalendarApp, renderDriveApp } from "./workspace-apps.js";
 import { showToast } from "./transitions.js";
 import { startOnboarding } from "./onboarding.js";
 
@@ -224,6 +225,18 @@ function renderTopbar(screenId) {
     title = "Connectors";
     sub = "Company & personal";
   }
+  if (screenId === "mail-app") {
+    title = "Email";
+    sub = "All channels · KMail";
+  }
+  if (screenId === "calendar-app") {
+    title = "Calendar";
+    sub = "All channels · KMail Calendar";
+  }
+  if (screenId === "drive-app") {
+    title = "Drive";
+    sub = "All channels · ZK Drive";
+  }
 
   const unread = D.unreadNotificationCount();
   const unreadBadge = unread > 0 ? `<span class="topbar-unread">${unread}</span>` : "";
@@ -304,6 +317,9 @@ function renderScreen(id) {
     case "notifications":     renderNotifications(); break;
     case "channel-knowledge": renderKnowledge(state.channelId || "c-vendor"); break;
     case "connectors":        renderConnectors(); break;
+    case "mail-app":          renderMailApp(); break;
+    case "calendar-app":      renderCalendarApp(); break;
+    case "drive-app":         renderDriveApp(); break;
   }
 }
 

@@ -192,6 +192,15 @@ export function renderSidebar(state) {
         <div class="sb-inbox${state.screen === "notifications" ? " active" : ""}" data-nav="inbox" role="button" aria-label="Open inbox">
           <span class="ib-icon">${iconSvg("inbox", 14)}</span>Inbox${inboxBadge}
         </div>
+        <div class="sb-item${state.screen === "mail-app" ? " active" : ""}" data-nav="mail-app">
+          ${iconSvg("mail", 14)} Email
+        </div>
+        <div class="sb-item${state.screen === "calendar-app" ? " active" : ""}" data-nav="calendar-app">
+          ${iconSvg("calendar", 14)} Calendar
+        </div>
+        <div class="sb-item${state.screen === "drive-app" ? " active" : ""}" data-nav="drive-app">
+          ${iconSvg("folder", 14)} Drive
+        </div>
         <div class="sb-item" data-nav="my-work">
           ${iconSvg("briefcase", 14)} My Work
         </div>
@@ -239,6 +248,9 @@ function wireSidebarEvents() {
       switch (kind) {
         case "home":     window.app.navigateTo("workspace-home"); break;
         case "inbox":    window.app.navigateTo("notifications"); break;
+        case "mail-app": window.app.navigateTo("mail-app"); break;
+        case "calendar-app": window.app.navigateTo("calendar-app"); break;
+        case "drive-app": window.app.navigateTo("drive-app"); break;
         case "connectors": window.app.navigateTo("connectors"); break;
         case "my-work":  window.app.navigateTo("workspace-home", { workTab: "tasks" }); break;
         case "templates":window.app.navigateTo("template-gallery"); break;
