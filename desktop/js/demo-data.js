@@ -15,6 +15,8 @@ export const users = [
   { id: "u-sofia", name: "Sofia Reyes",  role: "Compliance",      initials: "SR", color: "#f59e0b" },
   { id: "u-tom",   name: "Tom Becker",   role: "Sales Director",  initials: "TB", color: "#0ea5e9" },
   { id: "u-ana",   name: "Ana Wu",       role: "Product Manager", initials: "AW", color: "#a855f7" },
+  { id: "u-lisa",  name: "Lisa Chen",    role: "HR Manager",      initials: "LC", color: "#d946ef" },
+  { id: "u-raj",   name: "Raj Mehta",    role: "Finance Lead",    initials: "RM", color: "#14b8a6" },
   // `u-system` is used for system-generated chat notices (e.g. "Email received
   // from …"). Rendered as a subtle grey message without an AI pill.
   { id: "u-system", name: "KChat", role: "System", initials: "·", color: "#8a93a6", isSystem: true },
@@ -30,7 +32,7 @@ export const aiEmployees = [
     role: "Ops Coordinator",
     initials: "KA",
     color: "#8b5cf6",
-    allowedChannels: ["c-vendor", "c-logistics"],
+    allowedChannels: ["c-vendor", "c-logistics", "c-procurement"],
     status: "Drafting weekly vendor risk summary",
     concurrency: 2,
     enabled: true,
@@ -57,7 +59,7 @@ export const aiEmployees = [
     role: "Sales Assist",
     initials: "MI",
     color: "#10b981",
-    allowedChannels: ["c-pipeline", "c-deals"],
+    allowedChannels: ["c-pipeline", "c-deals", "c-shieldnet"],
     status: "Cooling down — budget cap",
     concurrency: 2,
     enabled: true,
@@ -103,6 +105,53 @@ export const aiEmployees = [
       { id: "t-nina-2", title: "Compare competitor feature set", status: "queued",  lastUpdated: "10m",      recipe: "compare",   sources: ["drive:/research"] },
     ],
   },
+  {
+    id: "ai-hana",
+    name: "Hana HR AI",
+    role: "HR Assistant",
+    initials: "HA",
+    color: "#d946ef",
+    allowedChannels: ["c-hr-people", "c-procurement"],
+    status: "Monitoring leave requests",
+    concurrency: 1,
+    enabled: true,
+    budget: {
+      monthlyCap: 150.0,
+      spentThisPeriod: 42.8,
+      cooldown: { state: "ready", nextAvailable: null, reason: null },
+      recentRuns: [
+        { recipe: "leave-check", cost: 0.12, at: "5m ago" },
+      ],
+    },
+    queue: [
+      { id: "t-hana-1", title: "Process Sofia's leave request",       status: "done",    lastUpdated: "5m ago", recipe: "leave-check",      sources: ["#hr-people"] },
+      { id: "t-hana-2", title: "Onboarding equipment requisition",    status: "running", lastUpdated: "2m ago", recipe: "procurement-req",  sources: ["#hr-people", "#procurement"] },
+    ],
+  },
+  {
+    id: "ai-finn",
+    name: "Finn Finance AI",
+    role: "Finance Analyst",
+    initials: "FI",
+    color: "#14b8a6",
+    allowedChannels: ["c-finance", "c-procurement"],
+    status: "Reconciling Q2 budget",
+    concurrency: 2,
+    enabled: true,
+    budget: {
+      monthlyCap: 200.0,
+      spentThisPeriod: 88.5,
+      cooldown: { state: "ready", nextAvailable: null, reason: null },
+      recentRuns: [
+        { recipe: "budget-analysis", cost: 0.65, at: "10m ago" },
+        { recipe: "bill-match",      cost: 0.22, at: "30m ago" },
+      ],
+    },
+    queue: [
+      { id: "t-finn-1", title: "Q2 Ops budget analysis",          status: "done", lastUpdated: "10m ago", recipe: "budget-analysis", sources: ["#finance", "ledger"] },
+      { id: "t-finn-2", title: "Match TechDirect invoice to PO",  status: "done", lastUpdated: "30m ago", recipe: "bill-match",      sources: ["#finance", "AP subledger"] },
+    ],
+  },
 ];
 
 /* ---------------- Tenants / Communities ---------------- */
@@ -118,9 +167,9 @@ export const tenants = [
     color: "#6366f1",
     gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     description: "KChat Business · 248 members",
-    domainIds: ["d-ops", "d-sales", "d-product"],
+    domainIds: ["d-ops", "d-sales", "d-product", "d-people", "d-finance"],
     dmIds: ["dm-mira", "dm-tom", "dm-ana"],
-    aiEmployeeIds: ["ai-kara", "ai-mika", "ai-nina"],
+    aiEmployeeIds: ["ai-kara", "ai-mika", "ai-nina", "ai-hana", "ai-finn"],
     primary: true,
   },
   {
@@ -149,11 +198,13 @@ export const tenants = [
 
 /* ---------------- Domains / Channels / DMs ---------------- */
 export const domains = [
-  { id: "d-ops",     tenantId: "t-acme",   name: "Operations", icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
-  { id: "d-sales",   tenantId: "t-acme",   name: "Sales",      icon: "sales",   channels: ["c-pipeline", "c-deals"],                    knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
-  { id: "d-product", tenantId: "t-acme",   name: "Product",    icon: "product", channels: ["c-roadmap", "c-specs"],                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
-  { id: "d-gx",      tenantId: "t-globex", name: "Account",    icon: "sales",   channels: ["c-gx-general", "c-gx-qbrs"],                knowledge: { policies: 0, templates: 1, summary: "Joint account workspace"           } },
-  { id: "d-labs",    tenantId: "t-labs",   name: "Research",   icon: "product", channels: ["c-labs-general"],                           knowledge: { policies: 0, templates: 0, summary: "R&D lab"                          } },
+  { id: "d-ops",     tenantId: "t-acme",   name: "Operations",       icon: "ops",     channels: ["c-vendor", "c-logistics", "c-compliance", "c-procurement"], knowledge: { policies: 3, templates: 2, summary: "3 shared policies, 2 SOP templates" } },
+  { id: "d-sales",   tenantId: "t-acme",   name: "Sales",            icon: "sales",   channels: ["c-pipeline", "c-deals", "c-shieldnet"],                     knowledge: { policies: 1, templates: 3, summary: "1 policy, 3 deal templates"      } },
+  { id: "d-product", tenantId: "t-acme",   name: "Product",          icon: "product", channels: ["c-roadmap", "c-specs"],                                     knowledge: { policies: 2, templates: 4, summary: "2 policies, 4 PRD templates"    } },
+  { id: "d-people",  tenantId: "t-acme",   name: "People & Culture", icon: "ops",     channels: ["c-hr-people"],                                              knowledge: { policies: 2, templates: 1, summary: "2 HR policies, 1 onboarding template" } },
+  { id: "d-finance", tenantId: "t-acme",   name: "Finance",          icon: "sales",   channels: ["c-finance"],                                                knowledge: { policies: 3, templates: 2, summary: "3 finance policies, 2 report templates" } },
+  { id: "d-gx",      tenantId: "t-globex", name: "Account",          icon: "sales",   channels: ["c-gx-general", "c-gx-qbrs"],                                knowledge: { policies: 0, templates: 1, summary: "Joint account workspace"           } },
+  { id: "d-labs",    tenantId: "t-labs",   name: "Research",         icon: "product", channels: ["c-labs-general"],                                           knowledge: { policies: 0, templates: 0, summary: "R&D lab"                          } },
 ];
 
 export const channels = {
@@ -167,6 +218,10 @@ export const channels = {
   "c-gx-general":  { id: "c-gx-general",  tenantId: "t-globex", domainId: "d-gx",      name: "general",            description: "Joint working channel",            members: 12, knowledgeRebuilt: "1d ago",  knowledgeEntityCount:  4 },
   "c-gx-qbrs":     { id: "c-gx-qbrs",     tenantId: "t-globex", domainId: "d-gx",      name: "qbrs",               description: "Quarterly business reviews",       members:  8, knowledgeRebuilt: "2d ago",  knowledgeEntityCount:  6 },
   "c-labs-general":{ id: "c-labs-general",tenantId: "t-labs",   domainId: "d-labs",    name: "general",            description: "Lab announcements",                members: 18, knowledgeRebuilt: "1w ago", knowledgeEntityCount:  2 },
+  "c-hr-people":   { id: "c-hr-people",   tenantId: "t-acme",   domainId: "d-people",  name: "hr-people",          description: "Leave, onboarding, HR requests",   members: 18, knowledgeRebuilt: "30m ago", knowledgeEntityCount: 12 },
+  "c-procurement": { id: "c-procurement", tenantId: "t-acme",   domainId: "d-ops",     name: "procurement",        description: "Purchase requests, POs, suppliers",members:  8, knowledgeRebuilt: "1h ago",  knowledgeEntityCount:  9 },
+  "c-finance":     { id: "c-finance",     tenantId: "t-acme",   domainId: "d-finance", name: "finance",            description: "Budget, invoices, ledger",         members:  6, knowledgeRebuilt: "20m ago", knowledgeEntityCount: 15 },
+  "c-shieldnet":   { id: "c-shieldnet",   tenantId: "t-acme",   domainId: "d-sales",   name: "shieldnet-360",      description: "ShieldNet 360 deal room",          members:  5, knowledgeRebuilt: "15m ago", knowledgeEntityCount:  8 },
 };
 
 export const directMessages = [
@@ -217,6 +272,58 @@ export const messages = {
   "c-specs": [
     { id: "m-s-1", senderId: "u-ana",  ts: "14:30", text: "Kicking off PRD for Vendor Portal v2. Thread below with scope notes." },
     { id: "m-s-2", senderId: "ai-nina", isAI: true, ts: "14:33", text: "Drafting from the linked thread + research folder.", card: { type: "artifact", refId: "a-prd-vendor-portal" } },
+  ],
+
+  /* Flow 1 — HR leave + onboarding requisition */
+  "c-hr-people": [
+    { id: "m-hr-1",  senderId: "u-sofia", ts: "10:05", text: "I need to take 3 days off next week (Mon–Wed) for a family event. Can someone check my balance?" },
+    { id: "m-hr-2",  senderId: "ai-hana", isAI: true, ts: "10:06", text: "Checking your leave balance now, Sofia.", card: { type: "leave-balance", refId: "lb-sofia" } },
+    { id: "m-hr-3",  senderId: "u-sofia", ts: "10:07", text: "Great — please file the request for Mon–Wed." },
+    { id: "m-hr-4",  senderId: "ai-hana", isAI: true, ts: "10:08", text: "Leave request filed. Routing to Ken for approval.", card: { type: "leave-request", refId: "lr-sofia-1" } },
+    { id: "m-hr-5",  senderId: "u-ken",   ts: "10:15", text: "Reviewed — no team conflicts. Approved." },
+    { id: "m-hr-6",  senderId: "ai-hana", isAI: true, ts: "10:16", text: "Leave approved. Calendar blocked Mon–Wed. Balance updated: Annual leave 12 → 9 days.", card: { type: "leave-request", refId: "lr-sofia-1" } },
+    { id: "m-hr-7",  senderId: "u-mira",  ts: "10:30", text: "We have 3 new hires starting May 5. They'll need laptops and monitors for onboarding." },
+    { id: "m-hr-8",  senderId: "ai-hana", isAI: true, ts: "10:31", text: "I see 3 pending onboarding records. I can generate a procurement request for standard dev equipment (3× laptop + 3× monitor = $6,750). Shall I?", cardType: "ai-suggest" },
+    { id: "m-hr-9",  senderId: "u-mira",  ts: "10:32", text: "Yes — standard dev setup. Route it to #procurement." },
+    { id: "m-hr-10", senderId: "ai-hana", isAI: true, ts: "10:33", text: "Purchase requisition filed and cross-posted to #procurement.", card: { type: "purchase-req", refId: "pr-onboard-equip" } },
+  ],
+
+  /* Flow 2 — Smart procurement */
+  "c-procurement": [
+    { id: "m-proc-1", senderId: "ai-hana", isAI: true, ts: "10:33", text: "HR onboarding triggered: 3× Dev Laptop ($1,800 ea) + 3× Monitor ($450 ea). Total: $6,750. Purchase requisition filed.", card: { type: "purchase-req", refId: "pr-onboard-equip" } },
+    { id: "m-proc-2", senderId: "ai-kara", isAI: true, ts: "10:34", text: "Budget check: IT Equipment has $18,200 remaining in Q2. This PR uses 37% of remaining budget. Within policy threshold.", card: { type: "budget-check", refId: "bc-it-equip" } },
+    { id: "m-proc-3", senderId: "u-ken",   ts: "10:38", text: "Looks good. Generate the PO — route to TechDirect." },
+    { id: "m-proc-4", senderId: "ai-kara", isAI: true, ts: "10:39", text: "PO generated and sent to TechDirect.", card: { type: "purchase-order", refId: "po-2026-0047" } },
+    { id: "m-proc-5", senderId: "u-ken",   ts: "10:42", text: "Approved. Track delivery and update when goods arrive." },
+    { id: "m-proc-6", senderId: "ai-kara", isAI: true, ts: "10:43", text: "PO confirmed. Expected delivery: Apr 30. I'll notify #finance when the invoice arrives and match it against this PO." },
+  ],
+
+  /* Flow 3 — Budget + PR/PO close-out */
+  "c-finance": [
+    { id: "m-fin-1", senderId: "u-ken",   ts: "11:00", text: "Finn, pull the Q2 budget status for Operations." },
+    { id: "m-fin-2", senderId: "ai-finn", isAI: true, ts: "11:01", text: "Here's the Q2 Ops budget summary. 1 line flagged over 5% threshold.", card: { type: "budget-summary", refId: "bs-q2-ops" } },
+    { id: "m-fin-3", senderId: "u-ken",   ts: "11:03", text: "The Logistics line is 5.3% over — what's driving it?" },
+    { id: "m-fin-4", senderId: "ai-finn", isAI: true, ts: "11:04", text: "Logistics overspend driven by 2 factors: (1) FleetOne emergency carrier diversion +$4,200, (2) NSK backlog surcharge +$2,500. Both traced to the carrier capacity issue in #logistics on Apr 8.", card: { type: "ai-insight", refId: "ins-logistics-over" } },
+    { id: "m-fin-5", senderId: "u-dan",   ts: "11:20", text: "TechDirect invoice just arrived for the laptop PO — $6,750.", attachments: [{ name: "INV-TD-8842.pdf", size: "340 KB" }] },
+    { id: "m-fin-6", senderId: "ai-finn", isAI: true, ts: "11:21", text: "Matching against PO-2026-0047. All items and amounts match.", card: { type: "bill-match", refId: "bm-techdirect" } },
+    { id: "m-fin-7", senderId: "u-ken",   ts: "11:22", text: "Post it." },
+    { id: "m-fin-8", senderId: "ai-finn", isAI: true, ts: "11:23", text: "Posted. Journal entry JE-2026-0412 created. AP subledger updated. IT Equipment budget: $18,200 → $11,450 remaining.", card: { type: "journal-entry", refId: "je-2026-0412" } },
+  ],
+
+  /* Flow 4 — CRM pipeline (ShieldNet 360) */
+  "c-shieldnet": [
+    { id: "m-sn-1",  senderId: "u-tom",   ts: "14:00", text: "Just got off a call with ShieldNet's CISO. They're interested in our 360 platform — 200 seats, enterprise tier." },
+    { id: "m-sn-2",  senderId: "ai-mika", isAI: true, ts: "14:01", text: "I can create a deal from this thread. Detected: ShieldNet Inc, 200 seats × $180/seat/yr = $36,000 ARR, contact: CISO. Shall I file it?", cardType: "ai-suggest" },
+    { id: "m-sn-3",  senderId: "u-tom",   ts: "14:02", text: "Yes — set close date to end of Q2." },
+    { id: "m-sn-4",  senderId: "ai-mika", isAI: true, ts: "14:03", text: "Deal created.", card: { type: "deal", refId: "deal-shieldnet-360" } },
+    { id: "m-sn-5",  senderId: "u-tom",   ts: "14:30", text: "ShieldNet wants a formal proposal with volume discount." },
+    { id: "m-sn-6",  senderId: "ai-mika", isAI: true, ts: "14:31", text: "Generating a quote from the enterprise price list. 10% volume discount applied.", card: { type: "quote", refId: "q-shieldnet-1" } },
+    { id: "m-sn-7",  senderId: "u-tom",   ts: "14:35", text: "Advance to proposal stage." },
+    { id: "m-sn-8",  senderId: "ai-mika", isAI: true, ts: "14:36", text: "Deal advanced to Proposal. Follow-up activity scheduled for Thursday. Call logged.", card: { type: "deal", refId: "deal-shieldnet-360" } },
+    { id: "m-sn-9",  senderId: "u-tom",   ts: "15:00", text: "ShieldNet accepted. They want to negotiate payment terms — Net-30 vs Net-45." },
+    { id: "m-sn-10", senderId: "ai-mika", isAI: true, ts: "15:01", text: "Advancing to Negotiation. Risk assessment: Low — ShieldNet has strong credit, no outstanding AR. Recommend Net-30.", card: { type: "deal", refId: "deal-shieldnet-360" } },
+    { id: "m-sn-11", senderId: "u-tom",   ts: "16:00", text: "Deal closed! ShieldNet signed on Net-30 terms." },
+    { id: "m-sn-12", senderId: "ai-mika", isAI: true, ts: "16:01", text: "Congratulations! Marked as Won. Deal moved to Closed-Won at $36,000 ARR. Activity logged, contract workflow kicked off, and #finance notified to schedule the first invoice.", card: { type: "deal", refId: "deal-shieldnet-360" } },
   ],
 };
 
@@ -405,6 +512,209 @@ export const artifacts = {
       { heading: "Success Metrics",   body: "Onboarding time reduced 60%; evidence completeness > 95%; admin NPS > 40.", confidence: "high" },
       { heading: "Open Questions",    body: "SSO provider list; tenant-level data residency; scoring model ownership.", confidence: "review" },
     ],
+  },
+};
+
+/* ---------------- Business-suite reference data (HR / Procurement / Finance / CRM) ---------------- */
+// Backs the new inline cards shown in the HR, procurement, finance, and
+// ShieldNet sales channels. Keyed by refId used inside each message's
+// `card.refId`. Lookup helpers are exported at the bottom of this file.
+
+export const leaveBalances = {
+  "lb-sofia": {
+    id: "lb-sofia",
+    employeeId: "u-sofia",
+    asOf: "Today",
+    lines: [
+      { type: "Annual leave",   accrued: 15, used: 3, remaining: 12 },
+      { type: "Sick leave",     accrued: 10, used: 2, remaining: 8  },
+      { type: "Personal days",  accrued: 3,  used: 0, remaining: 3  },
+    ],
+  },
+};
+
+export const leaveRequests = {
+  "lr-sofia-1": {
+    id: "lr-sofia-1",
+    employeeId: "u-sofia",
+    type: "Annual leave",
+    startDate: "Mon Apr 27",
+    endDate: "Wed Apr 29",
+    days: 3,
+    reason: "Family event",
+    status: "approved",
+    approverId: "u-ken",
+    submittedAt: "10:08",
+    decidedAt: "10:16",
+    balanceBefore: 12,
+    balanceAfter: 9,
+    calendarBlocked: true,
+  },
+};
+
+export const purchaseReqs = {
+  "pr-onboard-equip": {
+    id: "pr-onboard-equip",
+    number: "PR-2026-0112",
+    title: "Onboarding equipment — 3 new hires (May 5)",
+    requestorId: "u-mira",
+    submittedAt: "10:33",
+    items: [
+      { name: "Dev Laptop (std config)",  qty: 3, unitPrice: 1800, total: 5400 },
+      { name: "External Monitor 27\"",    qty: 3, unitPrice: 450,  total: 1350 },
+    ],
+    subtotal: 6750,
+    currency: "USD",
+    costCenter: "IT Equipment",
+    status: "Approved",
+    linkedChannelId: "c-procurement",
+    linkedPOId: "po-2026-0047",
+    sourceChannelId: "c-hr-people",
+  },
+};
+
+export const purchaseOrders = {
+  "po-2026-0047": {
+    id: "po-2026-0047",
+    number: "PO-2026-0047",
+    supplier: "TechDirect Inc",
+    supplierEmail: "orders@techdirect.com",
+    items: [
+      { name: "Dev Laptop (std config)",  qty: 3, unitPrice: 1800, total: 5400 },
+      { name: "External Monitor 27\"",    qty: 3, unitPrice: 450,  total: 1350 },
+    ],
+    total: 6750,
+    currency: "USD",
+    issuedAt: "10:39",
+    expectedDelivery: "Apr 30",
+    status: "Confirmed",
+    linkedPRId: "pr-onboard-equip",
+  },
+};
+
+export const budgetChecks = {
+  "bc-it-equip": {
+    id: "bc-it-equip",
+    costCenter: "IT Equipment",
+    period: "Q2 FY26",
+    budgeted: 30000,
+    spent: 11800,
+    remaining: 18200,
+    proposedCharge: 6750,
+    remainingAfter: 11450,
+    percentOfRemaining: 37,
+    thresholdPercent: 50,
+    status: "within-policy",
+  },
+};
+
+export const budgetSummaries = {
+  "bs-q2-ops": {
+    id: "bs-q2-ops",
+    title: "Q2 FY26 — Operations",
+    asOf: "Today",
+    thresholdPct: 5.0,
+    lines: [
+      { name: "Vendor spend",      budget: 190000, actual: 188600, variancePct: -0.7, flag: null   },
+      { name: "Logistics",         budget: 102000, actual: 107406, variancePct:  5.3, flag: "over" },
+      { name: "Compliance tools",  budget:  22500, actual:  22600, variancePct:  0.4, flag: null   },
+      { name: "AI compute",        budget:  18000, actual:  17200, variancePct: -4.4, flag: null   },
+      { name: "IT Equipment",      budget:  30000, actual:  11800, variancePct: -60.7, flag: null  },
+      { name: "Software licenses", budget:  35000, actual:  35900, variancePct:  2.6, flag: null   },
+      { name: "Contractors",       budget:  50000, actual:  52400, variancePct:  4.8, flag: null   },
+      { name: "Training",          budget:  10000, actual:   7800, variancePct: -22.0, flag: null  },
+    ],
+  },
+};
+
+export const aiInsights = {
+  "ins-logistics-over": {
+    id: "ins-logistics-over",
+    title: "Logistics overspend — driver analysis",
+    topic: "Q2 Logistics variance",
+    bullets: [
+      { label: "FleetOne emergency carrier diversion", amount: "+$4,200" },
+      { label: "NSK backlog surcharge",                amount: "+$2,500" },
+    ],
+    totalVariance: "+$6,700 (5.3%)",
+    tracedTo: { thread: "Carrier capacity — 3-day NSK backlog", channel: "#logistics", date: "Apr 8" },
+    recommendation: "Pre-commit FleetOne priority SLA for May to avoid repeat.",
+    confidence: "high",
+  },
+};
+
+export const billMatches = {
+  "bm-techdirect": {
+    id: "bm-techdirect",
+    invoice: { number: "INV-TD-8842", supplier: "TechDirect Inc", amount: 6750, date: "Today" },
+    poId: "po-2026-0047",
+    lineChecks: [
+      { name: "Dev Laptop (std config)", poQty: 3, invQty: 3, poUnit: 1800, invUnit: 1800, match: true },
+      { name: "External Monitor 27\"",   poQty: 3, invQty: 3, poUnit:  450, invUnit:  450, match: true },
+    ],
+    totalsMatch: true,
+    exceptions: [],
+    status: "ready-to-post",
+  },
+};
+
+export const journalEntries = {
+  "je-2026-0412": {
+    id: "je-2026-0412",
+    number: "JE-2026-0412",
+    postedAt: "11:23",
+    description: "TechDirect laptop + monitor — PO-2026-0047 invoice",
+    lines: [
+      { account: "6200 — IT Equipment (expense)",      debit: 6750, credit: 0    },
+      { account: "2010 — Accounts Payable · TechDirect", debit: 0,    credit: 6750 },
+    ],
+    total: 6750,
+    relatedPOId: "po-2026-0047",
+    postedById: "u-ken",
+  },
+};
+
+export const deals = {
+  "deal-shieldnet-360": {
+    id: "deal-shieldnet-360",
+    name: "ShieldNet — 360 Platform",
+    account: "ShieldNet Inc",
+    contactRole: "CISO",
+    seats: 200,
+    pricePerSeat: 180,
+    term: "Annual",
+    arr: 36000,
+    currency: "USD",
+    stage: "Closed Won",
+    closeDate: "End of Q2",
+    ownerId: "u-tom",
+    risk: "Low",
+    terms: "Net-30",
+    stageHistory: [
+      { stage: "Qualified",   at: "14:03" },
+      { stage: "Proposal",    at: "14:36" },
+      { stage: "Negotiation", at: "15:01" },
+      { stage: "Closed Won",  at: "16:01" },
+    ],
+  },
+};
+
+export const quotes = {
+  "q-shieldnet-1": {
+    id: "q-shieldnet-1",
+    number: "Q-2026-0118",
+    dealId: "deal-shieldnet-360",
+    items: [
+      { name: "ShieldNet 360 — Enterprise tier", qty: 200, unit: 180, subtotal: 36000 },
+    ],
+    subtotal: 36000,
+    discountPct: 10,
+    discount: 3600,
+    total: 32400,
+    currency: "USD",
+    terms: "Net-30 (proposed)",
+    validUntil: "End of Q2",
+    status: "Sent",
   },
 };
 
@@ -1222,6 +1532,16 @@ export function threadById(id)    { return threads[id] || null; }
 export function templateById(id)  { return templates[id] || null; }
 export function knowledgeForChannel(channelId) { return knowledge[channelId] || null; }
 export function unreadNotificationCount()      { return notifications.filter(n => n.unread).length; }
+export function leaveBalanceById(id)  { return leaveBalances[id]  || null; }
+export function leaveRequestById(id)  { return leaveRequests[id]  || null; }
+export function purchaseReqById(id)   { return purchaseReqs[id]   || null; }
+export function purchaseOrderById(id) { return purchaseOrders[id] || null; }
+export function budgetCheckById(id)   { return budgetChecks[id]   || null; }
+export function budgetSummaryById(id) { return budgetSummaries[id]|| null; }
+export function aiInsightById(id)     { return aiInsights[id]     || null; }
+export function billMatchById(id)     { return billMatches[id]    || null; }
+export function journalEntryById(id)  { return journalEntries[id] || null; }
+export function quoteById(id)         { return quotes[id]         || null; }
 
 /* ---- Integrated workspace helpers (v0.5) ---- */
 export function emailById(id)                { return emailThreads[id] || null; }
@@ -1240,8 +1560,11 @@ export function businessRecordsForChannel(channelId) {
     alerts:    businessRecords.inventory.filter(r => r.channelId === channelId),
   };
 }
+/* Deal lookup checks the rich `deals` map (used by CRM deal cards in
+   #shieldnet-360) first, then falls back to the v0.5 business-records
+   summary list (used by the right-panel business view). */
 export function dealById(id) {
-  return businessRecords.crm.find(d => d.id === id) || null;
+  return deals[id] || businessRecords.crm.find(d => d.id === id) || null;
 }
 /* Combined inbox count: unread chat notifications already drives the
    sidebar badge; email notifications are in the same `notifications`
