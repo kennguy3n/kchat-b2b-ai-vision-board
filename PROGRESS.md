@@ -7,6 +7,116 @@ changes.
 
 ---
 
+## Mobile — Channel List KChat-fidelity pass (v0.8)
+
+**Goal:** Make the mobile channel-list screen (the first real screen a
+demo viewer lands on after the launcher) actually look like a KChat /
+Slack-style messaging app — a **horizontal community/tenant strip at
+the top**, **rich channel rows** with group avatars + last-message
+previews + relative timestamps + unread badges, a **pinned
+"Announcement"** section, and a **"Joined groups (N)"** header above
+the domain groups. The topbar now names the active community instead
+of saying "Channels".
+
+### Why
+
+Before v0.8 the channel list was static HTML: every row was a flat
+`# logistics · 9 members · AI: Kara` line. There was no community
+switcher on the channel list itself (only on `home`), no last-message
+preview, no timestamps, and the # hash had no color. That undersells
+the KChat UX — real chat apps are dominated by the community strip
+and the rich preview rows, not a member count.
+
+### Changes
+
+- [x] **Channel list is now JS-rendered** — `mobile/index.html`'s
+      `screen-channel-list` is a thin shell with
+      `[data-community-strip]`, `[data-channel-list-body]`, and
+      topbar placeholders; `SCREEN_ENTER['channel-list']` in
+      `mobile/js/app.js` calls `renderChannelList(root)`.
+- [x] **Community strip** (`.community-strip`, `.community-icon`) —
+      horizontal scroll of tenant icons above the list. Leading
+      chat-bubble represents the current messages view; each tenant
+      (Acme / Globex / Labs) is a circular avatar with a primary-color
+      ring when active; trailing "+" opens a join-community flow.
+      Tenant switching is persisted in `localStorage` under
+      `kchat-b2b-tenant`.
+- [x] **Rich channel rows** (`.channel-row-rich`) — 40px circular
+      group avatar (first-letter of the channel, colored via the
+      existing `.avatar.aN` tokens) replaces the flat `#` hash; a
+      two-row info column shows **name · relative time** on top and
+      **last-message preview · unread badge** on the bottom. Pinned
+      announcement rows use their configured emoji and a
+      primary-50 gradient background.
+- [x] **Pinned "Announcement" section** — rendered above "Joined
+      groups" when any channel has `pinned: true`. Seeded the Acme
+      tenant with a `c-announce` channel so the section ships
+      populated out of the gate.
+- [x] **"Joined groups (N)"** section title — counts non-pinned
+      channels in the active tenant. Existing Ops / Sales / Product /
+      People / Finance domain sub-groups remain under this header so
+      the B2B categorization is preserved.
+- [x] **Tenant-aware topbar** — title shows the active tenant name
+      (Acme Corp / Globex Partners / Acme Labs), subtitle shows
+      `General · N members` (matching the KChat reference
+      screenshot pattern). Re-renders on tenant switch without a
+      screen transition.
+- [x] **Tenant-scoped channel data** — `mobile/js/data.js` channels
+      are now tagged with `tenantId` (`t-acme`, `t-globex`, `t-labs`)
+      and each tenant carries a `members` count. Added 3 Globex
+      channels (partner-network / joint-deals / partner-support) and
+      2 Labs channels (research / builds) so switching tenants
+      actually changes the list instead of only recoloring a ring.
+- [x] **`relativeTime(c)` helper** — passes through the existing
+      pre-formatted `time` strings ("09:46", "Yesterday", "Mar 10")
+      and additionally supports a numeric `ts` (epoch ms) field for
+      future real data — minutes, hours, Yesterday, weekday,
+      Mon/Day.
+- [x] **`lastMessagePreview(c)` helper** — returns `c.last` when
+      present, falling back to `N members` then `No messages yet`
+      so a row is never empty.
+- [x] **CSS additions** in `mobile/css/components.css`:
+      `.community-strip`, `.community-icon(.active|.plus|.active-chat)`,
+      `.community-icon-inner`, `.community-icon-label`,
+      `.channel-section-title`, `.channel-row-rich`
+      (+ `.pinned`), `.channel-avatar`, `.pinned-group`.
+- [x] **Updated `mobile/screenshots/03-channel-list.png`** — captured
+      against the new rendering (community strip, pinned
+      announcement, rich rows, "Joined groups (9)" header).
+- [x] **Doc refresh** — `mobile/README.md` row 3 describes the new
+      screen shape; `mobile/screenshots/README.md` row 03 updated;
+      top-level `README.md` "Progress log" pointer bumped to v0.8.
+
+### Chat-first home (follow-up in the same PR)
+
+- [x] **Message tab lands on `channel-list`**, not `home`. A chat app's
+      home is chat — the Message tab (💬) in the bottom bar now opens
+      the channel list directly.
+- [x] **Launcher CTA** relabeled to **"Open Acme Corp chats →"** and
+      routes to `channel-list`. A secondary **"Workspace dashboard
+      (Core Intents, shortcuts)"** button preserves the old entry
+      point for anyone who wants the Core Intents + Quick Actions
+      surface.
+- [x] **Workspace dashboard reachable from the channel list** — a new
+      **⊞** icon next to the search icon in the channel-list topbar
+      opens the `home` screen on demand. The dashboard (Core Intents
+      tiles, Browse Channels, AI Employees, Templates, Approvals
+      counter, Recent channels) is not lost; it's one tap away.
+- [x] **Demo steps re-pointed** — `demoSteps.vendor-review`,
+      `demoSteps.draft-prd`, and `demoSteps.ai-employee` now start on
+      `channel-list` instead of `home`, matching the new landing.
+
+### Segments that benefit most
+
+- **Operations / Sales (Kara, Mika, Sofia, Dan)** — the vendor-review
+  demo path opens straight into the channel list, so the
+  KChat-fidelity upgrade is the first thing a demo audience sees.
+- **Platform / IT buyers** — the explicit multi-community strip
+  reinforces that KChat is a multi-tenant product (tenant = community)
+  without needing a slide.
+
+---
+
 ## Mobile — B2C-Mirrored Rebuild (v0.7)
 
 **Goal:** Rebuild the mobile click-through so it **mirrors the B2C prototype's

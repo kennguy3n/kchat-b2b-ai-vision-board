@@ -2304,6 +2304,135 @@
 .channel-row .last { font-size: 12px; color: var(--k-text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .channel-row .time { font-size: 11px; color: var(--k-text-3); font-variant-numeric: tabular-nums; }
 
+/* Community/tenant icon strip — horizontal scroll above the channel
+   list, matching the real KChat app. Each icon is a tenant; the
+   leading chat bubble represents the current messages view and the
+   trailing "+" opens a join-community flow. */
+.community-strip {
+  display: flex;
+  gap: 12px;
+  padding: 6px 2px 14px;
+  margin: 0 -4px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--k-border-2);
+}
+.community-strip::-webkit-scrollbar { display: none; }
+.community-icon {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  min-width: 58px;
+}
+.community-icon-inner {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  background: var(--k-primary-50);
+  color: var(--k-primary);
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.community-icon.active .community-icon-inner,
+.community-icon.active-chat .community-icon-inner {
+  border-color: var(--k-primary);
+  box-shadow: 0 0 0 2px var(--k-surface), 0 0 0 4px var(--k-primary);
+}
+.community-icon-label {
+  font-size: 10.5px;
+  color: var(--k-text-3);
+  font-weight: 600;
+  max-width: 58px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.community-icon.active .community-icon-label { color: var(--k-primary); }
+.community-icon.plus .community-icon-inner {
+  background: transparent;
+  border: 2px dashed var(--k-border);
+  color: var(--k-text-3);
+  font-size: 22px;
+  font-weight: 300;
+}
+.community-icon.active-chat { cursor: default; }
+
+/* Channel-list section title (between pinned + Joined groups sections) */
+.channel-section-title {
+  margin: 12px 4px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--k-text-2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Rich channel row — circular avatar on the left, name + time on top
+   right, preview + unread badge on bottom right. Replaces the flat
+   "# hash" row for the KChat-style messaging look. */
+.channel-row-rich {
+  align-items: stretch;
+  gap: 12px;
+  padding: 10px 12px;
+  min-height: 60px;
+}
+.channel-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.channel-row-rich .info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+.channel-row-rich .row-top,
+.channel-row-rich .row-bot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.channel-row-rich .row-top .name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.channel-row-rich .row-top .time {
+  flex-shrink: 0;
+  color: var(--k-text-3);
+}
+.channel-row-rich .row-bot .last {
+  flex: 1;
+  min-width: 0;
+}
+.channel-row-rich .row-bot .tab-badge {
+  flex-shrink: 0;
+}
+
+/* Pinned announcement channel emphasis */
+.pinned-group .domain-header { color: var(--k-primary); }
+.channel-row-rich.pinned {
+  background: linear-gradient(180deg, var(--k-primary-50) 0%, var(--k-surface) 100%);
+  border-color: var(--k-primary-50);
+}
+.channel-row-rich.pinned .name { color: var(--k-text); }
+
 /* Tenant switcher avatars */
 .avatar {
   width: 40px; height: 40px;

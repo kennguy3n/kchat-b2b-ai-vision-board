@@ -73,14 +73,15 @@
           </button>
 
           <div class="launcher-section-title">Or explore freely</div>
-          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.show('home')">Open Acme Corp workspace →</button>
+          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.show('channel-list')">Open Acme Corp chats →</button>
+          <button class="btn btn-ghost btn-full" onclick="KApp.show('home')" style="margin-top:8px;">Workspace dashboard (Core Intents, shortcuts)</button>
           <div class="text-xs muted-2" style="text-align:center; margin-top:12px;">
             Community is a tenant construct. The shell is identical to KChat consumer — the features are just B2B.
           </div>
         </div>
       </section>
 
-      <!-- SCREEN: home (workspace home — Message tab) -->
+      <!-- SCREEN: home (workspace dashboard — reachable from the 🏠 icon in the channel-list topbar and the launcher's secondary button. NOT the Message-tab landing; that's #channel-list.) -->
       <section class="screen" id="screen-home">
         <div class="topbar messages-topbar">
           <div class="title">Acme Corp<div class="subtitle">Ken Nguyen · @ken</div></div>
@@ -170,48 +171,19 @@
         <button class="fab" onclick="KApp.show('action-launcher')" aria-label="New message or action">+</button>
       </section>
 
-      <!-- SCREEN: channel-list -->
+      <!-- SCREEN: channel-list (JS-rendered in SCREEN_ENTER['channel-list']) -->
       <section class="screen" id="screen-channel-list">
-        <div class="topbar">
+        <div class="topbar" data-channel-list-topbar>
           <button class="back-btn" onclick="KApp.back()" aria-label="Back">‹</button>
-          <div class="title">Channels<div class="subtitle">Acme Corp · 9 channels · 5 domains</div></div>
-          <div class="actions"><button onclick="KApp.show('search')" aria-label="Search">🔎</button></div>
+          <div class="title" data-channel-list-title>Acme Corp<div class="subtitle" data-channel-list-subtitle>General · 248 members</div></div>
+          <div class="actions">
+            <button onclick="KApp.show('home')" aria-label="Workspace dashboard">⊞</button>
+            <button onclick="KApp.show('search')" aria-label="Search">🔎</button>
+          </div>
         </div>
         <div class="content">
-          <div class="domain-group">
-            <div class="domain-header"><span>Operations</span><span class="chevron">▾</span></div>
-            <div class="domain-channels">
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">vendor-management</div><div class="last">14 members · AI: Kara</div></div><span class="tab-badge" style="position:static;">4</span></div>
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">logistics</div><div class="last">9 members · AI: Kara</div></div><span class="tab-badge" style="position:static;">1</span></div>
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">compliance</div><div class="last">6 members</div></div></div>
-            </div>
-          </div>
-          <div class="domain-group">
-            <div class="domain-header"><span>Sales</span><span class="chevron">▾</span></div>
-            <div class="domain-channels">
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">pipeline</div><div class="last">11 members · AI: Mika</div></div><span class="tab-badge" style="position:static;">2</span></div>
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">deals</div><div class="last">7 members · AI: Mika</div></div><span class="tab-badge" style="position:static;">1</span></div>
-            </div>
-          </div>
-          <div class="domain-group">
-            <div class="domain-header"><span>Product</span><span class="chevron">▾</span></div>
-            <div class="domain-channels">
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">roadmap</div><div class="last">10 members · AI: Nina</div></div></div>
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">specs</div><div class="last">12 members · AI: Nina</div></div><span class="tab-badge" style="position:static;">3</span></div>
-            </div>
-          </div>
-          <div class="domain-group">
-            <div class="domain-header"><span>People</span><span class="chevron">▾</span></div>
-            <div class="domain-channels">
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">hr-people</div><div class="last">8 members · AI: Hana</div></div><span class="tab-badge" style="position:static;">1</span></div>
-            </div>
-          </div>
-          <div class="domain-group">
-            <div class="domain-header"><span>Finance</span><span class="chevron">▾</span></div>
-            <div class="domain-channels">
-              <div class="channel-row" onclick="KApp.show('channel-chat')"><span class="channel-hash">#</span><div class="info"><div class="name">finance</div><div class="last">5 members · AI: Finn</div></div></div>
-            </div>
-          </div>
+          <div data-community-strip></div>
+          <div data-channel-list-body></div>
         </div>
       </section>
 
