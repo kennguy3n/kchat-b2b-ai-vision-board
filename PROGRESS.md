@@ -1,8 +1,100 @@
 # KChat B2B — Progress Log
 
 A running log of meaningful changes to the vision board prototype under
-`desktop/`. Each entry names the release, the audit findings it addresses,
-and which SME segments benefit most from the changes.
+`desktop/` and (as of v0.6) `mobile/`. Each entry names the release, the
+audit findings it addresses, and which SME segments benefit most from the
+changes.
+
+---
+
+## Mobile Click-Through (v0.6)
+
+**Goal:** Retell the same KChat B2B product story on a phone with
+**mobile-native** UX patterns. The desktop demo's home / domain dashboards
+are intentionally absent — the mobile app is **messaging-first**, opening
+straight into the channel list (Slack mobile / WhatsApp pattern). Every
+desktop right-panel surface (brief / processing / output / approval / task
+panel / AI employee) is reframed as a full-screen pushed view in a
+per-tab navigation stack.
+
+### Changes
+
+- [x] **Pure static HTML/CSS/JS under `mobile/`** — no frameworks, no
+      build tools. Reuses `desktop/js/demo-data.js`, `desktop/js/icons.js`,
+      `desktop/js/cards.js`, and `desktop/css/cards.css` via ES module
+      relative imports (`../desktop/js/`). Served from the repo root.
+- [x] **5-tab bottom navigation** — Chat / AI / Inbox / Activity / Me.
+      Unread badges on Chat (unread channel count) and Inbox
+      (action-required count). Per-tab navigation stacks with
+      back-button push/pop animations and `localStorage` persistence
+      under `kchat.mobile.lastScreen`.
+- [x] **Chat tab is the root** — channel list with an Unreads section,
+      domain-grouped channels, DMs, last-message preview, and unread
+      counts. No separate "Home" tab.
+- [x] **Channel chat with mobile-width KApp cards** — desktop's
+      `renderCard` reused as-is; cards reflow to the phone column. Tap
+      any message to surface a **Reply / Thread / Task / AI** action
+      bar (mobile equivalent of desktop hover actions). Pinned compose
+      bar at bottom with attach / input / AI sparkle / send.
+- [x] **Thread Detail** as a pushed view — flat message list, linked
+      object chips at the top (5 Tasks, 1 Approval, etc.), and a
+      thread action bar at the bottom (Extract Tasks / Summarize /
+      Draft Doc / Create Approval).
+- [x] **AI Action Launcher in two modes** — full-screen embedded as
+      the AI tab root (intent filter pills, channel-aware suggestions,
+      2-column action grid grouped by Create / Analyze / Plan /
+      Approve), and as a bottom sheet when triggered from the chat
+      compose bar's sparkle button.
+- [x] **Brief Builder → Processing → Output Review** flow as a
+      3-screen push stack — same fields and 4-step animation as
+      desktop, with sticky footers for the primary CTAs (*Generate
+      Draft*, *Edit in Workspace* / *Publish to Channel*).
+- [x] **Inbox tab** with priority grouping (Action required vs.
+      Updates), kind filter pills (All / Mentions / Approvals / AI
+      Updates), and routing back into the originating channel,
+      thread, approval, or AI output.
+- [x] **Activity tab** as a chronological timeline of channel
+      activity + AI employee state changes. Simpler than Inbox — just
+      the feed.
+- [x] **Me tab** consolidating profile, workspace summary, AI
+      Employees horizontal scroll, **My Tasks** / **My Approvals**
+      quick actions, and the **Communities** tenant switcher (replaces
+      the desktop's far-left tenant rail).
+- [x] **KApps as full-screen pushed views** — Tasks list with status
+      filter + Task Detail, Approval Review with audit trail and
+      stacked Approve / Deny CTAs (2-step confirmation), AI Employee
+      profile with allowed channels, monthly budget bar, cooldown
+      state, and task queue.
+- [x] **Touch-target and safe-area hygiene** — every interactive
+      element is at least 44px tall, tab bar respects
+      `env(safe-area-inset-bottom)`, top bar reserves 28px for the
+      status bar so the demo also looks right inside the iOS notch
+      area.
+
+### What's NOT on mobile (by design)
+
+- No onboarding tour, no template gallery, no slide / sheet / document
+  artifact workspaces, no settings modal, no channel knowledge panel.
+  The desktop demo retains all of those; mobile stays focused on the
+  messaging-first loop (discuss → invoke AI → review → approve).
+
+### Files
+
+- `mobile/index.html`, `mobile/css/*` (12 stylesheets), `mobile/js/*`
+  (11 modules), `mobile/assets/` symlink to `desktop/assets/`.
+- New documentation: `mobile/README.md` (click-through guide,
+  architecture, screen index). Root `README.md` gains a *Run the
+  mobile demo* section.
+
+### SME alignment
+
+- **Asset-light SMEs (sales, services, ops):** Same lightweight loop
+  on the go — read the channel, invoke AI from compose, approve from
+  Inbox, switch tenants from Me. No desktop required.
+- **Asset-heavy SMEs (manufacturing, logistics, distribution):**
+  Approval Review with audit trail and 2-step Approve / Deny is fully
+  usable from a phone, so floor managers and field teams can clear
+  the approval queue without going back to a workstation.
 
 ---
 

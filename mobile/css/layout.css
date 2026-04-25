@@ -1,0 +1,152 @@
+/* Phone shell */
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: var(--phone-w);
+  margin: 0 auto;
+  background: var(--bg);
+  color: var(--text);
+  display: grid;
+  grid-template-rows: var(--statusbar-h) var(--topbar-h) 1fr var(--tabbar-h);
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  font-family: var(--font-ui);
+  /* Subtle device frame outline on tablet/desktop viewports */
+  box-shadow: 0 0 0 1px var(--border), 0 24px 48px rgba(16,24,40,0.18);
+}
+@media (min-width: 480px) {
+  .phone {
+    margin: 24px auto;
+    height: calc(100dvh - 48px);
+    min-height: 720px;
+    border-radius: 36px;
+    border: 1px solid var(--border);
+  }
+}
+
+/* Status bar (cosmetic) */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  font-size: 11px; font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border-bottom: 1px solid transparent;
+}
+.status-bar .sb-right { color: var(--text-muted); letter-spacing: 0.4px; }
+
+/* Top bar */
+.topbar {
+  display: grid;
+  grid-template-columns: 56px 1fr 56px;
+  align-items: center;
+  padding: 0 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 5;
+}
+.topbar .tb-back,
+.topbar .tb-action {
+  appearance: none; border: 0; background: transparent;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+.topbar .tb-back:active,
+.topbar .tb-action:active { background: var(--surface-2); }
+.topbar .tb-back[hidden] { visibility: hidden; }
+.topbar .tb-title {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.15;
+  font-size: 15px;
+  overflow: hidden;
+}
+.topbar .tb-title .tb-sub {
+  font-weight: 500; font-size: 11.5px; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.topbar .tb-actions {
+  display: flex; justify-content: flex-end; gap: 2px;
+}
+
+/* Content stack */
+.content {
+  position: relative;
+  background: var(--bg);
+  overflow: hidden;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: none;
+  background: var(--bg);
+}
+.screen.active { display: block; }
+.screen.pushing,
+.screen.pushed { display: block; }
+
+/* Generic page wrapper */
+.page {
+  padding: var(--content-pad);
+}
+.page > h1 {
+  font-size: 22px;
+  margin: 0 0 12px;
+}
+
+/* Sticky search bar (used in channel list, ai launcher) */
+.search-bar {
+  position: sticky; top: 0;
+  background: var(--bg);
+  padding: 8px 12px 6px;
+  z-index: 2;
+}
+.search-bar input {
+  width: 100%;
+  height: 38px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 0 12px 0 36px;
+  font-size: 14px;
+  color: var(--text);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6372' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 21l-4.3-4.3M17 10.5A6.5 6.5 0 1 1 4 10.5a6.5 6.5 0 0 1 13 0Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px 50%;
+  outline: none;
+}
+.search-bar input:focus { border-color: var(--primary); }
+
+/* Sticky bottom action bar inside screens */
+.sticky-footer {
+  position: sticky; bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 12px var(--content-pad);
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Section header */
+.sec-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px var(--content-pad) 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.sec-head button {
+  background: none; border: 0; color: var(--text-muted);
+  font: inherit; padding: 4px 6px; cursor: pointer;
+  letter-spacing: 0;
+}
+.sec-head button .caret { transition: transform 160ms; display: inline-block; }
+.sec-head[data-collapsed="true"] button .caret { transform: rotate(-90deg); }
