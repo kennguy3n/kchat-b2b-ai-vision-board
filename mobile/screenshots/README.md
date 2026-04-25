@@ -13,8 +13,8 @@ five-tab shell (Message / Notification / Tasks / Settings / More).
 | # | Screen | What it shows |
 |---|---|---|
 | 01 | Launcher | Demo landing with three guided demo entry points |
-| 02 | Home | Workspace home (Message tab landing) — tenant switcher, Core Intents row, quick actions, recent channels |
-| 03 | Channel list | Community/tenant strip (Chat · Acme · Globex · Labs · +Join), pinned `📌 Announcement`, "Joined groups (9)" header, rich rows with group avatars + last-message previews + relative timestamps + unread badges |
+| 02 | Home | Workspace **dashboard** — reachable from the ⊞ icon in the channel-list topbar and from the launcher's secondary "Workspace dashboard" button. Tenant switcher, Core Intents row, quick actions, recent channels. Not the Message-tab landing (that's the channel list — see 03). |
+| 03 | Channel list | Generic "👥 Community" topbar; community/tenant strip with the personal-chat icon separated from the B2B communities by a vertical divider (Chat · Acme · Globex · Labs · +Join) and an underline indicator under the selected community; active-tenant header below the strip ("Acme Corp › · 🌐 General · 248 members") with a trailing search icon; pinned `📌 Announcement`; "Joined groups (9)" header with rich rows (group avatars + last-message previews + relative timestamps + unread badges) |
 | 04 | Channel chat | `#vendor-management` with AI cards, approval cards, email card, compute-mode badges |
 | 05 | Thread detail | Vendor review thread with AI-extracted task list |
 

@@ -2365,6 +2365,97 @@
 }
 .community-icon.active-chat { cursor: default; }
 
+/* Vertical divider between the personal-chat icon (B2C-style DMs, a
+   mode switcher — not a peer community) and the community icons on
+   the right. Keeps the visual grouping explicit without a text label. */
+.community-strip-divider {
+  flex-shrink: 0;
+  align-self: center;
+  width: 1px;
+  height: 40px;
+  background: var(--k-border);
+  margin: 0 4px;
+}
+
+/* Active-tenant indicator: thin horizontal bar under the selected
+   community icon, matching the reference KChat screenshot. */
+.community-icon { position: relative; }
+.community-icon.active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--k-text);
+}
+
+/* Topbar leading icon (👥) next to the "Community" title */
+.topbar-title-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+/* Tenant-name header shown BELOW the community strip: big active-
+   tenant name with a caret + "🌐 General · N members" subtitle +
+   a trailing search icon. Acts as the page-level context, while the
+   topbar above stays generic ("👥 Community"). */
+.tenant-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 4px 10px;
+  cursor: pointer;
+}
+.tenant-header:focus-visible {
+  outline: 2px solid var(--k-accent, #6366f1);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.tenant-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tenant-header-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--k-text);
+  line-height: 1.2;
+}
+.tenant-header-caret {
+  color: var(--k-text-2);
+  font-weight: 500;
+  font-size: 20px;
+}
+.tenant-header-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--k-text-2);
+}
+.tenant-header-sub-icon { opacity: 0.8; }
+.tenant-header-search {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--k-text-2);
+}
+.tenant-header-search:hover { background: var(--k-surface-2, rgba(0,0,0,0.04)); }
+
 /* Channel-list section title (between pinned + Joined groups sections) */
 .channel-section-title {
   margin: 12px 4px 6px;

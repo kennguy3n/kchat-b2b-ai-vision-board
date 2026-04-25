@@ -329,13 +329,15 @@
           <span class="community-icon-label">${t.short || t.name}</span>
         </button>`;
     }).join('');
-    // Leading "chat" bubble (current messages view) + trailing "+" join
+    // Leading personal-chat bubble is a mode switcher (B2C-style DMs),
+    // NOT a peer community — hence no label and a vertical divider
+    // separating it from the B2B community icons on the right.
     return `
       <div class="community-strip" role="tablist" aria-label="Communities">
-        <button class="community-icon chat active-chat" aria-label="Messages" disabled>
+        <button class="community-icon chat active-chat" aria-label="Personal chats" disabled>
           <span class="community-icon-inner avatar a2">💬</span>
-          <span class="community-icon-label">Chat</span>
         </button>
+        <span class="community-strip-divider" role="separator" aria-hidden="true"></span>
         ${tiles}
         <button class="community-icon plus" data-action="join-community" aria-label="Join a community">
           <span class="community-icon-inner">+</span>
@@ -344,11 +346,32 @@
       </div>`;
   }
 
+  function tenantHeaderHTML(tenant) {
+    if (!tenant) return '';
+    const members = tenant.members || 0;
+    return `
+      <div class="tenant-header" data-action="open-tenant" tabindex="0"
+           aria-label="Open ${tenant.name} workspace">
+        <div class="tenant-header-main">
+          <div class="tenant-header-name">
+            <span>${tenant.name}</span>
+            <span class="tenant-header-caret" aria-hidden="true">›</span>
+          </div>
+          <div class="tenant-header-sub">
+            <span class="tenant-header-sub-icon" aria-hidden="true">🌐</span>
+            General · ${members} members
+          </div>
+        </div>
+        <button class="tenant-header-search" data-action="search"
+                onclick="event.stopPropagation(); KApp.show('search')"
+                aria-label="Search">🔎</button>
+      </div>`;
+  }
+
   function renderChannelList(root) {
-    const stripHost  = root.querySelector('[data-community-strip]');
-    const listHost   = root.querySelector('[data-channel-list-body]');
-    const titleEl    = root.querySelector('[data-channel-list-title]');
-    const subtitleEl = root.querySelector('[data-channel-list-subtitle]');
+    const stripHost   = root.querySelector('[data-community-strip]');
+    const headerHost  = root.querySelector('[data-tenant-header]');
+    const listHost    = root.querySelector('[data-channel-list-body]');
     if (!listHost || !stripHost) return;
 
     const tenant = tenantById(state.tenantId);
@@ -387,21 +410,14 @@
     </div>`;
 
     stripHost.innerHTML = communityStripHTML();
+    if (headerHost) headerHost.innerHTML = tenantHeaderHTML(tenant);
     listHost.innerHTML = pinnedHTML + joinedHTML;
 
-    // Topbar: active community name + channel count (screenshot pattern)
-    if (tenant) {
-      if (titleEl) {
-        // Replace only the leading text node so the child .subtitle div
-        // stays intact
-        const firstText = Array.from(titleEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-        if (firstText) firstText.nodeValue = tenant.name;
-        else titleEl.prepend(document.createTextNode(tenant.name));
-      }
-      if (subtitleEl) {
-        subtitleEl.textContent = `General · ${tenant.members || 0} members`;
-      }
-    }
+    // Topbar stays generic ("👥 Community"). The active tenant name +
+    // member count render BELOW the strip as a dedicated section
+    // header (see tenantHeaderHTML) — putting the tenant name in the
+    // topbar above the strip reads as "everything below is inside
+    // this tenant", which is the opposite of what the strip means.
 
     wireChannelList(root);
   }
@@ -418,6 +434,8 @@
         switchTenant(tid);
       } else if (action === 'open-channel') {
         showScreen('channel-chat');
+      } else if (action === 'open-tenant') {
+        showScreen('home');
       } else if (action === 'join-community') {
         toast('Community join flow is not wired in this demo');
       }
