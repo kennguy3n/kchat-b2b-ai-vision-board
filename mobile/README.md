@@ -58,7 +58,7 @@ tab bar drop into B2B with zero rework.
 
 ### Phase 1 — Core navigation (8)
 1. `launcher` — guided-demo landing
-2. `home` — Acme Corp workspace (tenant switcher, Core Intents, quick actions, recent channels)
+2. `home` — Acme Corp **workspace dashboard** (tenant switcher, Core Intents, quick actions, recent channels). Reachable from the **⊞** icon in the `channel-list` topbar and from the launcher's secondary "Workspace dashboard" button. **Not the Message-tab landing** — the Message tab (💬) opens `channel-list` directly, since a chat app's home is chat.
 3. `channel-list` — community/tenant strip at top (Chat · Acme · Globex · Labs · +Join), pinned `announcement` row, then "Joined groups (9)" with domain sub-sections for the active community. Rich rows show a colored group avatar, name, relative time, last-message preview, and unread badge; tenant switching persists via `localStorage` under `kchat-b2b-tenant`.
 4. `channel-chat` — `#vendor-management` with 12 messages, AI cards, approval card, email card
 5. `thread-detail` — 5 extracted tasks inline, thread chips

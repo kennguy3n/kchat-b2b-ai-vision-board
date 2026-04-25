@@ -348,7 +348,7 @@ We are happy to counter-sign once your legal team approves.
 
   demoSteps: {
     'vendor-review': [
-      { screen: 'home',            hint: 'Acme Corp workspace · tap #vendor-management to enter the main channel', target: '' },
+      { screen: 'channel-list',    hint: 'Acme Corp channels · tap #vendor-management to enter the main channel', target: '' },
       { screen: 'channel-chat',    hint: 'Long-press the AI message from Kara to see context actions',              target: '#msg-m-v-6' },
       { screen: 'long-press-menu', hint: 'KChat AI suggested "Open thread" — tap it',                              target: '#menu-thread' },
       { screen: 'thread-detail',   hint: 'Kara extracted 5 tasks from the thread · tap "5 Tasks"',                   target: '#thread-chip-tasks' },
@@ -358,7 +358,7 @@ We are happy to counter-sign once your legal team approves.
       { screen: 'notifications',   hint: 'Notification cleared · Action required list is shorter',                   target: '' },
     ],
     'draft-prd': [
-      { screen: 'home',             hint: 'Tap #specs to join the Product team',                                     target: '' },
+      { screen: 'channel-list',     hint: 'Tap #specs to join the Product team',                                     target: '' },
       { screen: 'channel-chat',     hint: 'Tap the + AI sparkle to open the Action Launcher',                        target: '#ai-sparkle' },
       { screen: 'action-launcher',  hint: 'Core Intents · Create → tap PRD',                                         target: '#intent-create' },
       { screen: 'brief-builder',    hint: 'Nina pre-filled every field · tap Generate Draft',                        target: '#brief-generate' },
@@ -367,7 +367,7 @@ We are happy to counter-sign once your legal team approves.
       { screen: 'artifact-workspace', hint: 'Section-level editing + AI assist · publish when ready',                target: '' },
     ],
     'ai-employee': [
-      { screen: 'home',              hint: 'Tap the Settings tab (⚙) in the bottom bar',                              target: '' },
+      { screen: 'channel-list',      hint: 'Tap the Settings tab (⚙) in the bottom bar',                              target: '' },
       { screen: 'settings',          hint: 'AI Employees section pinned at the top · tap through',                    target: '#settings-ai-employees' },
       { screen: 'ai-employee-list',  hint: 'Five AI Employees across Ops / Sales / Product / HR / Finance',           target: '' },
       { screen: 'ai-employee-detail', hint: 'Budget bar, compute mode, queue · tap Back to jump into her channel',    target: '' },

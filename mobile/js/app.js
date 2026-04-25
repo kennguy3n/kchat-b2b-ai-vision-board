@@ -151,7 +151,10 @@
 
   function onTabClick(tab) {
     switch (tab) {
-      case 'chats':         showScreen('home'); break;
+      // Chat app → Message tab lands on the channel list (chat-first),
+      // not the workspace dashboard. The dashboard is still reachable
+      // via the 🏠 topbar icon on the channel list.
+      case 'chats':         showScreen('channel-list'); break;
       case 'notifications': showScreen('notifications'); break;
       case 'tasks':         showScreen('task-list'); break;
       case 'settings':      showScreen('settings'); break;

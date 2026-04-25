@@ -87,6 +87,25 @@ and the rich preview rows, not a member count.
       screen shape; `mobile/screenshots/README.md` row 03 updated;
       top-level `README.md` "Progress log" pointer bumped to v0.8.
 
+### Chat-first home (follow-up in the same PR)
+
+- [x] **Message tab lands on `channel-list`**, not `home`. A chat app's
+      home is chat — the Message tab (💬) in the bottom bar now opens
+      the channel list directly.
+- [x] **Launcher CTA** relabeled to **"Open Acme Corp chats →"** and
+      routes to `channel-list`. A secondary **"Workspace dashboard
+      (Core Intents, shortcuts)"** button preserves the old entry
+      point for anyone who wants the Core Intents + Quick Actions
+      surface.
+- [x] **Workspace dashboard reachable from the channel list** — a new
+      **⊞** icon next to the search icon in the channel-list topbar
+      opens the `home` screen on demand. The dashboard (Core Intents
+      tiles, Browse Channels, AI Employees, Templates, Approvals
+      counter, Recent channels) is not lost; it's one tap away.
+- [x] **Demo steps re-pointed** — `demoSteps.vendor-review`,
+      `demoSteps.draft-prd`, and `demoSteps.ai-employee` now start on
+      `channel-list` instead of `home`, matching the new landing.
+
 ### Segments that benefit most
 
 - **Operations / Sales (Kara, Mika, Sofia, Dan)** — the vendor-review

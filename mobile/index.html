@@ -73,14 +73,15 @@
           </button>
 
           <div class="launcher-section-title">Or explore freely</div>
-          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.show('home')">Open Acme Corp workspace →</button>
+          <button class="btn btn-primary btn-full btn-lg" onclick="KApp.show('channel-list')">Open Acme Corp chats →</button>
+          <button class="btn btn-ghost btn-full" onclick="KApp.show('home')" style="margin-top:8px;">Workspace dashboard (Core Intents, shortcuts)</button>
           <div class="text-xs muted-2" style="text-align:center; margin-top:12px;">
             Community is a tenant construct. The shell is identical to KChat consumer — the features are just B2B.
           </div>
         </div>
       </section>
 
-      <!-- SCREEN: home (workspace home — Message tab) -->
+      <!-- SCREEN: home (workspace dashboard — reachable from the 🏠 icon in the channel-list topbar and the launcher's secondary button. NOT the Message-tab landing; that's #channel-list.) -->
       <section class="screen" id="screen-home">
         <div class="topbar messages-topbar">
           <div class="title">Acme Corp<div class="subtitle">Ken Nguyen · @ken</div></div>
@@ -175,7 +176,10 @@
         <div class="topbar" data-channel-list-topbar>
           <button class="back-btn" onclick="KApp.back()" aria-label="Back">‹</button>
           <div class="title" data-channel-list-title>Acme Corp<div class="subtitle" data-channel-list-subtitle>General · 248 members</div></div>
-          <div class="actions"><button onclick="KApp.show('search')" aria-label="Search">🔎</button></div>
+          <div class="actions">
+            <button onclick="KApp.show('home')" aria-label="Workspace dashboard">⊞</button>
+            <button onclick="KApp.show('search')" aria-label="Search">🔎</button>
+          </div>
         </div>
         <div class="content">
           <div data-community-strip></div>
