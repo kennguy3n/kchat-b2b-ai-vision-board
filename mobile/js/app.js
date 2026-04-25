@@ -15,6 +15,14 @@
   }
   setInterval(updateClock, 30000);
 
+  // ---- App state ----
+  // Shared across screens that need tenant-awareness (channel list,
+  // community strip). Persisted in localStorage so switching tenants
+  // survives a hash-driven reload.
+  const state = {
+    tenantId: localStorage.getItem('kchat-b2b-tenant') || 't-acme',
+  };
+
   // ---- Navigation ----
   const history = [];
   let currentScreen = null;
@@ -221,8 +229,222 @@
     if (btn) btn.textContent = (document.body.dataset.theme === 'dark' ? '☀️ Light' : '🌙 Dark');
   }
 
-  // ---- Screen enter hooks (AI simulations) ----
+  // ---- Channel list: community strip + rich channel rows ----
+  // Mirrors the real KChat UX — horizontal community icons at the top
+  // (each = one tenant/workspace), the active community name/member
+  // count as the topbar, and "Joined groups (N)" sections built from
+  // KDATA.channels filtered by tenantId.
+
+  function channelsForActiveTenant() {
+    const all = window.KDATA.channels || [];
+    return all.filter(c => c.tenantId === state.tenantId);
+  }
+
+  function tenantById(tid) {
+    return (window.KDATA.tenants || []).find(t => t.id === tid) || null;
+  }
+
+  // Accepts either a pre-formatted string ("09:46", "Yesterday", "Mar 10")
+  // or a numeric `ts` (epoch ms). For the static demo data strings are
+  // already human-friendly — so we pass them through unchanged. The
+  // numeric path exists so a future real data source can be dropped in
+  // without touching the renderer.
+  function relativeTime(c) {
+    if (!c) return '';
+    if (typeof c.time === 'string' && c.time) return c.time;
+    const ts = typeof c.ts === 'number' ? c.ts : null;
+    if (ts == null) return '';
+    const now = Date.now();
+    const diff = now - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'now';
+    if (mins < 60) return mins + 'm';
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) {
+      const d = new Date(ts);
+      const hh = d.getHours();
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const am = hh < 12 ? 'AM' : 'PM';
+      const h12 = ((hh + 11) % 12) + 1;
+      return h12 + ':' + mm + ' ' + am;
+    }
+    const days = Math.floor(hours / 24);
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(ts).getDay()];
+    const d = new Date(ts);
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  // Circular group avatar for a channel — first letter of the name,
+  // colored per channel.color. Uses the same `.avatar` tokens already
+  // defined for tenant switcher / DM rows so the palette stays in sync.
+  function channelAvatarHTML(c) {
+    if (c.pinned && c.emoji) {
+      return `<span class="channel-avatar avatar ${c.color || 'a5'}" aria-hidden="true">${c.emoji}</span>`;
+    }
+    const letter = (c.name || '#').replace(/^#/, '').charAt(0).toUpperCase();
+    return `<span class="channel-avatar avatar ${c.color || 'a2'}" aria-hidden="true">${letter}</span>`;
+  }
+
+  function lastMessagePreview(c) {
+    // Static demo data already stores last message as "Sender: text".
+    // Fall back to a generic line so the row is never empty.
+    return c.last || (c.members ? (c.members + ' members') : 'No messages yet');
+  }
+
+  function channelRow(c) {
+    const unread = c.unread || 0;
+    const badge = unread > 0 ? `<span class="tab-badge" style="position:static;">${unread}</span>` : '';
+    const name = c.pinned ? c.name : '#' + c.name;
+    return `
+      <div class="channel-row channel-row-rich${c.pinned ? ' pinned' : ''}"
+           data-action="open-channel" data-channel-id="${c.id}"
+           role="button" tabindex="0" aria-label="Open ${c.name}">
+        ${channelAvatarHTML(c)}
+        <div class="info">
+          <div class="row-top">
+            <span class="name">${name}</span>
+            <span class="time">${relativeTime(c)}</span>
+          </div>
+          <div class="row-bot">
+            <span class="last">${lastMessagePreview(c)}</span>
+            ${badge}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function communityStripHTML() {
+    const tenants = window.KDATA.tenants || [];
+    const tiles = tenants.map(t => {
+      const active = t.id === state.tenantId;
+      return `
+        <button class="community-icon${active ? ' active' : ''}"
+                data-action="switch-tenant" data-tenant-id="${t.id}"
+                aria-label="Switch to ${t.name}" aria-pressed="${active}">
+          <span class="community-icon-inner avatar ${t.color || 'a2'}">${t.avatar || t.short || 'T'}</span>
+          <span class="community-icon-label">${t.short || t.name}</span>
+        </button>`;
+    }).join('');
+    // Leading "chat" bubble (current messages view) + trailing "+" join
+    return `
+      <div class="community-strip" role="tablist" aria-label="Communities">
+        <button class="community-icon chat active-chat" aria-label="Messages" disabled>
+          <span class="community-icon-inner avatar a2">💬</span>
+          <span class="community-icon-label">Chat</span>
+        </button>
+        ${tiles}
+        <button class="community-icon plus" data-action="join-community" aria-label="Join a community">
+          <span class="community-icon-inner">+</span>
+          <span class="community-icon-label">Join</span>
+        </button>
+      </div>`;
+  }
+
+  function renderChannelList(root) {
+    const stripHost  = root.querySelector('[data-community-strip]');
+    const listHost   = root.querySelector('[data-channel-list-body]');
+    const titleEl    = root.querySelector('[data-channel-list-title]');
+    const subtitleEl = root.querySelector('[data-channel-list-subtitle]');
+    if (!listHost || !stripHost) return;
+
+    const tenant = tenantById(state.tenantId);
+    const channels = channelsForActiveTenant();
+    const pinned = channels.filter(c => c.pinned);
+    const joined = channels.filter(c => !c.pinned);
+
+    // Group joined channels by domain (keeps the B2B ops/sales/etc.
+    // breakdown) but under a single "Joined groups (N)" section header,
+    // matching the KChat reference screenshot.
+    const byDomain = {};
+    const order = [];
+    joined.forEach(c => {
+      if (!byDomain[c.domain]) { byDomain[c.domain] = []; order.push(c.domain); }
+      byDomain[c.domain].push(c);
+    });
+
+    const pinnedHTML = pinned.length ? `
+      <div class="domain-group pinned-group">
+        <div class="domain-header"><span>📌 Announcement</span></div>
+        <div class="domain-channels">${pinned.map(channelRow).join('')}</div>
+      </div>` : '';
+
+    const joinedHeaderCount = joined.length;
+    const joinedHTML = joined.length ? `
+      <div class="section-title channel-section-title">
+        Joined groups (${joinedHeaderCount})
+      </div>
+      ${order.map(dom => `
+        <div class="domain-group">
+          <div class="domain-header"><span>${dom}</span><span class="chevron">▾</span></div>
+          <div class="domain-channels">${byDomain[dom].map(channelRow).join('')}</div>
+        </div>`).join('')}
+    ` : `<div class="text-sm muted-2" style="padding:24px 0;text-align:center;">
+      No channels yet in this community.
+    </div>`;
+
+    stripHost.innerHTML = communityStripHTML();
+    listHost.innerHTML = pinnedHTML + joinedHTML;
+
+    // Topbar: active community name + channel count (screenshot pattern)
+    if (tenant) {
+      if (titleEl) {
+        // Replace only the leading text node so the child .subtitle div
+        // stays intact
+        const firstText = Array.from(titleEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+        if (firstText) firstText.nodeValue = tenant.name;
+        else titleEl.prepend(document.createTextNode(tenant.name));
+      }
+      if (subtitleEl) {
+        subtitleEl.textContent = `General · ${tenant.members || 0} members`;
+      }
+    }
+
+    wireChannelList(root);
+  }
+
+  function wireChannelList(root) {
+    if (root.dataset.clWired) return;
+    root.dataset.clWired = '1';
+    root.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-action]');
+      if (!el || !root.contains(el)) return;
+      const action = el.dataset.action;
+      if (action === 'switch-tenant') {
+        const tid = el.dataset.tenantId;
+        switchTenant(tid);
+      } else if (action === 'open-channel') {
+        showScreen('channel-chat');
+      } else if (action === 'join-community') {
+        toast('Community join flow is not wired in this demo');
+      }
+    });
+    root.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const el = e.target.closest('[data-action="open-channel"]');
+      if (!el || !root.contains(el)) return;
+      e.preventDefault();
+      showScreen('channel-chat');
+    });
+  }
+
+  function switchTenant(tid) {
+    if (!tid || tid === state.tenantId) return;
+    const t = tenantById(tid);
+    if (!t) return;
+    state.tenantId = tid;
+    localStorage.setItem('kchat-b2b-tenant', tid);
+    toast('Switched to ' + t.name);
+    const root = document.getElementById('screen-channel-list');
+    if (root && currentScreen === 'channel-list') renderChannelList(root);
+  }
+
+  // ---- Screen enter hooks (AI simulations + channel list) ----
   const SCREEN_ENTER = {
+    'channel-list'(root) {
+      renderChannelList(root);
+    },
+
     'ai-processing'(root) {
       // Auto-advance to output review after a brief animation
       const slot = root.querySelector('[data-ai-slot="processing"]');
@@ -517,6 +739,8 @@
     toggleTheme,
     privacyStrip,
     wireLongPresses,
+    switchTenant,
+    state,
     startDemo: (p) => DEMO.start(p),
     endDemo: () => DEMO.end(),
   };

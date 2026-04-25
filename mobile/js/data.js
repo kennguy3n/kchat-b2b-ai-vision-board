@@ -5,21 +5,52 @@ window.KDATA = {
   user: { name: 'Ken Nguyen', handle: '@ken', avatar: 'KN', role: 'Head of Ops' },
 
   tenants: [
-    { id: 't-acme',   name: 'Acme Corp',      short: 'Acme',    avatar: 'AC', color: 'a2', active: true,  description: 'KChat Business · 248 members' },
-    { id: 't-globex', name: 'Globex Partners', short: 'Globex', avatar: 'GX', color: 'a3', description: 'Partner network · 42 members' },
-    { id: 't-labs',   name: 'Acme Labs',       short: 'Labs',   avatar: 'AL', color: 'a4', description: 'R&D subsidiary · 18 members' },
+    { id: 't-acme',   name: 'Acme Corp',      short: 'Acme',   avatar: 'AC', color: 'a2', active: true, members: 248, description: 'KChat Business · 248 members' },
+    { id: 't-globex', name: 'Globex Partners', short: 'Globex', avatar: 'GX', color: 'a3',              members:  42, description: 'Partner network · 42 members' },
+    { id: 't-labs',   name: 'Acme Labs',       short: 'Labs',   avatar: 'AL', color: 'a4',              members:  18, description: 'R&D subsidiary · 18 members' },
   ],
 
   channels: [
-    { id: 'c-vendor',     domain: 'Operations', name: 'vendor-management', last: 'Kara Ops AI: Orbix remediation summary ready', time: '09:46', unread: 4, ai: true },
-    { id: 'c-logistics',  domain: 'Operations', name: 'logistics',          last: 'Dan: Pulling FleetOne rates now',                time: '09:05', unread: 1 },
-    { id: 'c-compliance', domain: 'Operations', name: 'compliance',         last: 'Sofia: SOC2 evidence window opens Monday',        time: '10:00', unread: 0 },
-    { id: 'c-pipeline',   domain: 'Sales',      name: 'pipeline',           last: 'Tom: Globex moved to verbal',                     time: '11:10', unread: 2 },
-    { id: 'c-deals',      domain: 'Sales',      name: 'deals',              last: 'Mika Sales AI: QBR draft attached · 2 risks',     time: '11:32', unread: 1, ai: true },
-    { id: 'c-roadmap',    domain: 'Product',    name: 'roadmap',            last: 'Ana: Q3 themes forming up',                       time: '13:05', unread: 0 },
-    { id: 'c-specs',      domain: 'Product',    name: 'specs',              last: 'Nina PM AI: Drafting Vendor Portal v2 PRD',       time: '14:33', unread: 3, ai: true },
-    { id: 'c-hr-people',  domain: 'People',     name: 'hr-people',          last: 'Hana HR AI: Leave request routed to Ken',         time: '10:08', unread: 1, ai: true },
-    { id: 'c-finance',    domain: 'Finance',    name: 'finance',            last: 'Finn Finance AI: Q2 accruals reconciled',         time: 'Yesterday', unread: 0, ai: true },
+    // Pinned announcement — always shown at top, above domain groups
+    { id: 'c-announce',   tenantId: 't-acme', domain: 'Pinned',     name: 'announcement',       pinned: true, emoji: '📢', color: 'a5',
+      last: 'Ken Nguyen: Q2 all-hands moved to Wed 10 AM · agenda in thread', time: '08:12', unread: 0 },
+
+    { id: 'c-vendor',     tenantId: 't-acme', domain: 'Operations', name: 'vendor-management',  members: 14, color: 'a2',
+      last: 'Kara Ops AI: Orbix remediation summary ready',   time: '09:46', unread: 4, ai: true },
+    { id: 'c-logistics',  tenantId: 't-acme', domain: 'Operations', name: 'logistics',          members:  9, color: 'a2',
+      last: 'Dan: Pulling FleetOne rates now',                time: '09:05', unread: 1 },
+    { id: 'c-compliance', tenantId: 't-acme', domain: 'Operations', name: 'compliance',         members:  6, color: 'a2',
+      last: 'Sofia: SOC2 evidence window opens Monday',       time: '10:00', unread: 0 },
+
+    { id: 'c-pipeline',   tenantId: 't-acme', domain: 'Sales',      name: 'pipeline',           members: 11, color: 'a3',
+      last: 'Tom: Globex moved to verbal',                    time: '11:10', unread: 2 },
+    { id: 'c-deals',      tenantId: 't-acme', domain: 'Sales',      name: 'deals',              members:  7, color: 'a3',
+      last: 'Mika Sales AI: QBR draft attached · 2 risks',    time: '11:32', unread: 1, ai: true },
+
+    { id: 'c-roadmap',    tenantId: 't-acme', domain: 'Product',    name: 'roadmap',            members: 10, color: 'a4',
+      last: 'Ana: Q3 themes forming up',                      time: 'Thu',   unread: 0 },
+    { id: 'c-specs',      tenantId: 't-acme', domain: 'Product',    name: 'specs',              members: 12, color: 'a4',
+      last: 'Nina PM AI: Drafting Vendor Portal v2 PRD',      time: '14:33', unread: 3, ai: true },
+
+    { id: 'c-hr-people',  tenantId: 't-acme', domain: 'People',     name: 'hr-people',          members:  8, color: 'a5',
+      last: 'Hana HR AI: Leave request routed to Ken',        time: '10:08', unread: 1, ai: true },
+
+    { id: 'c-finance',    tenantId: 't-acme', domain: 'Finance',    name: 'finance',            members:  5, color: 'a3',
+      last: 'Finn Finance AI: Q2 accruals reconciled',        time: 'Yesterday', unread: 0, ai: true },
+
+    // Globex tenant — partner-network channels
+    { id: 'c-gx-partners',  tenantId: 't-globex', domain: 'Partners',     name: 'partner-network', members: 24, color: 'a3',
+      last: 'Lia: Onboarding packet sent to 3 new partners',  time: '11:20', unread: 2 },
+    { id: 'c-gx-deals',     tenantId: 't-globex', domain: 'Deals',        name: 'joint-deals',     members: 18, color: 'a3',
+      last: 'Mika Sales AI: 2 co-sell opportunities flagged', time: 'Wed',   unread: 1, ai: true },
+    { id: 'c-gx-support',   tenantId: 't-globex', domain: 'Support',      name: 'partner-support', members: 11, color: 'a2',
+      last: 'Sofia: Escalation queue cleared · 0 open',       time: 'Tue',   unread: 0 },
+
+    // Labs tenant — R&D channels
+    { id: 'c-lb-research',  tenantId: 't-labs',   domain: 'Research',     name: 'research',        members: 12, color: 'a4',
+      last: 'Nina PM AI: New paper summary posted',            time: '15:04', unread: 2, ai: true },
+    { id: 'c-lb-builds',    tenantId: 't-labs',   domain: 'Engineering', name: 'builds',          members:  9, color: 'a2',
+      last: 'Alex: Nightly build green · 0 regressions',       time: 'Mar 10',unread: 0 },
   ],
 
   coreIntents: [

@@ -14,7 +14,7 @@ five-tab shell (Message / Notification / Tasks / Settings / More).
 |---|---|---|
 | 01 | Launcher | Demo landing with three guided demo entry points |
 | 02 | Home | Workspace home (Message tab landing) — tenant switcher, Core Intents row, quick actions, recent channels |
-| 03 | Channel list | Domain-grouped channels for Acme Corp |
+| 03 | Channel list | Community/tenant strip (Chat · Acme · Globex · Labs · +Join), pinned `📌 Announcement`, "Joined groups (9)" header, rich rows with group avatars + last-message previews + relative timestamps + unread badges |
 | 04 | Channel chat | `#vendor-management` with AI cards, approval cards, email card, compute-mode badges |
 | 05 | Thread detail | Vendor review thread with AI-extracted task list |
 
