@@ -230,14 +230,31 @@ export function wireChannelChat() {
   const el = document.querySelector('[data-screen="channel-chat"]');
   if (!el) return;
   el.addEventListener("click", (e) => {
+    // Card actions take precedence over tap-message so cards rendered
+    // inside non-system messages (approval, artifact, task-list) still
+    // route to their detail screens.
+    const cardAction = e.target.closest("[data-card-action]")?.dataset.cardAction;
+    if (cardAction === "open-artifact") {
+      const aid = e.target.closest("[data-artifact-id]")?.dataset.artifactId;
+      window.app.navigate("ai-output", { artifactId: aid });
+      return;
+    }
+    if (cardAction === "open-approval") {
+      const apid = e.target.closest("[data-approval-id]")?.dataset.approvalId;
+      window.app.navigate("approval-review", { approvalId: apid });
+      return;
+    }
+    if (cardAction === "open-tasks") {
+      window.app.navigate("tasks");
+      return;
+    }
+
     const action = e.target.closest("[data-action]")?.dataset.action;
     if (action === "tap-message") {
       const m = e.target.closest(".message-mob");
       const id = m?.dataset.msgId;
       if (!id) return;
-      // Don't show action bar on system messages or when tapping a card link
       if (m.classList.contains("system")) return;
-      if (e.target.closest("[data-card-action]")) return;
       showMessageActionBar(m, id);
       return;
     }
@@ -276,23 +293,6 @@ export function wireChannelChat() {
     if (msgAction === "reply") {
       showToast("Replied (demo)");
       document.querySelectorAll(".msg-action-bar").forEach(b => b.remove());
-      return;
-    }
-
-    // Card actions inside chat (mirror desktop card data-card-action)
-    const cardAction = e.target.closest("[data-card-action]")?.dataset.cardAction;
-    if (cardAction === "open-artifact") {
-      const aid = e.target.closest("[data-artifact-id]")?.dataset.artifactId;
-      window.app.navigate("ai-output", { artifactId: aid });
-      return;
-    }
-    if (cardAction === "open-approval") {
-      const apid = e.target.closest("[data-approval-id]")?.dataset.approvalId;
-      window.app.navigate("approval-review", { approvalId: apid });
-      return;
-    }
-    if (cardAction === "open-tasks") {
-      window.app.navigate("tasks");
       return;
     }
   });
