@@ -32,8 +32,12 @@ mobile/
     data.js               window.KDATA — hardcoded B2B demo content (no ES modules)
     simulate-ai.js        Copied verbatim from B2C — KAI.processInto / attachLongPress / typingHTML
     app.js                Navigation (KApp namespace), SCREEN_ENTER hooks, guided demos
-  screenshots/            PR screenshots
+  screenshots/            32-shot walkthrough (see screenshots/README.md)
 ```
+
+See [`screenshots/README.md`](./screenshots/README.md) for the full
+numbered walkthrough — each of the 32 screens is inlined there so the
+whole click-through can be reviewed without running the server.
 
 The CSS variable names (`--k-primary`, `--k-accent`, …) match the B2C prototype
 exactly; only the **values** are swapped to the B2B desktop palette
