@@ -2,7 +2,7 @@
 
 **Status:** Vision / Pitch Draft
 **Owner:** KChat Product
-**Version:** 0.1 (Desktop vision board)
+**Version:** 0.8.1 (Desktop + Mobile vision board)
 **Accompanying artifact:** Static HTML/CSS/JS click-through under `desktop/`
 
 ---
