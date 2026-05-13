@@ -157,3 +157,7 @@ The v0.2 "UX audit" pass (see [`PROGRESS.md`](./PROGRESS.md)) adds the following
 - Not production code — intentionally framework-free for a fast click-through.
 
 See [`PROPOSAL.md`](./PROPOSAL.md) for the production vision, phased build plan, and governance model.
+
+## License
+
+Proprietary. See [`LICENSE`](LICENSE).
